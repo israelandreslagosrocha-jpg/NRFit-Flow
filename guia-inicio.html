@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Inicio Rápido - NR Fit & Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #E91E63 0%, #1a1a1a 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #E91E63;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .step-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-left: 4px solid #E91E63;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .step-card h3 {
+            color: #E91E63;
+            margin-bottom: 10px;
+        }
+
+        .step-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        .file-list {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 15px 0;
+        }
+
+        .file-item {
+            padding: 8px;
+            color: #333;
+        }
+
+        .file-item.folder::before {
+            content: "📁 ";
+        }
+
+        .file-item.html::before {
+            content: "🌐 ";
+        }
+
+        .file-item.css::before {
+            content: "🎨 ";
+        }
+
+        .file-item.js::before {
+            content: "⚙️ ";
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feature-box {
+            background: linear-gradient(135deg, #E91E63 0%, #1a1a1a 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .feature-box strong {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .link-button {
+            display: inline-block;
+            background: #E91E63;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s;
+        }
+
+        .link-button:hover {
+            background: #1a1a1a;
+            transform: translateY(-2px);
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f9f9f9;
+            border-radius: 5px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 10px;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #667eea;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏋️ NR Fit & Flow</h1>
+        <p class="subtitle">Guía de Inicio Rápido - Página Web Modern para Gimnasio</p>
+
+        <!-- Introducción -->
+        <div class="section">
+            <h2>👋 Bienvenida</h2>
+            <p>¡Felicidades! Has recibido una página web completamente funcional y moderna para tu gimnasio. Este documento te guiará a través de los primeros pasos.</p>
+            <div class="success">
+                <strong>✓ ¡Excelentes noticias!</strong> Tu página ya está lista para usar. No requiere configuración técnica complicada.
+            </div>
+        </div>
+
+        <!-- Estructura de Archivos -->
+        <div class="section">
+            <h2>📁 Estructura de Archivos</h2>
+            <p>Tu proyecto contiene los siguientes archivos:</p>
+            <div class="file-list">
+                <div class="file-item folder">WEB NR/</div>
+                <div class="file-item html" style="margin-left: 20px;">index.html (página principal)</div>
+                <div class="file-item html" style="margin-left: 20px;">about.html (sobre nosotros)</div>
+                <div class="file-item css" style="margin-left: 20px;">styles.css (estilos)</div>
+                <div class="file-item js" style="margin-left: 20px;">script.js (funcionalidades)</div>
+                <div class="file-item" style="margin-left: 20px;">📄 README.md (documentación)</div>
+                <div class="file-item" style="margin-left: 20px;">⚙️ CONFIGURACION.md (guía de personalización)</div>
+            </div>
+        </div>
+
+        <!-- Cómo Ver tu Página -->
+        <div class="section">
+            <h2>🚀 Cómo Ver tu Página</h2>
+            
+            <div class="step-card">
+                <h3>Opción 1: Abrir directamente (La más simple)</h3>
+                <p>1. Haz doble clic en el archivo <code>index.html</code></p>
+                <p>2. ¡Se abrirá en tu navegador automáticamente!</p>
+            </div>
+
+            <div class="step-card">
+                <h3>Opción 2: Con Python (Recomendado)</h3>
+                <p>1. Abre Terminal en la carpeta del proyecto</p>
+                <div class="code-block">cd "/Users/teomusicrecords/Downloads/NR FIT AND FLOW/WEB NR"<br>python -m http.server 8000</div>
+                <p>2. Abre tu navegador y ve a <code>http://localhost:8000</code></p>
+            </div>
+
+            <div class="step-card">
+                <h3>Opción 3: Con VS Code (Live Server)</h3>
+                <p>1. Abre la carpeta en VS Code</p>
+                <p>2. Instala la extensión "Live Server" de Ritwick Dey</p>
+                <p>3. Haz clic derecho en index.html → "Open with Live Server"</p>
+            </div>
+        </div>
+
+        <!-- Características -->
+        <div class="section">
+            <h2>⭐ Características Incluidas</h2>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <strong>📱</strong> Responsive Design
+                </div>
+                <div class="feature-box">
+                    <strong>🎨</strong> Diseño Moderno
+                </div>
+                <div class="feature-box">
+                    <strong>⚡</strong> Rápido y Ligero
+                </div>
+                <div class="feature-box">
+                    <strong>🔧</strong> Fácil de Personalizar
+                </div>
+                <div class="feature-box">
+                    <strong>🌐</strong> SEO Optimizado
+                </div>
+                <div class="feature-box">
+                    <strong>✨</strong> Animaciones Suaves
+                </div>
+            </div>
+        </div>
+
+        <!-- Personalización Rápida -->
+        <div class="section">
+            <h2>🎯 Personalizaciones Más Comunes</h2>
+            
+            <table>
+                <tr>
+                    <th>Qué cambiar</th>
+                    <th>Dónde hacerlo</th>
+                    <th>Dificultad</th>
+                </tr>
+                <tr>
+                    <td>Nombre del gimnasio</td>
+                    <td>index.html - línea 3 y en el logo</td>
+                    <td>⭐ Muy Fácil</td>
+                </tr>
+                <tr>
+                    <td>Colores principales</td>
+                    <td>styles.css - primeras 10 líneas</td>
+                    <td>⭐ Muy Fácil</td>
+                </tr>
+                <tr>
+                    <td>Precios de membresías</td>
+                    <td>index.html - sección Membresías</td>
+                    <td>⭐ Muy Fácil</td>
+                </tr>
+                <tr>
+                    <td>Información de contacto</td>
+                    <td>index.html - sección Contacto</td>
+                    <td>⭐ Muy Fácil</td>
+                </tr>
+                <tr>
+                    <td>Imágenes</td>
+                    <td>index.html y about.html</td>
+                    <td>⭐ Muy Fácil</td>
+                </tr>
+                <tr>
+                    <td>Agregar nueva página</td>
+                    <td>Crear nuevo archivo .html</td>
+                    <td>⭐⭐ Fácil</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Primeros Pasos -->
+        <div class="section">
+            <h2>✅ Checklist de Primeros Pasos</h2>
+            <ul class="checklist">
+                <li>Abre index.html en tu navegador</li>
+                <li>Revisa todas las secciones de la página</li>
+                <li>Lee el archivo README.md para entender la estructura</li>
+                <li>Lee el archivo CONFIGURACION.md para personalizaciones</li>
+                <li>Cambia el nombre del gimnasio en index.html</li>
+                <li>Actualiza la información de contacto</li>
+                <li>Ajusta los precios de las membresías</li>
+                <li>Reemplaza las imágenes con las tuyas</li>
+                <li>Prueba el formulario de contacto</li>
+                <li>Testea la página en dispositivos móviles</li>
+            </ul>
+        </div>
+
+        <!-- Despliegue -->
+        <div class="section">
+            <h2>🌍 Desplegar tu Página en Internet</h2>
+            
+            <div class="step-card">
+                <h3>Opción 1: Netlify (⭐ RECOMENDADO)</h3>
+                <p>✓ Gratis, rápido y fácil</p>
+                <p>✓ HTTPS automático</p>
+                <p>✓ Actualizaciones en tiempo real</p>
+                <ol style="margin-top: 10px;">
+                    <li>Ve a <a href="https://netlify.com" target="_blank">netlify.com</a></li>
+                    <li>Sube tu carpeta de archivos</li>
+                    <li>¡Tu sitio estará en línea en minutos!</li>
+                </ol>
+            </div>
+
+            <div class="step-card">
+                <h3>Opción 2: Vercel</h3>
+                <p>✓ Muy rápido y moderno</p>
+                <p>✓ Perfecto para SPA</p>
+                <p>1. Ve a <a href="https://vercel.com" target="_blank">vercel.com</a></p>
+                <p>2. Importa tu proyecto</p>
+                <p>3. ¡Desplegado en segundos!</p>
+            </div>
+
+            <div class="step-card">
+                <h3>Opción 3: GitHub Pages</h3>
+                <p>✓ Gratis con GitHub</p>
+                <p>1. Crea repositorio en GitHub</p>
+                <p>2. Sube tus archivos</p>
+                <p>3. Activa Pages en Settings</p>
+            </div>
+        </div>
+
+        <!-- Recursos Útiles -->
+        <div class="section">
+            <h2>📚 Recursos Útiles</h2>
+            
+            <div class="step-card">
+                <h3>📖 Documentación</h3>
+                <ul style="margin-left: 20px;">
+                    <li><a href="README.md" target="_blank">README.md</a> - Documentación completa</li>
+                    <li><a href="CONFIGURACION.md" target="_blank">CONFIGURACION.md</a> - Guía de personalización</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <h3>🎓 Tutoriales en Línea</h3>
+                <ul style="margin-left: 20px;">
+                    <li><a href="https://www.w3schools.com/html/" target="_blank">W3Schools - HTML</a></li>
+                    <li><a href="https://www.w3schools.com/css/" target="_blank">W3Schools - CSS</a></li>
+                    <li><a href="https://www.w3schools.com/js/" target="_blank">W3Schools - JavaScript</a></li>
+                    <li><a href="https://developer.mozilla.org/" target="_blank">MDN Web Docs</a></li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <h3>🖼️ Imágenes Gratis</h3>
+                <ul style="margin-left: 20px;">
+                    <li><a href="https://unsplash.com" target="_blank">Unsplash</a> - 4+ millones de fotos</li>
+                    <li><a href="https://pexels.com" target="_blank">Pexels</a> - Miles de imágenes gratis</li>
+                    <li><a href="https://pixabay.com" target="_blank">Pixabay</a> - Más de 3 millones</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Soporte -->
+        <div class="section">
+            <h2>🆘 ¿Necesitas Ayuda?</h2>
+            
+            <div class="warning">
+                <strong>Consejo:</strong> La mayoría de cambios son simples. Todo lo que necesitas está en los archivos README.md y CONFIGURACION.md.
+            </div>
+
+            <div class="step-card">
+                <h3>Errores Comunes y Soluciones</h3>
+                <p><strong>P: La página no se ve correctamente en móvil</strong></p>
+                <p>R: Asegúrate de incluir esta línea en el HTML:</p>
+                <div class="code-block">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</div>
+                
+                <p style="margin-top: 20px;"><strong>P: El menú hamburguesa no funciona</strong></p>
+                <p>R: Revisa que script.js esté conectado correctamente en el HTML.</p>
+                
+                <p style="margin-top: 20px;"><strong>P: Las imágenes no cargan</strong></p>
+                <p>R: Verifica que las URLs sean válidas y públicas.</p>
+            </div>
+        </div>
+
+        <!-- Siguiente Paso -->
+        <div class="section">
+            <h2>🎉 ¡Listo para Empezar!</h2>
+            
+            <div class="success">
+                <p><strong>¡Excelente!</strong> Tienes todo lo que necesitas. Tu página web está lista para ser personalizada y compartida con el mundo.</p>
+                <p style="margin-top: 15px;">Los archivos están optimizados, son responsivos y profesionales. Solo necesitas:</p>
+                <ul style="margin: 15px 0 0 20px;">
+                    <li>Cambiar la información de contacto</li>
+                    <li>Agregar tus propias imágenes</li>
+                    <li>Ajustar los precios y servicios</li>
+                    <li>¡Desplegar en internet!</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="index.html" class="link-button">📄 Ver Página Principal</a>
+                <a href="about.html" class="link-button">📄 Ver Página Sobre Nosotros</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 2px solid #f0f0f0; color: #999;">
+            <p>NR Fit & Flow © 2026 - Página web moderna para gimnasios</p>
+            <p style="font-size: 0.9rem; margin-top: 10px;">Creado con ❤️ para tu éxito</p>
+        </div>
+    </div>
+</body>
+</html>

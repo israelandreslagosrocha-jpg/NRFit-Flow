@@ -1,0 +1,532 @@
+/* ===================================
+   EJEMPLOS DE PERSONALIZACIÓN AVANZADA
+   NR Fit & Flow
+   =================================== */
+
+/* 
+   Este archivo contiene ejemplos de CSS que puedes agregar 
+   a tu styles.css para obtener efectos más avanzados
+*/
+
+/* ============================================
+   EJEMPLO 1: Tema Oscuro (Dark Mode)
+   ============================================ */
+
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+}
+
+body.dark-mode .navbar {
+    background-color: #0a0e27;
+    border-bottom: 1px solid #333;
+}
+
+body.dark-mode .navbar .nav-links a {
+    color: #f0f0f0;
+}
+
+body.dark-mode .servicio-card,
+body.dark-mode .membresia-card {
+    background-color: #222;
+    color: #f0f0f0;
+}
+
+body.dark-mode .contacto-form input,
+body.dark-mode .contacto-form textarea {
+    background-color: #222;
+    color: #f0f0f0;
+    border-color: #444;
+}
+
+/* ============================================
+   EJEMPLO 2: Botón de Contacto Flotante
+   ============================================ */
+
+.floating-contact {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    z-index: 999;
+}
+
+.floating-contact:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.floating-contact a {
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ============================================
+   EJEMPLO 3: Animación de Entrada en Cards
+   ============================================ */
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Diferentes tiempos de animación */
+.fade-in-up:nth-child(1) { animation-delay: 0.1s; }
+.fade-in-up:nth-child(2) { animation-delay: 0.2s; }
+.fade-in-up:nth-child(3) { animation-delay: 0.3s; }
+.fade-in-up:nth-child(4) { animation-delay: 0.4s; }
+.fade-in-up:nth-child(5) { animation-delay: 0.5s; }
+.fade-in-up:nth-child(6) { animation-delay: 0.6s; }
+
+/* ============================================
+   EJEMPLO 4: Efecto Hover Mejorado en Cards
+   ============================================ */
+
+.card-hover-advanced {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-hover-advanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.card-hover-advanced:hover::before {
+    left: 100%;
+}
+
+/* ============================================
+   EJEMPLO 5: Badge con Animación de Pulse
+   ============================================ */
+
+.badge-pulse {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(255, 107, 53, 0);
+    }
+}
+
+/* ============================================
+   EJEMPLO 6: Contador Animado
+   ============================================ */
+
+.counter {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    animation: countUp 2s ease-out;
+}
+
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   EJEMPLO 7: Gradient Animado
+   ============================================ */
+
+.gradient-animated {
+    background: linear-gradient(
+        -45deg,
+        var(--primary-color),
+        var(--secondary-color),
+        var(--accent-color),
+        var(--primary-color)
+    );
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ============================================
+   EJEMPLO 8: Modal/Pop-up
+   ============================================ */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow);
+    animation: slideIn 0.3s ease;
+}
+
+.modal-close {
+    float: right;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #999;
+}
+
+.modal-close:hover {
+    color: var(--primary-color);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ============================================
+   EJEMPLO 9: Timeline (Cronología)
+   ============================================ */
+
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 100%;
+    background: var(--primary-color);
+}
+
+.timeline-item {
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.timeline-item:nth-child(odd) .timeline-content {
+    margin-left: 0;
+    margin-right: 52%;
+    text-align: right;
+}
+
+.timeline-item:nth-child(even) .timeline-content {
+    margin-left: 52%;
+    margin-right: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border: 4px solid white;
+    border-radius: 50%;
+    top: 0;
+    z-index: 1;
+    box-shadow: 0 0 0 4px var(--light-bg);
+}
+
+.timeline-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   EJEMPLO 10: Texto con Efecto Gradient
+   ============================================ */
+
+.text-gradient {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+/* ============================================
+   EJEMPLO 11: Botón con Efecto Loading
+   ============================================ */
+
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    color: transparent;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   EJEMPLO 12: Card con Overlay
+   ============================================ */
+
+.card-overlay {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.card-overlay:hover::after {
+    opacity: 1;
+}
+
+/* ============================================
+   EJEMPLO 13: Elemento Flotante (Floating)
+   ============================================ */
+
+.float-element {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* ============================================
+   EJEMPLO 14: Efecto Bounce en Botones
+   ============================================ */
+
+.btn-bounce {
+    animation: bounce 0.6s;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* ============================================
+   EJEMPLO 15: Scrollbar Personalizado
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* ============================================
+   EJEMPLO 16: Transición Suave de Página
+   ============================================ */
+
+.page-transition {
+    animation: pageTransition 0.5s ease;
+}
+
+@keyframes pageTransition {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   EJEMPLO 17: Efecto 3D en Hover
+   ============================================ */
+
+.card-3d {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+    transform: rotateX(10deg) rotateY(10deg);
+}
+
+/* ============================================
+   EJEMPLO 18: Desenfoque Progresivo
+   ============================================ */
+
+.blur-hover {
+    transition: filter 0.3s ease;
+}
+
+.blur-hover:hover {
+    filter: blur(5px);
+}
+
+/* ============================================
+   EJEMPLO 19: Sombra Colorida
+   ============================================ */
+
+.shadow-colorful {
+    box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+    transition: box-shadow 0.3s ease;
+}
+
+.shadow-colorful:hover {
+    box-shadow: 0 20px 40px rgba(255, 107, 53, 0.5);
+}
+
+/* ============================================
+   EJEMPLO 20: Animación de Escritura
+   ============================================ */
+
+.typing {
+    overflow: hidden;
+    border-right: 3px solid var(--primary-color);
+    white-space: nowrap;
+    animation: 
+        typing 3.5s steps(40, end),
+        blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@keyframes blink-caret {
+    from, to { border-right-color: transparent; }
+    50% { border-right-color: var(--primary-color); }
+}
+
+/* ============================================
+   Responsive para todos los ejemplos
+   ============================================ */
+
+@media (max-width: 768px) {
+    .timeline::before {
+        left: 30px;
+    }
+    
+    .timeline-item:nth-child(odd) .timeline-content,
+    .timeline-item:nth-child(even) .timeline-content {
+        margin-left: 70px;
+        margin-right: 0;
+        text-align: left;
+    }
+    
+    .timeline-marker {
+        left: 30px;
+    }
+    
+    .floating-contact {
+        width: 50px;
+        height: 50px;
+    }
+}

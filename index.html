@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NR Fit & Flow - Gimnasio Moderno</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff66c4;
+            --secondary-color: #1a1a1a;
+            --accent-color: #ff66c4;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png" alt="NR Logo" style="height: 50px; width: auto;">
+                <span>NR Fit & Flow</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#servicios">Servicios</a></li>
+                <li><a href="#entrenamientos">Entrenamientos</a></li>
+                <li><a href="#membresias">Membresías</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero">
+        <video autoplay muted loop style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+            <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1769191474/NR_video_3_coq0ui.mp4" type="video/mp4">
+        </video>
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(233, 30, 99, 0.35) 0%, rgba(26, 26, 26, 0.35) 100%); z-index: 2;"></div>
+        <div class="hero-content" style="position: relative; z-index: 3; margin-top: 200px;">
+            <button class="btn btn-primary">Empezar Ahora</button>
+        </div>
+    </section>
+
+    <!-- Servicios -->
+    <section id="servicios" class="servicios">
+        <div class="container">
+            <h2>Nuestros Servicios</h2>
+            <div class="servicios-slider" aria-label="Servicios principales">
+                <button class="slider-control prev" type="button" aria-label="Servicio anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="servicios-viewport">
+                    <div class="servicios-track" role="list">
+                        <article class="servicio-slide" role="listitem">
+                            <video class="servicio-video" autoplay muted loop playsinline>
+                                <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498941/full_energy_1_peqqel.mp4" type="video/mp4">
+                            </video>
+                            <div class="servicio-overlay">
+                                <h3>Full Energy</h3>
+                                <a class="btn btn-primary" href="#servicio-personal">Saber mas</a>
+                            </div>
+                        </article>
+                        <article class="servicio-slide" role="listitem">
+                            <video class="servicio-video" autoplay muted loop playsinline>
+                                <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498942/gap_1_m9t9xn.mp4" type="video/mp4">
+                            </video>
+                            <div class="servicio-overlay">
+                                <h3>GAP</h3>
+                                <a class="btn btn-primary" href="#servicio-funcional">Saber mas</a>
+                            </div>
+                        </article>
+                        <article class="servicio-slide" role="listitem">
+                            <video class="servicio-video" autoplay muted loop playsinline>
+                                <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498940/pilates_1_w78fwg.mp4" type="video/mp4">
+                            </video>
+                            <div class="servicio-overlay">
+                                <h3>Pilates (proximamente)</h3>
+                                <a class="btn btn-primary" href="#servicio-nutricion">Saber mas</a>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+                <button class="slider-control next" type="button" aria-label="Servicio siguiente">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="slider-dots" role="tablist" aria-label="Seleccionar servicio">
+                <button class="dot active" type="button" aria-label="Ir al servicio 1"></button>
+                <button class="dot" type="button" aria-label="Ir al servicio 2"></button>
+                <button class="dot" type="button" aria-label="Ir al servicio 3"></button>
+            </div>
+        </div>
+    </section>
+
+    <section id="servicio-personal" class="servicio-detalle">
+        <div class="container">
+            <div class="servicio-detalle-card">
+                <h3>Entrenamiento Personal</h3>
+                <p>Plan individual con enfoque en tecnica, seguridad y resultados medibles.</p>
+                <ul>
+                    <li>Evaluacion inicial y metas claras</li>
+                    <li>Plan semanal adaptado a tu ritmo</li>
+                    <li>Seguimiento de progreso y ajustes</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="servicio-funcional" class="servicio-detalle">
+        <div class="container">
+            <div class="servicio-detalle-card">
+                <h3>Clases Funcionales</h3>
+                <p>Sesiones energicas para mejorar fuerza, movilidad y resistencia.</p>
+                <ul>
+                    <li>Grupos reducidos y dinamicos</li>
+                    <li>Rutinas variadas cada semana</li>
+                    <li>Escalas para todo nivel</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="servicio-nutricion" class="servicio-detalle">
+        <div class="container">
+            <div class="servicio-detalle-card">
+                <h3>Habitos y Nutricion</h3>
+                <p>Acompanamiento para sostener energia, salud y composicion corporal.</p>
+                <ul>
+                    <li>Guia simple y realista</li>
+                    <li>Planificacion semanal flexible</li>
+                    <li>Habitos que se mantienen en el tiempo</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Entrenamientos -->
+    <section id="entrenamientos" class="entrenamientos"></section>
+
+    <!-- Membresías -->
+    <section id="membresias" class="membresias">
+        <div class="container">
+            <h2>Planes de Membresía</h2>
+            <div class="membresias-grid">
+                <div class="membresia-card">
+                    <h3>Básica</h3>
+                    <div class="price">$29<span>/mes</span></div>
+                    <ul class="features">
+                        <li><i class="fas fa-check"></i> Acceso a instalaciones</li>
+                        <li><i class="fas fa-check"></i> Horario completo</li>
+                        <li><i class="fas fa-times"></i> Clases grupales</li>
+                        <li><i class="fas fa-times"></i> Entrenador personal</li>
+                    </ul>
+                    <button class="btn btn-secondary">Elegir Plan</button>
+                </div>
+                <div class="membresia-card featured">
+                    <span class="badge">Popular</span>
+                    <h3>Premium</h3>
+                    <div class="price">$59<span>/mes</span></div>
+                    <ul class="features">
+                        <li><i class="fas fa-check"></i> Acceso a instalaciones</li>
+                        <li><i class="fas fa-check"></i> Horario completo</li>
+                        <li><i class="fas fa-check"></i> Clases grupales ilimitadas</li>
+                        <li><i class="fas fa-check"></i> 2 sesiones entrenador</li>
+                    </ul>
+                    <button class="btn btn-primary">Elegir Plan</button>
+                </div>
+                <div class="membresia-card">
+                    <h3>Elite</h3>
+                    <div class="price">$99<span>/mes</span></div>
+                    <ul class="features">
+                        <li><i class="fas fa-check"></i> Acceso a instalaciones</li>
+                        <li><i class="fas fa-check"></i> Horario completo</li>
+                        <li><i class="fas fa-check"></i> Clases grupales ilimitadas</li>
+                        <li><i class="fas fa-check"></i> Entrenador personal dedicado</li>
+                    </ul>
+                    <button class="btn btn-secondary">Elegir Plan</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonios -->
+    <section class="testimonios" id="resenas">
+        <div class="container">
+            <h2>Tu Opinion Nos Importa</h2>
+            <div class="resena-card">
+                <form class="resena-form">
+                    <div class="rating-group" aria-label="Calificacion">
+                        <input type="radio" id="estrella-5" name="rating" value="5">
+                        <label for="estrella-5" title="5 estrellas"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="estrella-4" name="rating" value="4">
+                        <label for="estrella-4" title="4 estrellas"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="estrella-3" name="rating" value="3">
+                        <label for="estrella-3" title="3 estrellas"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="estrella-2" name="rating" value="2">
+                        <label for="estrella-2" title="2 estrellas"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="estrella-1" name="rating" value="1">
+                        <label for="estrella-1" title="1 estrella"><i class="fas fa-star"></i></label>
+                    </div>
+                    <input type="text" name="nombre" placeholder="Tu nombre (opcional)">
+                    <label class="anonimo">
+                        <input type="checkbox" name="anonimo" value="si">
+                        Comentar como anonimo
+                    </label>
+                    <textarea name="resena" placeholder="Escribe tu resena" rows="5" required></textarea>
+                    <button type="submit" class="btn btn-primary">Enviar Resena</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="contacto">
+        <div class="container">
+            <h2>Contáctanos</h2>
+            <div class="contacto-content">
+                <div class="contacto-info">
+                    <div class="info-card">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>Ubicacion</h3>
+                        <p>Por definir</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fab fa-whatsapp"></i>
+                        <h3>WhatsApp</h3>
+                        <p><a href="https://wa.me/56957144823" target="_blank" rel="noopener">Natalia Riquelme · +56 9 5714 4823</a></p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fas fa-envelope"></i>
+                        <h3>Email</h3>
+                        <p>info@nrfitflow.com</p>
+                    </div>
+                </div>
+                <form class="contacto-form">
+                    <input type="text" placeholder="Tu Nombre" required>
+                    <input type="email" placeholder="Tu Email" required>
+                    <textarea placeholder="Tu Mensaje" rows="5" required></textarea>
+                    <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>NR Fit & Flow</h4>
+                    <p>Tu destino para un estilo de vida saludable y transformación física.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="#inicio">Inicio</a></li>
+                        <li><a href="#servicios">Servicios</a></li>
+                        <li><a href="#membresias">Membresías</a></li>
+                        <li><a href="#contacto">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Términos de Servicio</a></li>
+                        <li><a href="#">Política de Privacidad</a></li>
+                        <li><a href="#">Cookies</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 NR Fit & Flow. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
