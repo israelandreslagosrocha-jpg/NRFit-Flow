@@ -6,6 +6,7 @@
     <title>NR Fit & Flow - Gimnasio Moderno</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #ff66c4;
@@ -39,213 +40,196 @@
 
     <!-- Hero Section -->
     <section id="inicio" class="hero">
-        <video autoplay muted loop style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+        <video autoplay muted loop playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
             <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1769191474/NR_video_3_coq0ui.mp4" type="video/mp4">
         </video>
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(233, 30, 99, 0.35) 0%, rgba(26, 26, 26, 0.35) 100%); z-index: 2;"></div>
-        <div class="hero-content" style="position: relative; z-index: 3; margin-top: 200px;">
-            <button class="btn btn-primary">Empezar Ahora</button>
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.4) 100%); z-index: 2;"></div>
+        <div class="hero-content" style="position: relative; z-index: 3; margin-top: 150px; text-align: center; max-width: 800px; margin-left: auto; margin-right: auto; padding: 0 20px;">
+            <h1 style="font-family: 'Poppins', sans-serif; font-size: 3rem; line-height: 1.2; margin-bottom: 20px; color: white;">No tienes tiempo para entrenar, pero necesitas volver a sentirte bien con tu cuerpo.</h1>
+            <h2 style="font-family: 'Inter', sans-serif; font-weight: 400; font-size: 1.2rem; color: #f0f0f0; margin-bottom: 40px;">Entrena desde casa, a tu propio ritmo y sin presiones. Programas adaptados a ti, incluso si estás en post parto o empiezas desde cero.</h2>
+            <a href="#programas" class="btn btn-primary" style="font-size: 1.2rem; padding: 15px 40px; border-radius: 50px;">Empieza Hoy Mismo</a>
         </div>
     </section>
 
-    <!-- Servicios -->
-    <section id="servicios" class="servicios">
-        <div class="container">
-            <h2>Nuestros Servicios</h2>
-            <div class="servicios-slider" aria-label="Servicios principales">
-                <button class="slider-control prev" type="button" aria-label="Servicio anterior">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <div class="servicios-viewport">
-                    <div class="servicios-track" role="list">
-                        <article class="servicio-slide" role="listitem">
-                            <video class="servicio-video" autoplay muted loop playsinline>
-                                <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498941/full_energy_1_peqqel.mp4" type="video/mp4">
-                            </video>
-                            <div class="servicio-overlay">
-                                <h3>Full Energy</h3>
-                                <a class="btn btn-primary" href="#servicio-personal">Saber mas</a>
-                            </div>
-                        </article>
-                        <article class="servicio-slide" role="listitem">
-                            <video class="servicio-video" autoplay muted loop playsinline>
-                                <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498942/gap_1_m9t9xn.mp4" type="video/mp4">
-                            </video>
-                            <div class="servicio-overlay">
-                                <h3>GAP</h3>
-                                <a class="btn btn-primary" href="#servicio-funcional">Saber mas</a>
-                            </div>
-                        </article>
-                        <article class="servicio-slide" role="listitem">
-                            <video class="servicio-video" autoplay muted loop playsinline>
-                                <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498940/pilates_1_w78fwg.mp4" type="video/mp4">
-                            </video>
-                            <div class="servicio-overlay">
-                                <h3>Pilates (proximamente)</h3>
-                                <a class="btn btn-primary" href="#servicio-nutricion">Saber mas</a>
-                            </div>
-                        </article>
-                    </div>
+    <!-- Identificación del Dolor -->
+    <section id="identificacion" style="padding: 80px 20px; background-color: #fcfcfc;">
+        <div class="container" style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <h2 style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; color: var(--secondary-color); margin-bottom: 40px;">Sabemos exactamente cómo te sientes...</h2>
+            <div style="text-align: left; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <ul style="list-style: none; padding: 0; margin: 0; font-family: 'Inter', sans-serif; font-size: 1.1rem; color: #444;">
+                    <li style="margin-bottom: 20px; display: flex; align-items: center;"><i class="fas fa-times-circle" style="color: #ff4b4b; margin-right: 15px; font-size: 1.5rem;"></i> Sientes que <strong>no tienes tiempo</strong> para ir a un gimnasio.</li>
+                    <li style="margin-bottom: 20px; display: flex; align-items: center;"><i class="fas fa-times-circle" style="color: #ff4b4b; margin-right: 15px; font-size: 1.5rem;"></i> <strong>No sabes por dónde empezar</strong> y te abruma tanta información.</li>
+                    <li style="margin-bottom: 20px; display: flex; align-items: center;"><i class="fas fa-times-circle" style="color: #ff4b4b; margin-right: 15px; font-size: 1.5rem;"></i> Te da <strong>miedo entrenar después del embarazo</strong> y lastimarte.</li>
+                    <li style="display: flex; align-items: center;"><i class="fas fa-times-circle" style="color: #ff4b4b; margin-right: 15px; font-size: 1.5rem;"></i> Has intentado rutinas genéricas que terminan frustrándote.</li>
+                </ul>
+                <p style="margin-top: 40px; text-align: center; font-style: italic; color: #666; font-size: 1.1rem;">"No es tu culpa. La industria del fitness no está pensada para la vida real de una mujer. Pero esto sí."</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- La Solución -->
+    <section id="solucion" style="padding: 80px 20px; background-color: white;">
+        <div class="container" style="max-width: 1000px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2 style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; color: var(--secondary-color);">El entrenamiento que se adapta a tu vida, no al revés.</h2>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 60px;">
+                <div style="text-align: center; padding: 30px; background: #fff9fc; border-radius: 15px;">
+                    <i class="fas fa-home" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.2rem; margin-bottom: 10px;">Desde la comodidad de tu casa</h3>
+                    <p style="font-family: 'Inter', sans-serif; color: #666; font-size: 0.95rem;">Sin traslados, sin miradas incómodas.</p>
                 </div>
-                <button class="slider-control next" type="button" aria-label="Servicio siguiente">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                <div style="text-align: center; padding: 30px; background: #fff9fc; border-radius: 15px;">
+                    <i class="fas fa-bullseye" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.2rem; margin-bottom: 10px;">Entrenamientos guiados</h3>
+                    <p style="font-family: 'Inter', sans-serif; color: #666; font-size: 0.95rem;">Te llevamos de la mano paso a paso.</p>
+                </div>
+                <div style="text-align: center; padding: 30px; background: #fff9fc; border-radius: 15px;">
+                    <i class="fas fa-heart" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.2rem; margin-bottom: 10px;">100% Sin presión</h3>
+                    <p style="font-family: 'Inter', sans-serif; color: #666; font-size: 0.95rem;">Avanza a tu ritmo, escuchando a tu cuerpo.</p>
+                </div>
+                <div style="text-align: center; padding: 30px; background: #fff9fc; border-radius: 15px;">
+                    <i class="fas fa-users" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.2rem; margin-bottom: 10px;">Acompañamiento real</h3>
+                    <p style="font-family: 'Inter', sans-serif; color: #666; font-size: 0.95rem;">No eres un número más, estamos contigo.</p>
+                </div>
             </div>
-            <div class="slider-dots" role="tablist" aria-label="Seleccionar servicio">
-                <button class="dot active" type="button" aria-label="Ir al servicio 1"></button>
-                <button class="dot" type="button" aria-label="Ir al servicio 2"></button>
-                <button class="dot" type="button" aria-label="Ir al servicio 3"></button>
-            </div>
-        </div>
-    </section>
-
-    <section id="servicio-personal" class="servicio-detalle">
-        <div class="container">
-            <div class="servicio-detalle-card">
-                <h3>Entrenamiento Personal</h3>
-                <p>Plan individual con enfoque en tecnica, seguridad y resultados medibles.</p>
-                <ul>
-                    <li>Evaluacion inicial y metas claras</li>
-                    <li>Plan semanal adaptado a tu ritmo</li>
-                    <li>Seguimiento de progreso y ajustes</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <section id="servicio-funcional" class="servicio-detalle">
-        <div class="container">
-            <div class="servicio-detalle-card">
-                <h3>Clases Funcionales</h3>
-                <p>Sesiones energicas para mejorar fuerza, movilidad y resistencia.</p>
-                <ul>
-                    <li>Grupos reducidos y dinamicos</li>
-                    <li>Rutinas variadas cada semana</li>
-                    <li>Escalas para todo nivel</li>
-                </ul>
+            
+            <div style="text-align: center; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.1);">
+                <video controls style="width: 100%; display: block;" poster="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png">
+                    <!-- Placeholder video, using existing one for demo -->
+                    <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498941/full_energy_1_peqqel.mp4" type="video/mp4">
+                </video>
             </div>
         </div>
     </section>
 
-    <section id="servicio-nutricion" class="servicio-detalle">
+    <!-- Programas y Planes -->
+    <section id="programas" class="membresias" style="background-color: #f9f9f9; padding: 80px 20px;">
         <div class="container">
-            <div class="servicio-detalle-card">
-                <h3>Habitos y Nutricion</h3>
-                <p>Acompanamiento para sostener energia, salud y composicion corporal.</p>
-                <ul>
-                    <li>Guia simple y realista</li>
-                    <li>Planificacion semanal flexible</li>
-                    <li>Habitos que se mantienen en el tiempo</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- Entrenamientos -->
-    <section id="entrenamientos" class="entrenamientos"></section>
-
-    <!-- Membresías -->
-    <section id="membresias" class="membresias">
-        <div class="container">
-            <h2>Planes de Membresía</h2>
+            <h2 style="font-family: 'Poppins', sans-serif; text-align: center; margin-bottom: 50px;">Encuentra el programa perfecto para ti</h2>
             <div class="membresias-grid">
+                <!-- Programa 1 -->
                 <div class="membresia-card">
-                    <h3>Básica</h3>
-                    <div class="price">$29<span>/mes</span></div>
-                    <ul class="features">
-                        <li><i class="fas fa-check"></i> Acceso a instalaciones</li>
-                        <li><i class="fas fa-check"></i> Horario completo</li>
-                        <li><i class="fas fa-times"></i> Clases grupales</li>
-                        <li><i class="fas fa-times"></i> Entrenador personal</li>
-                    </ul>
-                    <button class="btn btn-secondary">Elegir Plan</button>
+                    <h3 style="font-family: 'Poppins', sans-serif;">Post Parto Seguro</h3>
+                    <div style="margin: 20px 0; border-radius: 10px; overflow: hidden; height: 150px;">
+                         <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                            <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498942/gap_1_m9t9xn.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 0.95rem; color: #555; text-align: left; margin-bottom: 15px;">Recupera tu fuerza central y confianza con ejercicios hipopresivos y movilidad suave.</p>
+                    <div style="background: #eef2ff; color: #4338ca; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; margin-bottom: 20px;">Beneficio: Vuelve a conectar con tu cuerpo de forma segura y sin impacto.</div>
+                    <a href="https://wa.me/56957144823?text=Hola,%20quiero%20información%20del%20programa%20Post%20Parto%20Seguro" target="_blank" class="btn btn-secondary" style="width: 100%; display: block; box-sizing: border-box;">Quiero recuperarme</a>
                 </div>
+                <!-- Programa 2 -->
                 <div class="membresia-card featured">
                     <span class="badge">Popular</span>
-                    <h3>Premium</h3>
-                    <div class="price">$59<span>/mes</span></div>
-                    <ul class="features">
-                        <li><i class="fas fa-check"></i> Acceso a instalaciones</li>
-                        <li><i class="fas fa-check"></i> Horario completo</li>
-                        <li><i class="fas fa-check"></i> Clases grupales ilimitadas</li>
-                        <li><i class="fas fa-check"></i> 2 sesiones entrenador</li>
-                    </ul>
-                    <button class="btn btn-primary">Elegir Plan</button>
+                    <h3 style="font-family: 'Poppins', sans-serif;">GAP (Glúteos, Abdomen, Piernas)</h3>
+                    <div style="margin: 20px 0; border-radius: 10px; overflow: hidden; height: 150px;">
+                         <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                            <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498941/full_energy_1_peqqel.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 0.95rem; color: #555; text-align: left; margin-bottom: 15px;">Tonifica y fortalece las zonas clave con rutinas dinámicas y efectivas de 30 minutos.</p>
+                    <div style="background: #fff0f5; color: #d81b60; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; margin-bottom: 20px;">Beneficio: Siéntete más fuerte, ágil y llena de energía para tu día a día.</div>
+                    <a href="https://wa.me/56957144823?text=Hola,%20quiero%20información%20del%20programa%20GAP" target="_blank" class="btn btn-primary" style="width: 100%; display: block; box-sizing: border-box;">Quiero sentirme fuerte</a>
                 </div>
+                <!-- Programa 3 -->
                 <div class="membresia-card">
-                    <h3>Elite</h3>
-                    <div class="price">$99<span>/mes</span></div>
-                    <ul class="features">
-                        <li><i class="fas fa-check"></i> Acceso a instalaciones</li>
-                        <li><i class="fas fa-check"></i> Horario completo</li>
-                        <li><i class="fas fa-check"></i> Clases grupales ilimitadas</li>
-                        <li><i class="fas fa-check"></i> Entrenador personal dedicado</li>
-                    </ul>
-                    <button class="btn btn-secondary">Elegir Plan</button>
+                    <h3 style="font-family: 'Poppins', sans-serif;">Pilates en Casa</h3>
+                    <div style="margin: 20px 0; border-radius: 10px; overflow: hidden; height: 150px;">
+                         <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                            <source src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498940/pilates_1_w78fwg.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 0.95rem; color: #555; text-align: left; margin-bottom: 15px;">Mejora tu postura, flexibilidad y reduce el estrés con movimientos controlados.</p>
+                    <div style="background: #eef2ff; color: #4338ca; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; margin-bottom: 20px;">Beneficio: Libera tensiones musculares y logra un cuerpo estilizado.</div>
+                    <a href="https://wa.me/56957144823?text=Hola,%20quiero%20información%20del%20programa%20Pilates" target="_blank" class="btn btn-secondary" style="width: 100%; display: block; box-sizing: border-box;">Quiero empezar pilates</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Testimonios -->
-    <section class="testimonios" id="resenas">
-        <div class="container">
-            <h2>Tu Opinion Nos Importa</h2>
-            <div class="resena-card">
-                <form class="resena-form">
-                    <div class="rating-group" aria-label="Calificacion">
-                        <input type="radio" id="estrella-5" name="rating" value="5">
-                        <label for="estrella-5" title="5 estrellas"><i class="fas fa-star"></i></label>
-                        <input type="radio" id="estrella-4" name="rating" value="4">
-                        <label for="estrella-4" title="4 estrellas"><i class="fas fa-star"></i></label>
-                        <input type="radio" id="estrella-3" name="rating" value="3">
-                        <label for="estrella-3" title="3 estrellas"><i class="fas fa-star"></i></label>
-                        <input type="radio" id="estrella-2" name="rating" value="2">
-                        <label for="estrella-2" title="2 estrellas"><i class="fas fa-star"></i></label>
-                        <input type="radio" id="estrella-1" name="rating" value="1">
-                        <label for="estrella-1" title="1 estrella"><i class="fas fa-star"></i></label>
+    <!-- Resultados y Transformación -->
+    <section class="testimonios" id="testimonios" style="padding: 80px 20px; background: white;">
+        <div class="container" style="max-width: 900px; margin: 0 auto; text-align: center;">
+            <h2 style="font-family: 'Poppins', sans-serif; margin-bottom: 50px;">Mujeres reales, transformaciones reales</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px;">
+                <div style="background: #fff9fc; padding: 30px; border-radius: 20px; text-align: left; position: relative;">
+                    <i class="fas fa-quote-left" style="font-size: 2rem; color: var(--primary-color); opacity: 0.2; position: absolute; top: 20px; left: 20px;"></i>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 1.05rem; color: #444; line-height: 1.6; position: relative; z-index: 1; padding-top: 10px;">"Pensé que nunca volvería a entrenar después de tener a mi bebé. Este programa me devolvió la seguridad y la energía que necesitaba."</p>
+                    <div style="margin-top: 20px; display: flex; align-items: center;">
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: #ddd; margin-right: 15px; overflow: hidden;">
+                            <img src="https://ui-avatars.com/api/?name=Maria+G&background=ff66c4&color=fff" alt="María" style="width: 100%;">
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-family: 'Poppins', sans-serif;">María</h4>
+                            <span style="font-size: 0.8rem; color: #777;">32 años</span>
+                        </div>
                     </div>
-                    <input type="text" name="nombre" placeholder="Tu nombre (opcional)">
-                    <label class="anonimo">
-                        <input type="checkbox" name="anonimo" value="si">
-                        Comentar como anonimo
-                    </label>
-                    <textarea name="resena" placeholder="Escribe tu resena" rows="5" required></textarea>
-                    <button type="submit" class="btn btn-primary">Enviar Resena</button>
-                </form>
+                </div>
+                
+                <div style="background: #fff9fc; padding: 30px; border-radius: 20px; text-align: left; position: relative;">
+                    <i class="fas fa-quote-left" style="font-size: 2rem; color: var(--primary-color); opacity: 0.2; position: absolute; top: 20px; left: 20px;"></i>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 1.05rem; color: #444; line-height: 1.6; position: relative; z-index: 1; padding-top: 10px;">"Solo tengo 30 minutos al día, y por fin encontré rutinas que me hacen sudar sin salir de casa y sin sentirme juzgada."</p>
+                    <div style="margin-top: 20px; display: flex; align-items: center;">
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: #ddd; margin-right: 15px; overflow: hidden;">
+                            <img src="https://ui-avatars.com/api/?name=Laura+M&background=ff66c4&color=fff" alt="Laura" style="width: 100%;">
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-family: 'Poppins', sans-serif;">Laura</h4>
+                            <span style="font-size: 0.8rem; color: #777;">28 años</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Contacto -->
-    <section id="contacto" class="contacto">
-        <div class="container">
-            <h2>Contáctanos</h2>
-            <div class="contacto-content">
-                <div class="contacto-info">
-                    <div class="info-card">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <h3>Ubicacion</h3>
-                        <p>Por definir</p>
-                    </div>
-                    <div class="info-card">
-                        <i class="fab fa-whatsapp"></i>
-                        <h3>WhatsApp</h3>
-                        <p><a href="https://wa.me/56957144823" target="_blank" rel="noopener">Natalia Riquelme · +56 9 5714 4823</a></p>
-                    </div>
-                    <div class="info-card">
-                        <i class="fas fa-envelope"></i>
-                        <h3>Email</h3>
-                        <p>info@nrfitflow.com</p>
-                    </div>
+    <!-- Cómo Funciona -->
+    <section id="como-funciona" style="padding: 80px 20px; background-color: #1a1a1a; color: white;">
+        <div class="container" style="max-width: 900px; margin: 0 auto; text-align: center;">
+            <h2 style="font-family: 'Poppins', sans-serif; margin-bottom: 50px; color: white;">Estás a 3 pasos de tu mejor versión:</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+                <div style="padding: 30px; text-align: center;">
+                    <div style="width: 80px; height: 80px; background: rgba(255,102,196,0.1); border: 2px solid var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem; color: var(--primary-color);">1</div>
+                    <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.3rem; margin-bottom: 15px;"><i class="fas fa-mobile-alt" style="margin-right: 10px;"></i> Eliges tu plan</h3>
+                    <p style="font-family: 'Inter', sans-serif; color: #ccc; font-size: 0.95rem;">Selecciona el programa que mejor se adapte a tu objetivo hoy.</p>
                 </div>
-                <form class="contacto-form">
-                    <input type="text" placeholder="Tu Nombre" required>
-                    <input type="email" placeholder="Tu Email" required>
-                    <textarea placeholder="Tu Mensaje" rows="5" required></textarea>
-                    <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
-                </form>
+                <div style="padding: 30px; text-align: center;">
+                    <div style="width: 80px; height: 80px; background: rgba(255,102,196,0.1); border: 2px solid var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem; color: var(--primary-color);">2</div>
+                    <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.3rem; margin-bottom: 15px;"><i class="fas fa-key" style="margin-right: 10px;"></i> Accedes a tu plataforma</h3>
+                    <p style="font-family: 'Inter', sans-serif; color: #ccc; font-size: 0.95rem;">Recibes acceso inmediato a todo tu contenido de forma segura.</p>
+                </div>
+                <div style="padding: 30px; text-align: center;">
+                    <div style="width: 80px; height: 80px; background: rgba(255,102,196,0.1); border: 2px solid var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem; color: var(--primary-color);">3</div>
+                    <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.3rem; margin-bottom: 15px;"><i class="fas fa-play-circle" style="margin-right: 10px;"></i> Entrenas a tu ritmo</h3>
+                    <p style="font-family: 'Inter', sans-serif; color: #ccc; font-size: 0.95rem;">Le das play y empiezas a transformar tu vida desde tu sala.</p>
+                </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Urgencia y Escasez -->
+    <section id="urgencia" style="padding: 60px 20px; background-color: var(--primary-color); color: white; text-align: center;">
+        <div class="container" style="max-width: 700px; margin: 0 auto;">
+            <h2 style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; margin-bottom: 20px; color: white;">Tu momento es ahora. No lo sigas postergando.</h2>
+            <p style="font-family: 'Inter', sans-serif; font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6;">Para garantizar la calidad y el acompañamiento cercano que mereces, trabajamos con <strong>cupos limitados este mes</strong>.</p>
+            <div style="display: inline-block; background: white; color: var(--secondary-color); padding: 15px 30px; border-radius: 50px; font-weight: 700; font-size: 1.2rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                <i class="fas fa-hourglass-half" style="color: var(--primary-color); margin-right: 10px;"></i> Solo quedan 5 plazas para seguimiento personalizado
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section id="cta-final" style="padding: 100px 20px; background-color: white; text-align: center;">
+        <div class="container">
+            <h2 style="font-family: 'Poppins', sans-serif; font-size: 2.5rem; color: var(--secondary-color); margin-bottom: 40px;">¿Lista para volver a ser tu prioridad?</h2>
+            <a href="#programas" class="btn btn-primary" style="font-size: 1.4rem; padding: 20px 50px; border-radius: 50px; box-shadow: 0 10px 30px rgba(255,102,196,0.4); display: inline-block;">Empieza Hoy Desde Casa</a>
         </div>
     </section>
 
