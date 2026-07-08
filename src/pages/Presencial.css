@@ -1,0 +1,242 @@
+/* --- HERO & BOOKING MOCKUP --- */
+.presencial-hero {
+  padding: 100px 0;
+  background: radial-gradient(circle at top right, rgba(233, 30, 99, 0.04) 0%, transparent 60%);
+}
+
+.presencial-title {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  margin-bottom: 24px;
+}
+
+.presencial-subtitle {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.presencial-location-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+body.theme-light .presencial-location-banner {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.booking-mockup-card {
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.booking-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.booking-header h3 {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.booking-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.classes-list-booking {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.class-booking-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+body.theme-light .class-booking-row {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.class-booking-row:hover:not(.full) {
+  border-color: rgba(233, 30, 99, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.class-booking-row.selected {
+  border-color: var(--primary);
+  background: rgba(233, 30, 99, 0.05);
+  box-shadow: 0 0 10px rgba(233, 30, 99, 0.1);
+}
+
+.class-booking-row.full {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.class-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.class-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.class-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.spots-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: rgba(233, 30, 99, 0.1);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.full-spots {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.booking-success-wrapper {
+  padding: 10px 0;
+}
+
+.success-note {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+/* --- PRICING BOXES --- */
+.pricing-box-react {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-tag {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: var(--primary);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.pricing-desc {
+  font-size: 0.95rem;
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+
+.pricing-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+}
+
+.price-val {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.price-lbl {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.pricing-bullets-react {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.pricing-bullets-react li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* --- SAFETY SECTION --- */
+.safety-card {
+  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 40px;
+}
+
+.safety-alert-icon {
+  color: #ef4444;
+  margin-bottom: 8px;
+}
+
+.safety-card h3 {
+  font-size: 1.5rem;
+}
+
+.safety-card p {
+  font-size: 1rem;
+}
+
+/* Responsiveness */
+@media (max-width: 992px) {
+  .presencial-title {
+    font-size: 2.8rem;
+  }
+}

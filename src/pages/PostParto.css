@@ -1,0 +1,138 @@
+/* --- HERO & INTAKE --- */
+.postparto-hero {
+  padding: 100px 0;
+  background: radial-gradient(circle at top right, rgba(233, 30, 99, 0.04) 0%, transparent 60%);
+}
+
+.postparto-title {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  margin-bottom: 24px;
+}
+
+.postparto-subtitle {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.warning-card-pink {
+  border-left: 4px solid var(--primary);
+  background: rgba(233, 30, 99, 0.03);
+  padding: 18px 24px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  max-width: 520px;
+}
+
+.warning-badge-pink {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.intake-card {
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.intake-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.intake-header h3 {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.intake-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Success Card */
+.intake-success-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), var(--shadow-glow);
+}
+
+.recommendation-strip {
+  background: rgba(233, 30, 99, 0.05);
+  border: 1px solid rgba(233, 30, 99, 0.2);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- PILLARS --- */
+.pillar-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pillar-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pillar-icon-pink {
+  color: var(--primary);
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.pillar-detail-card h3 {
+  font-size: 1.25rem;
+}
+
+.pillar-detail-card p {
+  font-size: 0.95rem;
+}
+
+/* --- PRICING --- */
+.postparto-price-card {
+  padding: 40px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  border-color: rgba(233, 30, 99, 0.15);
+}
+
+.price-number-pink {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.bullet-list-center li {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+/* Responsiveness */
+@media (max-width: 992px) {
+  .postparto-title {
+    font-size: 2.8rem;
+  }
+}
