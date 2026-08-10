@@ -1,0 +1,122 @@
+.tip-of-day-card {
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.08) 0%, rgba(20, 20, 28, 0.8) 100%);
+  border: 1px solid rgba(233, 30, 99, 0.25);
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+}
+
+.tip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.tip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: rgba(233, 30, 99, 0.15);
+  color: var(--primary);
+  border: 1px solid rgba(233, 30, 99, 0.3);
+}
+
+.tip-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.tip-content-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.tip-media-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.tip-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.tip-media-container:hover .tip-thumbnail {
+  transform: scale(1.08);
+}
+
+.tip-play-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.tip-media-container:hover .tip-play-overlay {
+  background: rgba(233, 30, 99, 0.5);
+}
+
+.tip-duration-pill {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.75);
+  font-size: 0.68rem;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.tip-text-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.tip-category {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.tip-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 2px 0 6px 0;
+}
+
+.tip-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.tip-btn {
+  align-self: flex-start;
+}
+
+@media (max-width: 600px) {
+  .tip-content-grid {
+    grid-template-columns: 1fr;
+  }
+}

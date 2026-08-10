@@ -1,0 +1,26 @@
+.admin-alumnas-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.plan-badge {
+  font-size: 0.8rem;
+  color: #c084fc;
+  background: rgba(147, 51, 234, 0.12);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+}
+
+.icon-btn-sm {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.icon-btn-sm:hover {
+  color: #fff;
+}

@@ -1,0 +1,252 @@
+.alumna-comunidad-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.comunidad-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.comunidad-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.invite-banner {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.15) 0%, rgba(20, 20, 30, 0.8) 100%);
+  border: 1px solid rgba(233, 30, 99, 0.3);
+  gap: 24px;
+}
+
+.gift-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.invite-left h3 {
+  font-size: 1.2rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+.invite-left p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.invite-code-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.code-lbl { font-size: 0.75rem; color: var(--text-muted); }
+
+.code-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--primary);
+}
+
+.code-val {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.comunidad-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+}
+
+.community-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.create-post-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.create-post-input-row {
+  display: flex;
+  gap: 12px;
+}
+
+.post-author-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.post-textarea {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: none;
+}
+
+.post-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.create-post-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.post-system-tag {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.post-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.post-author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.author-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.post-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.post-text {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.like-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.like-btn.liked {
+  color: var(--primary);
+}
+
+.naty-direct-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.naty-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.naty-profile-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary);
+}
+
+.naty-card-name {
+  font-size: 1rem;
+  color: #fff;
+}
+
+.naty-online-tag {
+  font-size: 0.72rem;
+  color: #10b981;
+}
+
+.naty-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.btn-full { width: 100%; }
+
+@media (max-width: 992px) {
+  .comunidad-layout-grid {
+    grid-template-columns: 1fr;
+  }
+  .invite-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

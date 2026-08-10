@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { UserDataProvider } from './context/UserDataContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -7,7 +9,9 @@ import Metodo403 from './pages/Metodo403';
 import Presencial from './pages/Presencial';
 import PostParto from './pages/PostParto';
 
-// Helper component to reset scroll position on navigation
+import AlumnaDashboardLayout from './pages/alumna/AlumnaDashboardLayout';
+import AdminDashboardLayout from './pages/admin/AdminDashboardLayout';
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   
@@ -20,23 +24,33 @@ function ScrollToTop() {
 
 export default function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <div className="app-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Navbar />
-        
-        {/* Main content pushed below the fixed header */}
-        <main style={{ flex: '1 0 auto', paddingTop: '80px' }}>
+    <AuthProvider>
+      <UserDataProvider>
+        <Router>
+          <ScrollToTop />
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/metodo-40-3" element={<Metodo403 />} />
-            <Route path="/presencial" element={<Presencial />} />
-            <Route path="/post-parto" element={<PostParto />} />
+            {/* Dashboard Routes (No public navbar/footer needed, they use their own header) */}
+            <Route path="/alumna/*" element={<AlumnaDashboardLayout />} />
+            <Route path="/admin/*" element={<AdminDashboardLayout />} />
+
+            {/* Public Website Routes */}
+            <Route path="/*" element={
+              <div className="app-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                <Navbar />
+                <main style={{ flex: '1 0 auto', paddingTop: '80px' }}>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/metodo-40-3" element={<Metodo403 />} />
+                    <Route path="/presencial" element={<Presencial />} />
+                    <Route path="/post-parto" element={<PostParto />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+            } />
           </Routes>
-        </main>
-        
-        <Footer />
-      </div>
-    </Router>
+        </Router>
+      </UserDataProvider>
+    </AuthProvider>
   );
 }

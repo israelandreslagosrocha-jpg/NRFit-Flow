@@ -1,0 +1,70 @@
+.sidebar-admin {
+  width: 250px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 14px;
+  height: calc(100vh - 120px);
+  position: sticky;
+  top: 96px;
+  background: rgba(18, 14, 25, 0.75);
+  border: 1px solid rgba(147, 51, 234, 0.2);
+}
+
+.admin-sidebar-header {
+  padding: 0 12px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.admin-badge-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #c084fc;
+  display: block;
+}
+
+.admin-brand {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sidebar-item.admin-item.active-admin {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.85) 0%, rgba(126, 34, 206, 0.95) 100%);
+  box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4);
+  font-weight: 600;
+}
+
+.admin-footer {
+  background: rgba(147, 51, 234, 0.08);
+  border-color: rgba(147, 51, 234, 0.2);
+}
+
+.admin-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.status-dot.green {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+@media (max-width: 992px) {
+  .sidebar-admin {
+    width: 100%;
+    height: auto;
+    position: static;
+  }
+}

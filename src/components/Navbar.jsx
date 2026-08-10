@@ -75,6 +75,7 @@ export default function Navbar() {
             <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
               {isLightTheme ? <Moon size={20} /> : <Sun size={20} />}
             </button>
+            <Link to="/alumna/para-ti" className="btn btn-secondary btn-sm">MI DASHBOARD</Link>
             <a href="#sistemas" className="btn btn-primary btn-sm">REGISTRARSE</a>
           </div>
         </div>
