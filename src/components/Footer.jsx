@@ -1,5 +1,7 @@
+'use client';
+
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import './Footer.css';
 
 export default function Footer() {
@@ -12,7 +14,7 @@ export default function Footer() {
           <h2 className="footer-cta-title">¿Lista para construir tu mejor versión?</h2>
           <p className="footer-cta-subtitle">Sistemas realistas diseñados para mujeres que buscan resultados duraderos.</p>
           <div className="footer-cta-actions">
-            <a href="#sistemas" className="btn btn-primary btn-lg">EMPEZAR AHORA</a>
+            <Link href="/#sistemas" className="btn btn-primary btn-lg">EMPEZAR AHORA</Link>
           </div>
         </div>
       </div>
@@ -22,7 +24,7 @@ export default function Footer() {
         <div className="container footer-grid">
           {/* Brand Info */}
           <div className="footer-brand-col">
-            <Link to="/" className="footer-logo">
+            <Link href="/" className="footer-logo">
               <img 
                 src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png" 
                 alt="Logo Naty Entrenadora" 
@@ -47,9 +49,9 @@ export default function Footer() {
           <div className="footer-links-col">
             <h4 className="footer-col-title">Sistemas Activos</h4>
             <ul className="footer-links-list-react">
-              <li><Link to="/metodo-40-3">Método 40/3 (Online)</Link></li>
-              <li><Link to="/presencial">Entrenamiento Presencial</Link></li>
-              <li><Link to="/post-parto">Recuperación Post Parto</Link></li>
+              <li><Link href="/metodo-40-3">Método 40/3 (Online)</Link></li>
+              <li><Link href="/presencial">Entrenamiento Presencial</Link></li>
+              <li><Link href="/post-parto">Recuperación Post Parto</Link></li>
             </ul>
           </div>
 

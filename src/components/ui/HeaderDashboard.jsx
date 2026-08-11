@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Shield, User, Flame, Bell, Sparkles } from 'lucide-react';

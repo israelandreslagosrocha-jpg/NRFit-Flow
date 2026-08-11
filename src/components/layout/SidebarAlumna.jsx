@@ -1,9 +1,14 @@
+'use client';
+
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Sparkles, Compass, Calendar, Film, TrendingUp, Users, Heart } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Sparkles, Compass, Calendar, Film, TrendingUp, Users } from 'lucide-react';
 import './SidebarAlumna.css';
 
 export default function SidebarAlumna() {
+  const pathname = usePathname();
+
   const navItems = [
     { path: '/alumna/para-ti', label: 'Para ti', icon: Sparkles },
     { path: '/alumna/explorar', label: 'Explorar', icon: Compass },
@@ -19,17 +24,17 @@ export default function SidebarAlumna() {
         <span className="sidebar-section-title">MENÚ PRINCIPAL</span>
         {navItems.map((item) => {
           const Icon = item.icon;
+          const isActive = pathname === item.path;
+
           return (
-            <NavLink
+            <Link
               key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `sidebar-item ${isActive ? 'active' : ''}`
-              }
+              href={item.path}
+              className={`sidebar-item ${isActive ? 'active' : ''}`}
             >
               <Icon size={20} className="sidebar-icon" />
               <span className="sidebar-label">{item.label}</span>
-            </NavLink>
+            </Link>
           );
         })}
       </div>

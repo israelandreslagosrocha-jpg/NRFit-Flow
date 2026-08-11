@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Heart, Activity, Check, ArrowRight, UserCheck, ShieldCheck, HeartCrack, HelpCircle } from 'lucide-react';
 import './PostParto.css';

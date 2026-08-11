@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import './Navbar.css';
 
@@ -7,6 +10,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLightTheme, setIsLightTheme] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,11 +34,18 @@ export default function Navbar() {
     }
   };
 
+  const navItems = [
+    { path: '/', label: 'INICIO' },
+    { path: '/metodo-40-3', label: 'MÉTODO 40/3' },
+    { path: '/presencial', label: 'PRESENCIAL' },
+    { path: '/post-parto', label: 'POST PARTO' },
+  ];
+
   return (
     <nav className={`navbar-react ${isScrolled ? 'scrolled' : ''}`}>
       <div className="container nav-flex">
         {/* Brand Logo */}
-        <Link to="/" className="brand-logo" onClick={() => setIsOpen(false)}>
+        <Link href="/" className="brand-logo" onClick={() => setIsOpen(false)}>
           <img 
             src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png" 
             alt="Naty Entrenadora Logo" 
@@ -49,34 +60,24 @@ export default function Navbar() {
         {/* Desktop Links */}
         <div className="desktop-nav">
           <ul className="nav-links-list">
-            <li>
-              <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                INICIO
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/metodo-40-3" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                MÉTODO 40/3
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/presencial" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                PRESENCIAL
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/post-parto" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                POST PARTO
-              </NavLink>
-            </li>
+            {navItems.map((item) => {
+              const isActive = pathname === item.path;
+              return (
+                <li key={item.path}>
+                  <Link href={item.path} className={`nav-link ${isActive ? 'active' : ''}`}>
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
           <div className="nav-actions">
             <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
               {isLightTheme ? <Moon size={20} /> : <Sun size={20} />}
             </button>
-            <Link to="/alumna/para-ti" className="btn btn-secondary btn-sm">MI DASHBOARD</Link>
-            <a href="#sistemas" className="btn btn-primary btn-sm">REGISTRARSE</a>
+            <Link href="/alumna/para-ti" className="btn btn-secondary btn-sm">MI DASHBOARD</Link>
+            <Link href="/#sistemas" className="btn btn-primary btn-sm">REGISTRARSE</Link>
           </div>
         </div>
 
@@ -94,30 +95,28 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       <div className={`mobile-drawer ${isOpen ? 'open' : ''}`}>
         <ul className="mobile-links-list">
-          <li>
-            <NavLink to="/" end className="mobile-link" onClick={() => setIsOpen(false)}>
-              INICIO
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/metodo-40-3" className="mobile-link" onClick={() => setIsOpen(false)}>
-              MÉTODO 40/3 (ONLINE)
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/presencial" className="mobile-link" onClick={() => setIsOpen(false)}>
-              ENTRENAMIENTO PRESENCIAL
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/post-parto" className="mobile-link" onClick={() => setIsOpen(false)}>
-              POST PARTO SEGURO
-            </NavLink>
-          </li>
+          {navItems.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <li key={item.path}>
+                <Link
+                  href={item.path}
+                  className={`mobile-link ${isActive ? 'active' : ''}`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
           <li style={{ marginTop: '20px' }}>
-            <a href="#sistemas" className="btn btn-primary btn-full text-center" onClick={() => setIsOpen(false)}>
+            <Link
+              href="/#sistemas"
+              className="btn btn-primary btn-full text-center"
+              onClick={() => setIsOpen(false)}
+            >
               REGISTRARSE
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

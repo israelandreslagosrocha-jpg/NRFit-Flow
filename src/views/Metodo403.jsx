@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Play, Check, HelpCircle, ArrowRight, ShieldAlert, Gift, MessageCircle } from 'lucide-react';
 import './Metodo403.css';

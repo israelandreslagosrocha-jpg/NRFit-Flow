@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ArrowRight, Play, CheckCircle, Shield, Users, Smartphone, BarChart3, Award } from 'lucide-react';
 import './Home.css';
 
@@ -211,7 +213,7 @@ export default function Home() {
                   ))}
                 </ul>
 
-                <Link to={sys.link} className="btn btn-secondary btn-full system-card-btn">
+                <Link href={sys.link} className="btn btn-secondary btn-full system-card-btn">
                   EXPLORAR SISTEMA <ArrowRight size={16} />
                 </Link>
               </div>

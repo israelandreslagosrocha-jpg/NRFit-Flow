@@ -4,13 +4,13 @@ import { AuthProvider } from './context/AuthContext';
 import { UserDataProvider } from './context/UserDataContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import Home from './pages/Home';
-import Metodo403 from './pages/Metodo403';
-import Presencial from './pages/Presencial';
-import PostParto from './pages/PostParto';
+import Home from './views/Home';
+import Metodo403 from './views/Metodo403';
+import Presencial from './views/Presencial';
+import PostParto from './views/PostParto';
 
-import AlumnaDashboardLayout from './pages/alumna/AlumnaDashboardLayout';
-import AdminDashboardLayout from './pages/admin/AdminDashboardLayout';
+import AlumnaDashboardLayout from './views/alumna/AlumnaDashboardLayout';
+import AdminDashboardLayout from './views/admin/AdminDashboardLayout';
 
 function ScrollToTop() {
   const { pathname } = useLocation();

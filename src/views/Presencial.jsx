@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Calendar, Clock, MapPin, CheckCircle, ArrowRight, Info, AlertTriangle } from 'lucide-react';
 import './Presencial.css';

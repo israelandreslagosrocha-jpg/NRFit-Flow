@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { X, CheckCircle, Flame, Clock, Heart } from 'lucide-react';
 import { useUserData } from '../../context/UserDataContext';
