@@ -43,7 +43,7 @@ export default function AdminAlumnas() {
 
         <div className="filter-pills-row">
           <span className="filter-label"><Filter size={14} /> Filtrar por Plan:</span>
-          {['Todos', 'GAP en Casa Mujeres', 'Método 40/3', 'Programa Post-Parto', 'Entrenamiento Presencial'].map(plan => (
+          {['Todos', 'Team Naty Online'].map(plan => (
             <button 
               key={plan}
               onClick={() => setFilterPlan(plan)}

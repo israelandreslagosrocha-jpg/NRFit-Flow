@@ -65,8 +65,8 @@ export default function AlumnaExplorar() {
         </div>
         <div className="collection-card col-metodo">
           <Flame size={20} className="col-icon" />
-          <h3>Método 40/3 Quema Rápida</h3>
-          <p>Formato de alta intensidad metabólica</p>
+          <h3>Fuerza & Movilidad Exprés</h3>
+          <p>Rutinas de 20 a 35 minutos de alta efectividad</p>
         </div>
         <div className="collection-card col-postparto">
           <Clock size={20} className="col-icon" />

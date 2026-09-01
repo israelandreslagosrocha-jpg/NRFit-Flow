@@ -12,13 +12,13 @@ export default function AlumnaMiPlan() {
   const [activeVideo, setActiveVideo] = useState(null);
 
   const daysOfWeek = [
-    { day: 'Lun', date: '10 Ago', title: 'GAP Glúteos & Abdomen', workoutId: 'w_01', isToday: true, status: 'Pendiente' },
-    { day: 'Mar', date: '11 Ago', title: 'Quema Metabólica 40/3', workoutId: 'w_02', isToday: false, status: 'Programado' },
-    { day: 'Mié', date: '12 Ago', title: 'Descanso Activo & Stretching', workoutId: 'w_05', isToday: false, status: 'Programado' },
-    { day: 'Jue', date: '13 Ago', title: 'GAP Piernas & Core', workoutId: 'w_04', isToday: false, status: 'Programado' },
-    { day: 'Vie', date: '14 Ago', title: 'Full Body Naty Power', workoutId: 'w_02', isToday: false, status: 'Programado' },
-    { day: 'Sáb', date: '15 Ago', title: 'Live Class Zoom', workoutId: 'w_01', isToday: false, status: 'En Vivo' },
-    { day: 'Dom', date: '16 Ago', title: 'Descanso Total', workoutId: null, isToday: false, status: 'Descanso' }
+    { day: 'Lun', date: '10 Ago', title: 'Entrenamiento Grabado Semanal', workoutId: 'w_01', isToday: true, status: 'Disponible' },
+    { day: 'Mar', date: '11 Ago', title: 'Clase LIVE con Natalia (20:00)', workoutId: 'w_02', isToday: false, status: 'En Vivo' },
+    { day: 'Mié', date: '12 Ago', title: 'Descanso Activo & Movilidad', workoutId: 'w_05', isToday: false, status: 'Opcional' },
+    { day: 'Jue', date: '13 Ago', title: 'Clase LIVE con Natalia (20:00)', workoutId: 'w_04', isToday: false, status: 'En Vivo' },
+    { day: 'Vie', date: '14 Ago', title: 'Videoteca & Práctica Libre', workoutId: 'w_02', isToday: false, status: 'Disponible' },
+    { day: 'Sáb', date: '15 Ago', title: 'Descanso & Recuperación', workoutId: null, isToday: false, status: 'Descanso' },
+    { day: 'Dom', date: '16 Ago', title: 'Planificación de la Semana', workoutId: null, isToday: false, status: 'Descanso' }
   ];
 
   const selectedTodayWorkout = workouts.find(w => w.id === 'w_01') || workouts[0];

@@ -25,7 +25,7 @@ export default function AlumnaComunidad() {
       text: '¿Alguna recomendación para las agujetas en cuadriceps? El Tip del Día de ayer me ayudó mucho.',
       likes: 8,
       isLiked: true,
-      system: 'Método 40/3'
+      system: 'Team Naty Online'
     }
   ]);
 
@@ -86,7 +86,7 @@ export default function AlumnaComunidad() {
             <span>INVITA Y GANA</span>
           </div>
           <h3>Comparte la experiencia con una amiga</h3>
-          <p>Regala 7 días gratis. Por cada amiga que se suscriba, recibes $15 USD de descuento en tu siguiente renovación.</p>
+          <p>Regala 7 días gratis. Por cada amiga que se suscriba al precio fundador ($25.000 CLP), recibes $10.000 CLP de descuento en tu siguiente renovación.</p>
         </div>
 
         <div className="invite-code-box">

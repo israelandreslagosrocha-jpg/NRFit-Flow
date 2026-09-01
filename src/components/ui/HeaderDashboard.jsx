@@ -24,10 +24,7 @@ export default function HeaderDashboard() {
               onChange={(e) => changeSystem(e.target.value)}
               className="system-select"
             >
-              <option value="gap-en-casa">GAP en Casa Mujeres</option>
-              <option value="metodo-40-3">Método 40/3</option>
-              <option value="post-parto">Programa Post-Parto</option>
-              <option value="presencial">Entrenamiento Presencial</option>
+              <option value="team-naty">Team Naty Online</option>
             </select>
           </div>
         )}

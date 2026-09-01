@@ -50,13 +50,10 @@ export function AuthProvider({ children }) {
 
   const changeSystem = (systemKey) => {
     const systemNames = {
-      'gap-en-casa': 'GAP en Casa Mujeres',
-      'metodo-40-3': 'Método 40/3',
-      'post-parto': 'Programa Post-Parto',
-      'presencial': 'Entrenamiento Presencial'
+      'team-naty': 'Team Naty Online'
     };
     setActiveSystem(systemKey);
-    setUser(prev => ({ ...prev, systemName: systemNames[systemKey] || 'GAP en Casa Mujeres' }));
+    setUser(prev => ({ ...prev, systemName: systemNames[systemKey] || 'Team Naty Online' }));
   };
 
   return (

@@ -5,7 +5,6 @@ import { UserDataProvider } from './context/UserDataContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './views/Home';
-import Metodo403 from './views/Metodo403';
 import Presencial from './views/Presencial';
 import PostParto from './views/PostParto';
 
@@ -40,9 +39,9 @@ export default function App() {
                 <main style={{ flex: '1 0 auto', paddingTop: '80px' }}>
                   <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/metodo-40-3" element={<Metodo403 />} />
-                    <Route path="/presencial" element={<Presencial />} />
-                    <Route path="/post-parto" element={<PostParto />} />
+                    <Route path="/metodo-40-3" element={<Home />} />
+                    <Route path="/presencial" element={<Home />} />
+                    <Route path="/post-parto" element={<Home />} />
                   </Routes>
                 </main>
                 <Footer />

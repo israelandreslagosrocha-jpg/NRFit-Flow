@@ -3,30 +3,30 @@ import type { Metadata } from 'next';
 import Home from '../../views/Home';
 
 export const metadata: Metadata = {
-  title: 'Naty Entrenadora | Plataforma Digital Multiprograma de Entrenamiento',
-  description: 'Sistemas de entrenamiento para mujeres reales. Método 40/3 online, Entrenamiento Presencial en Teodoro Schmidt, Post Parto Seguro y Pilates.',
+  title: 'Naty Entrenadora | Entrena para la vida que tienes',
+  description: 'Entrenamiento online continuo para mujeres que quieren recuperar fuerza, energía, movilidad y constancia, adaptando el entrenamiento a la vida que realmente tienen.',
   alternates: {
-    canonical: 'https://natyentrenadora.cl',
+    canonical: 'https://www.natyentrenadora.cl',
   },
   openGraph: {
-    title: 'Naty Entrenadora | Plataforma Digital Multiprograma',
-    description: 'Entrenamiento online y presencial que se adapta a tu vida, tu nivel y tus objetivos. Ecosistema NR Fit & Flow.',
-    url: 'https://natyentrenadora.cl',
+    title: 'Naty Entrenadora | Entrena para la vida que tienes',
+    description: 'Entrenamiento online continuo para mujeres que quieren recuperar fuerza, energía, movilidad y constancia. Membresía mensual con clases en vivo y grabadas.',
+    url: 'https://www.natyentrenadora.cl',
     siteName: 'Naty Entrenadora',
     images: [
       {
         url: 'https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png',
         width: 1200,
         height: 630,
-        alt: 'Naty Entrenadora Logo',
+        alt: 'Naty Entrenadora - Entrena para la vida que tienes',
       },
     ],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Naty Entrenadora | Plataforma Digital Multiprograma',
-    description: 'Sistemas de entrenamiento online y presencial para mujeres.',
+    title: 'Naty Entrenadora | Entrena para la vida que tienes',
+    description: 'Entrenamiento online continuo para mujeres reales. Membresía mensual con acompañamiento profesional.',
     images: ['https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png'],
   },
 };
@@ -37,10 +37,11 @@ export default function PublicHomePage() {
     '@graph': [
       {
         '@type': 'Organization',
-        '@id': 'https://natyentrenadora.cl/#organization',
+        '@id': 'https://www.natyentrenadora.cl/#organization',
         'name': 'Naty Entrenadora',
-        'url': 'https://natyentrenadora.cl',
+        'url': 'https://www.natyentrenadora.cl',
         'logo': 'https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png',
+        'email': 'team@natyentrenadora.cl',
         'founder': {
           '@type': 'Person',
           'name': 'Natalia Riquelme',
@@ -48,16 +49,11 @@ export default function PublicHomePage() {
         },
       },
       {
-        '@type': 'SportsActivityLocation',
-        '@id': 'https://natyentrenadora.cl/#localbusiness',
-        'name': 'Box Central Naty Entrenadora',
-        'address': {
-          '@type': 'PostalAddress',
-          'addressLocality': 'Teodoro Schmidt',
-          'addressRegion': 'Región de La Araucanía',
-          'addressCountry': 'CL',
-        },
-        'telephone': '+56957144823',
+        '@type': 'WebSite',
+        '@id': 'https://www.natyentrenadora.cl/#website',
+        'url': 'https://www.natyentrenadora.cl',
+        'name': 'Naty Entrenadora',
+        'description': 'Entrena para la vida que tienes. Plataforma de entrenamiento online continuo para mujeres.',
       },
     ],
   };

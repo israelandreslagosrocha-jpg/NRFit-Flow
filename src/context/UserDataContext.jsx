@@ -50,18 +50,18 @@ export function UserDataProvider({ children }) {
     },
     {
       id: 'w_02',
-      title: 'Método 40/3: Quema Metabólica Full Body',
+      title: 'Fuerza Funcional & Core Full Body',
       trainer: 'Naty Entrenadora',
-      duration: '40 min',
-      level: 'Avanzado',
-      system: 'metodo-40-3',
+      duration: '35 min',
+      level: 'Intermedio',
+      system: 'team-naty',
       category: 'Cardio & Fuerza',
-      calories: 450,
+      calories: 320,
       thumbnail: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&auto=format&fit=crop&q=80',
       videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
       isHero: false,
-      description: '40 segundos de trabajo de alta densidad con 3 bloques de recuperación activa. Diseñado para acelerar tu metabolismo.',
-      equipment: 'Mancuernas ligeras'
+      description: 'Sesión integral de fuerza funcional y estabilidad de core. Adaptada a diferentes niveles de intensidad.',
+      equipment: 'Mancuernas ligeras o peso corporal'
     },
     {
       id: 'w_03',
@@ -112,24 +112,24 @@ export function UserDataProvider({ children }) {
 
   // Admin Data Summary
   const [adminMetrics] = useState({
-    mrr: '$4,850 USD',
-    mrrGrowth: '+12.4%',
-    activeStudents: 342,
-    studentsGrowth: '+18 este mes',
-    activeSubscriptions: 310,
-    pendingPaymentsCount: 5,
-    pendingPaymentsTotal: '$425 USD',
-    liveClassesThisWeek: 4,
-    retentionRate: '94.2%'
+    mrr: '$3.750.000 CLP',
+    mrrGrowth: '+14.2%',
+    activeStudents: 150,
+    studentsGrowth: '+22 este mes',
+    activeSubscriptions: 150,
+    pendingPaymentsCount: 3,
+    pendingPaymentsTotal: '$75.000 CLP',
+    liveClassesThisWeek: 2,
+    retentionRate: '95.4%'
   });
 
   // Admin Students List
   const [studentsList, setStudentsList] = useState([
-    { id: 's_01', name: 'Carolina Martínez', email: 'carolina@ejemplo.com', plan: 'GAP en Casa Mujeres', status: 'Activa', renewalDate: '2026-08-25', totalPaid: '$149 USD', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' },
-    { id: 's_02', name: 'Valentina Silva', email: 'valentina@ejemplo.com', plan: 'Método 40/3', status: 'Activa', renewalDate: '2026-08-28', totalPaid: '$199 USD', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100' },
-    { id: 's_03', name: 'Camila Rojas', email: 'camila@ejemplo.com', plan: 'Programa Post-Parto', status: 'Pago Pendiente', renewalDate: '2026-08-10', totalPaid: '$99 USD', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100' },
-    { id: 's_04', name: 'Mariana Gómez', email: 'mariana@ejemplo.com', plan: 'Entrenamiento Presencial', status: 'Activa', renewalDate: '2026-09-01', totalPaid: '$350 USD', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100' },
-    { id: 's_05', name: 'Lucía Fernández', email: 'lucia@ejemplo.com', plan: 'GAP en Casa Mujeres', status: 'Activa', renewalDate: '2026-08-30', totalPaid: '$149 USD', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100' }
+    { id: 's_01', name: 'Carolina Martínez', email: 'carolina@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-08-25', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' },
+    { id: 's_02', name: 'Valentina Silva', email: 'valentina@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-08-28', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100' },
+    { id: 's_03', name: 'Camila Rojas', email: 'camila@ejemplo.com', plan: 'Team Naty Online', status: 'Pago Pendiente', renewalDate: '2026-08-10', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100' },
+    { id: 's_04', name: 'Mariana Gómez', email: 'mariana@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-09-01', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100' },
+    { id: 's_05', name: 'Lucía Fernández', email: 'lucia@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-08-30', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100' }
   ]);
 
   const toggleFavorite = (workoutId) => {
