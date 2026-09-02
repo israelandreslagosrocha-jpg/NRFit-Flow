@@ -48,8 +48,7 @@ export default function IdentificationSection() {
             ¿Quieres entrenar, pero <span className="nt-highlight">nunca encuentras el momento?</span>
           </h2>
           <p className="nt-subtitle">
-            El problema no eres tú ni tu fuerza de voluntad. El problema es que te han vendido 
-            un modelo de entrenamiento pensado para personas con vidas sin responsabilidades.
+            El problema no eres tú ni tu fuerza de voluntad. El problema es intentar encajar un modelo de entrenamiento que no fue pensado para la vida que tienes.
           </p>
         </div>
 

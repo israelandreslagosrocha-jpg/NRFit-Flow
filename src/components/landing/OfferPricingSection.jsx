@@ -7,7 +7,7 @@ import { CheckCircle2, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
 export default function OfferPricingSection() {
   const benefits = [
     "3 Entrenamientos semanales adaptados a tu vida cotidiana.",
-    "Clases en vivo los Martes y Jueves a las 20:00 hrs con corrección técnica.",
+    "Entrenamientos LIVE los Martes y Jueves a las 20:00 hrs con corrección técnica directa de Natalia.",
     "Contenido grabado semanal disponible para entrenar cuando tú puedas.",
     "Acceso total a la videoteca con todas las rutinas grabadas anteriores.",
     "Dashboard personal de alumna con seguimiento de constancia y racha.",

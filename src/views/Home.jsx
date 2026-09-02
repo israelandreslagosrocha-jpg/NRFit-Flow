@@ -12,7 +12,6 @@ import DashboardPreviewSection from '../components/landing/DashboardPreviewSecti
 import CommunitySection from '../components/landing/CommunitySection';
 import TestimonialsSection from '../components/landing/TestimonialsSection';
 import OfferPricingSection from '../components/landing/OfferPricingSection';
-import ReferralSection from '../components/landing/ReferralSection';
 import FaqSection from '../components/landing/FaqSection';
 import FinalCtaSection from '../components/landing/FinalCtaSection';
 
@@ -49,10 +48,7 @@ export default function Home() {
       {/* 10. Oferta Oficial ($25.000 CLP Precio Fundador + 7 Días Gratis) */}
       <OfferPricingSection />
 
-      {/* 11. Programa de Referidos ($25.000 CLP para amigas) */}
-      <ReferralSection />
-
-      {/* 12. Preguntas Frecuentes (12 FAQs) */}
+      {/* 11. Preguntas Frecuentes (12 FAQs) */}
       <FaqSection />
 
       {/* 13. CTA Final */}

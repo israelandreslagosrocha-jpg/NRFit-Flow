@@ -1,11 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Play, Calendar, Flame, Award, CheckCircle2, ChevronRight } from 'lucide-react';
+import { 
+  Play, Calendar, Flame, Award, CheckCircle2, Video, 
+  Users, Target, Sparkles, TrendingUp, Clock, BookOpen
+} from 'lucide-react';
 
 export default function DashboardPreviewSection() {
   return (
-    <section className="landing-section" style={{ background: '#08080B' }}>
+    <section id="plataforma" className="landing-section" style={{ background: '#070709' }}>
       <div className="landing-container">
         
         {/* Header */}
@@ -16,101 +19,163 @@ export default function DashboardPreviewSection() {
             <span className="nt-highlight">Tu plataforma personal de constancia.</span>
           </h2>
           <p className="nt-subtitle">
-            Diseñada con el estándar visual de las mejores aplicaciones de fitness del mundo, 
-            pero enfocada 100% en ayudarte a mantener tu racha y no abandonar.
+            Entrena, registra tu progreso, sigue tu semana y mantén el rumbo sin tener que empezar de cero cada vez.
           </p>
         </div>
 
-        {/* Interactive / Editorial Mockup */}
-        <div className="dashboard-preview-card">
+        {/* Big Dashboard Showcase Mockup */}
+        <div className="dashboard-preview-card" style={{ maxWidth: '1080px', margin: '0 auto' }}>
           
-          {/* Mock Topbar */}
-          <div className="dash-mock-topbar">
+          {/* Top Platform Bar */}
+          <div className="dash-mock-topbar" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '1rem', alignItems: 'center' }}>
             <div className="dash-mock-user">
-              <div className="dash-mock-avatar">C</div>
+              <div className="dash-mock-avatar">NR</div>
               <div>
-                <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                  ¡Hola, Camila!
+                <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
+                  Portal de Alumna • Team Naty
                 </h4>
                 <span style={{ fontSize: '0.8rem', color: 'var(--nt-pink)', fontWeight: 600 }}>
-                  Team Naty • Alumna Activa
+                  Membresía Online Activa
                 </span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.85rem', background: 'rgba(255, 45, 120, 0.12)', border: '1px solid var(--nt-border-pink)', borderRadius: 'var(--nt-radius-full)', fontSize: '0.8rem', fontWeight: 700, color: 'var(--nt-pink)' }}>
+            {/* Quick Badges: Racha, Comunidad, Objetivos */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.85rem', background: 'rgba(255, 45, 120, 0.12)', border: '1px solid var(--nt-border-pink)', borderRadius: 'var(--nt-radius-full)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--nt-pink)' }}>
                 <Flame size={14} /> 12 Entrenamientos Seguidos
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.85rem', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--nt-border)', borderRadius: 'var(--nt-radius-full)', fontSize: '0.78rem', fontWeight: 600, color: '#FFFFFF' }}>
+                <Users size={14} style={{ color: 'var(--nt-pink)' }} /> +150 Alumnas Activas
               </span>
             </div>
           </div>
 
-          {/* Mock Content Grid */}
-          <div className="dash-mock-grid">
+          {/* Main Dashboard Interactive Grid */}
+          <div style={{ padding: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
             
-            {/* Box 1: Next LIVE class card */}
-            <div className="dash-mock-box" style={{ background: 'linear-gradient(135deg, rgba(255, 45, 120, 0.1) 0%, #15151C 100%)', border: '1px solid var(--nt-border-pink)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--nt-pink)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  PRÓXIMA CLASE EN VIVO
+            {/* 1. PRÓXIMA SESIÓN LIVE */}
+            <div className="dash-mock-box" style={{ background: 'linear-gradient(135deg, rgba(255, 45, 120, 0.12) 0%, #13131A 100%)', border: '1px solid var(--nt-border-pink)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--nt-pink)', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span className="live-pulse-dot" style={{ width: 6, height: 6 }}></span> EN VIVO CON NATALIA
                 </span>
                 <span style={{ fontSize: '0.78rem', color: 'var(--nt-text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                   <Calendar size={13} /> Hoy 20:00 hrs
                 </span>
               </div>
 
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800, color: '#FFFFFF', margin: '0 0 0.5rem 0' }}>
-                Fuerza & Estabilidad de Core
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', margin: '0 0 0.35rem 0' }}>
+                Fuerza Funcional & Estabilidad
               </h3>
-              <p style={{ fontSize: '0.88rem', color: 'var(--nt-text-secondary)', margin: '0 0 1.25rem 0' }}>
-                Con Natalia Riquelme en vivo. 35 minutos de trabajo guiado adaptado a tu nivel.
+              <p style={{ fontSize: '0.82rem', color: 'var(--nt-text-secondary)', margin: '0 0 1rem 0', lineHeight: 1.5 }}>
+                Corrección en tiempo real con Natalia. Duración: 35 min. Implementos: Ninguno o mancuernas ligeras.
               </p>
 
-              <button className="nt-btn nt-btn-primary nt-btn-full" style={{ padding: '0.75rem 1.5rem', fontSize: '0.85rem' }}>
-                <Play size={16} fill="#FFFFFF" /> ENTRAR A LA SALA EN VIVO
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="nt-btn nt-btn-primary" style={{ flex: 1, padding: '0.65rem 1rem', fontSize: '0.8rem', justifyContent: 'center' }}>
+                  <Play size={15} fill="#FFFFFF" /> ENTRAR A LA SALA
+                </button>
+                <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(255,255,255,0.05)', borderRadius: 'var(--nt-radius-sm)', border: '1px solid var(--nt-border)', fontSize: '0.75rem', color: 'var(--nt-text-muted)', display: 'flex', alignItems: 'center' }}>
+                  En 15 min
+                </div>
+              </div>
             </div>
 
-            {/* Box 2: Weekly Tracker & Achievements */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              
-              {/* Weekly Streak Box */}
-              <div className="dash-mock-box">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#FFFFFF' }}>Semana Actual</span>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--nt-pink)', fontWeight: 600 }}>2 de 3 completados</span>
+            {/* 2. SEMANA ACTUAL & PLANIFICACIÓN */}
+            <div className="dash-mock-box" style={{ background: '#121217', border: '1px solid var(--nt-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Calendar size={15} style={{ color: 'var(--nt-pink)' }} /> Semana en Curso
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--nt-pink)', fontWeight: 700 }}>
+                  2 de 3 completados (67%)
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
+                <div style={{ padding: '0.75rem 0.5rem', textAlign: 'center', background: 'rgba(255,45,120,0.12)', border: '1px solid var(--nt-border-pink)', borderRadius: 'var(--nt-radius-sm)' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--nt-text-muted)', marginBottom: '0.2rem' }}>LUNES</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#FFFFFF' }}>Grabado ✓</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--nt-pink)', marginTop: '0.2rem' }}>25 min</div>
                 </div>
-                
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <div style={{ flex: 1, padding: '0.6rem', textAlign: 'center', background: 'rgba(255,45,120,0.15)', border: '1px solid var(--nt-border-pink)', borderRadius: 'var(--nt-radius-sm)', color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 700 }}>
-                    Lun ✓
-                  </div>
-                  <div style={{ flex: 1, padding: '0.6rem', textAlign: 'center', background: 'rgba(255,45,120,0.15)', border: '1px solid var(--nt-border-pink)', borderRadius: 'var(--nt-radius-sm)', color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 700 }}>
-                    Mar ✓
-                  </div>
-                  <div style={{ flex: 1, padding: '0.6rem', textAlign: 'center', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.15)', borderRadius: 'var(--nt-radius-sm)', color: 'var(--nt-text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>
-                    Jue (Hoy)
-                  </div>
+                <div style={{ padding: '0.75rem 0.5rem', textAlign: 'center', background: 'rgba(255,45,120,0.12)', border: '1px solid var(--nt-border-pink)', borderRadius: 'var(--nt-radius-sm)' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--nt-text-muted)', marginBottom: '0.2rem' }}>MARTES</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#FFFFFF' }}>LIVE ✓</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--nt-pink)', marginTop: '0.2rem' }}>35 min</div>
+                </div>
+                <div style={{ padding: '0.75rem 0.5rem', textAlign: 'center', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: 'var(--nt-radius-sm)' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--nt-text-muted)', marginBottom: '0.2rem' }}>JUEVES</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--nt-pink)' }}>LIVE (Hoy)</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--nt-text-muted)', marginTop: '0.2rem' }}>20:00 hrs</div>
                 </div>
               </div>
 
-              {/* Reward Badge Box */}
-              <div className="dash-mock-box" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'rgba(255, 45, 120, 0.15)', color: 'var(--nt-pink)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Award size={22} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--nt-text-secondary)' }}>
+                <CheckCircle2 size={13} style={{ color: 'var(--nt-pink)' }} />
+                <span>Meta semanal al alcance. ¡Hoy sumas tu 3er entrenamiento!</span>
+              </div>
+            </div>
+
+            {/* 3. VIDEOTECA ON-DEMAND */}
+            <div className="dash-mock-box" style={{ background: '#121217', border: '1px solid var(--nt-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Video size={15} style={{ color: 'var(--nt-pink)' }} /> Videoteca On-Demand
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--nt-text-muted)' }}>Disponible 24/7</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--nt-radius-sm)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF' }}>Movilidad Articular & Espalda</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--nt-text-muted)' }}>Ideal post-jornada laboral • 20 min</div>
+                  </div>
+                  <Play size={16} style={{ color: 'var(--nt-pink)', cursor: 'pointer' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--nt-radius-sm)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF' }}>Glúteos & Tren Inferior Fuerte</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--nt-text-muted)' }}>Técnica guiada • 35 min</div>
+                  </div>
+                  <Play size={16} style={{ color: 'var(--nt-pink)', cursor: 'pointer' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* 4. OBJETIVOS & RECOMPENSAS */}
+            <div className="dash-mock-box" style={{ background: '#121217', border: '1px solid var(--nt-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Award size={15} style={{ color: 'var(--nt-pink)' }} /> Logros & Recompensas
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--nt-pink)', fontWeight: 600 }}>Nivel 2</span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.65rem 0.75rem', background: 'rgba(255, 45, 120, 0.06)', borderRadius: 'var(--nt-radius-sm)', border: '1px solid rgba(255, 45, 120, 0.2)', marginBottom: '0.75rem' }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255, 45, 120, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--nt-pink)', flexShrink: 0 }}>
+                  <Award size={18} />
                 </div>
                 <div>
-                  <h5 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#FFFFFF', margin: '0 0 0.15rem 0' }}>
-                    Logro: Constancia Nivel 2
-                  </h5>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--nt-text-muted)', margin: 0 }}>
-                    Completaste 4 semanas continuas sin abandonar.
-                  </p>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF' }}>Insignia: 4 Semanas sin Abandonar</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--nt-text-muted)' }}>Hábito consolidado en tu rutina diaria</div>
                 </div>
               </div>
 
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--nt-text-secondary)' }}>
+                <span>Próxima meta: 8 Semanas Continuas</span>
+                <span style={{ color: 'var(--nt-pink)', fontWeight: 700 }}>75%</span>
+              </div>
             </div>
 
+          </div>
+
+          {/* Bottom Note */}
+          <div style={{ padding: '0.85rem 1.5rem', background: 'rgba(0,0,0,0.4)', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--nt-text-muted)' }}>
+              * Vista demostrativa del panel interactivo de alumna exclusivo del Team Naty Entrenadora.
+            </span>
           </div>
 
         </div>

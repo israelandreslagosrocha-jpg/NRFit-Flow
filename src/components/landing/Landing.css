@@ -288,55 +288,114 @@
   justify-content: center;
 }
 
-.hero-image-frame {
+.hero-online-card {
   position: relative;
   width: 100%;
-  max-width: 440px;
-  aspect-ratio: 4 / 5;
+  max-width: 460px;
+  background: #111116;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--nt-radius-lg);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8),
               0 0 50px rgba(255, 45, 120, 0.15);
-  background: #141418;
 }
 
-.hero-image-frame img {
+.hero-online-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: #16161D;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--nt-pink);
+  box-shadow: 0 0 10px var(--nt-pink);
+  animation: pulse-glow 1.8s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+.hero-video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  background: #000000;
+  overflow: hidden;
+}
+
+.hero-video-element {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 20%;
   display: block;
 }
 
-.hero-image-overlay {
+.hero-video-overlay-gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 55%, rgba(10, 10, 12, 0.95) 100%);
+  background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(10,10,12,0.85) 100%);
   pointer-events: none;
 }
 
-.hero-coach-caption {
+.hero-float-live-badge {
   position: absolute;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  right: 1.5rem;
+  top: 1rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 45, 120, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: var(--nt-radius-full);
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0.05em;
   z-index: 2;
 }
 
-.hero-coach-caption h4 {
-  font-family: var(--font-heading, 'Outfit', sans-serif);
-  font-size: 1.2rem;
+.hero-float-streak-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(18, 18, 22, 0.85);
+  border: 1px solid rgba(255, 45, 120, 0.3);
+  backdrop-filter: blur(8px);
+  border-radius: var(--nt-radius-full);
+  font-size: 0.7rem;
   font-weight: 700;
   color: #FFFFFF;
-  margin: 0;
+  z-index: 2;
 }
 
-.hero-coach-caption p {
-  font-size: 0.82rem;
-  color: var(--nt-pink);
-  margin: 0.2rem 0 0 0;
-  font-weight: 600;
+.hero-video-bottom-info {
+  position: absolute;
+  bottom: 1rem;
+  left: 1.25rem;
+  right: 1.25rem;
+  z-index: 2;
+}
+
+.hero-online-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: #14141A;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* ====================================================================

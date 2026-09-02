@@ -7,8 +7,8 @@ export default function NataliaAuthoritySection() {
   const credentials = [
     {
       icon: <Award size={20} />,
-      title: "Preparadora Física Certificada",
-      desc: "+15 años guiando a mujeres en entrenamiento presencial y online."
+      title: "Preparadora Física",
+      desc: "+15 años guiando a mujeres en fuerza, salud articular y hábitos sostenibles."
     },
     {
       icon: <Dumbbell size={20} />,
@@ -33,13 +33,14 @@ export default function NataliaAuthoritySection() {
         
         <div className="natalia-grid">
           
-          {/* Left Column: Real Photo of Natalia */}
+          {/* Left Column: Official Profile Image of Natalia */}
           <div className="natalia-photo-box">
-            <div className="natalia-photo-frame">
+            <div className="natalia-photo-frame" style={{ background: 'radial-gradient(circle at center, rgba(255, 45, 120, 0.15) 0%, #111116 80%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
               <img 
-                src="/images/natalia/natalia-profile.jpg" 
-                alt="Natalia Riquelme entrenando a sus alumnas" 
+                src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/Copia_de_NR_logo_image_efdt04.png" 
+                alt="Natalia Riquelme - Fundadora & Entrenadora Principal" 
                 loading="lazy"
+                style={{ width: '80%', height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.7))' }}
               />
             </div>
             <div className="natalia-exp-badge">

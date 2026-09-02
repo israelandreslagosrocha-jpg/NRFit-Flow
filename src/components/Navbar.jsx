@@ -26,6 +26,7 @@ export default function Navbar() {
   const navItems = [
     { path: '/#como-funciona', label: 'CÓMO FUNCIONA' },
     { path: '/#natalia', label: 'NATALIA' },
+    { path: '/#plataforma', label: 'PLATAFORMA' },
     { path: '/#comunidad', label: 'COMUNIDAD' },
     { path: '/#oferta', label: 'PRECIO FUNDADOR' },
     { path: '/#faq', label: 'PREGUNTAS' },

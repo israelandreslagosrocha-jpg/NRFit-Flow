@@ -16,18 +16,18 @@ export default function HowItWorksSection() {
     {
       badge: "EN VIVO CON NATALIA",
       day: "Martes",
-      title: "Clase LIVE Guiada",
+      title: "Entrenamiento LIVE con Natalia",
       time: "20:00 – 20:30 hrs (Chile)",
       icon: <Radio size={24} style={{ color: 'var(--nt-pink)' }} />,
-      desc: "Entrenamiento grupal en vivo con correcciones técnicas en tiempo real, motivación colectiva y respuesta de dudas directamente con Natalia."
+      desc: "Sesión en vivo guiada por Natalia con correcciones técnicas en tiempo real, motivación y resolución de dudas directamente para el Team."
     },
     {
       badge: "EN VIVO CON NATALIA",
       day: "Jueves",
-      title: "Clase LIVE Guiada",
+      title: "Entrenamiento LIVE con Natalia",
       time: "20:00 – 20:30 hrs (Chile)",
       icon: <Radio size={24} style={{ color: 'var(--nt-pink)' }} />,
-      desc: "Segunda sesión LIVE de la semana. Cerramos la planificación con ejercicios de fuerza funcional, resistencia y movilidad corporal completa."
+      desc: "Segunda sesión LIVE semanal. Trabajo enfocado en fuerza funcional, postura, movilidad y resistencia para la vida cotidiana."
     }
   ];
 

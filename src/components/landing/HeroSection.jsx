@@ -2,8 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowRight, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Sparkles, Play, Radio, Flame, Users } from 'lucide-react';
 
 export default function HeroSection() {
   return (
@@ -58,32 +57,81 @@ export default function HeroSection() {
             {/* Trust Micro-Indicators */}
             <div className="hero-guarantee-note">
               <ShieldCheck size={16} style={{ color: 'var(--nt-pink)' }} />
-              <span>Sin compromisos de permanencia. Cancela cuando quieras con 1 clic.</span>
+              <span>Sin compromisos de permanencia. Cancela cuando quieras en 1 clic.</span>
             </div>
 
           </div>
 
-          {/* Right Column: Editorial Hero Media (Natalia) */}
+          {/* Right Column: Editorial Online Platform & Live Session Mockup */}
           <div className="hero-media-wrap">
-            <div className="hero-image-frame">
-              <img 
-                src="/images/natalia/natalia-hero.jpg" 
-                alt="Natalia Riquelme - Entrenadora y Preparadora Física" 
-                loading="eager"
-                decoding="async"
-              />
-              <div className="hero-image-overlay" />
+            <div className="hero-online-card">
               
-              <div className="hero-coach-caption">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
-                  <Sparkles size={14} style={{ color: 'var(--nt-pink)' }} />
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', color: 'var(--nt-pink)', textTransform: 'uppercase' }}>
-                    Acompañamiento Real
+              {/* Card Top Bar */}
+              <div className="hero-online-topbar">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="live-pulse-dot"></span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--nt-pink)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    SESIÓN LIVE CON NATALIA
                   </span>
                 </div>
-                <h4>Natalia Riquelme</h4>
-                <p>+15 años de experiencia • Preparadora Física</p>
+                <span style={{ fontSize: '0.75rem', color: 'var(--nt-text-muted)', fontWeight: 600 }}>
+                  20:00 HRS
+                </span>
               </div>
+
+              {/* Video Player Frame with Native Ambient Overlay */}
+              <div className="hero-video-frame">
+                <video 
+                  src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498942/gap_1_m9t9xn.mp4" 
+                  autoPlay 
+                  muted 
+                  loop 
+                  playsInline 
+                  className="hero-video-element"
+                />
+                <div className="hero-video-overlay-gradient"></div>
+
+                {/* Floating Live Badge Top Left */}
+                <div className="hero-float-live-badge">
+                  <Radio size={14} style={{ color: '#FFFFFF' }} />
+                  <span>TRANSMISIÓN EN VIVO</span>
+                </div>
+
+                {/* Floating Streak Badge Top Right */}
+                <div className="hero-float-streak-badge">
+                  <Flame size={14} style={{ color: 'var(--nt-pink)' }} />
+                  <span>3 Semanas Activa</span>
+                </div>
+
+                {/* Bottom Overlay Info */}
+                <div className="hero-video-bottom-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                    <Sparkles size={13} style={{ color: 'var(--nt-pink)' }} />
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--nt-pink)', textTransform: 'uppercase' }}>
+                      Entrenamiento de Hoy
+                    </span>
+                  </div>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
+                    Fuerza Funcional & Estabilidad de Core
+                  </h4>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--nt-text-secondary)', margin: '0.2rem 0 0 0' }}>
+                    35 Minutos • Nivel Inicial a Intermedio • Desde Casa
+                  </p>
+                </div>
+              </div>
+
+              {/* Card Footer Strip */}
+              <div className="hero-online-footer">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.78rem', color: 'var(--nt-text-secondary)' }}>
+                  <Users size={15} style={{ color: 'var(--nt-pink)' }} />
+                  <span>Alumnas entrenando en vivo en el Team Naty</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E' }}></span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#22C55E' }}>SALA ABIERTA</span>
+                </div>
+              </div>
+
             </div>
           </div>
 

@@ -31,8 +31,7 @@ export default function ParadigmShiftSection() {
             De la frustración a un <span className="nt-highlight">entrenamiento sostenible</span>
           </h2>
           <p className="nt-subtitle">
-            No queremos que el ejercicio sea otra carga mental imposible de cumplir. 
-            Queremos que se convierta en la mejor parte de tu día.
+            No necesitas más motivación. Necesitas un sistema que puedas sostener y que se adapte a la vida que realmente tienes.
           </p>
         </div>
 
@@ -58,7 +57,7 @@ export default function ParadigmShiftSection() {
           {/* Col 2: DESPUÉS */}
           <div className="paradigm-col paradigm-after">
             <div className="paradigm-header">
-              <span className="paradigm-label">EL MÉTODO TEAM NATY ENTRENADORA</span>
+              <span className="paradigm-label">TEAM NATY ENTRENADORA</span>
               <h3>“Tengo un sistema que se adapta a mi vida”</h3>
             </div>
             <ul className="paradigm-list">

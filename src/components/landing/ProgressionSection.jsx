@@ -39,8 +39,8 @@ export default function ProgressionSection() {
             Tu entrenamiento <span className="nt-highlight">evoluciona contigo.</span>
           </h2>
           <p className="nt-subtitle">
-            No pretendemos que el día uno entrenes una hora entera. El secreto de la constancia 
-            es respetar tu punto de partida e ir construyendo capacidad paso a paso.
+            Empieza con lo que puedes sostener. Progresa cuando estés preparada. 
+            Sin metas forzadas ni la presión de tener que entrenar una hora completa para que valga.
           </p>
         </div>
 
@@ -60,9 +60,11 @@ export default function ProgressionSection() {
         </div>
 
         {/* Micro Clarification */}
-        <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--nt-text-muted)', fontSize: '0.88rem' }}>
-          * No todas las alumnas necesitan llegar a 60 minutos. Lo importante no es la cantidad de tiempo, sino la calidad del estímulo y que puedas sostenerlo en tu vida real.
-        </p>
+        <div style={{ maxWidth: '780px', margin: '2.5rem auto 0 auto', padding: '1.25rem 1.5rem', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--nt-border-subtle)', borderRadius: 'var(--nt-radius-md)', textAlign: 'center' }}>
+          <p style={{ margin: 0, color: 'var(--nt-text-secondary)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+            💡 <strong style={{ color: '#FFFFFF' }}>Progresión no significa entrenar más tiempo:</strong> Una mujer puede permanecer perfectamente en sesiones de 30 a 40 minutos y estar ganando fuerza, salud y energía real semana a semana. Tu constancia es tu mayor victoria.
+          </p>
+        </div>
 
       </div>
     </section>

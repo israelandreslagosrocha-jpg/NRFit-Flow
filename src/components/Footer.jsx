@@ -57,21 +57,22 @@ export default function Footer() {
             <h4 className="footer-col-title">Plataforma</h4>
             <ul className="footer-links-list-react">
               <li><Link href="/#como-funciona">Cómo Funciona</Link></li>
-              <li><Link href="/#natalia">Natalia Riquelme</Link></li>
-              <li><Link href="/#comunidad">Comunidad Team Naty</Link></li>
-              <li><Link href="/#oferta">Precio Fundador ($25.000)</Link></li>
+              <li><Link href="/#natalia">Natalia</Link></li>
+              <li><Link href="/#plataforma">Plataforma</Link></li>
+              <li><Link href="/#comunidad">Comunidad</Link></li>
+              <li><Link href="/#oferta">Precio Fundador</Link></li>
               <li><Link href="/#faq">Preguntas Frecuentes</Link></li>
             </ul>
           </div>
 
           {/* Nav Col 2: Alumnas */}
           <div className="footer-links-col">
-            <h4 className="footer-col-title">Portal Alumna</h4>
+            <h4 className="footer-col-title">Alumna</h4>
             <ul className="footer-links-list-react">
               <li><Link href="/alumna/para-ti">Mi Dashboard</Link></li>
-              <li><Link href="/alumna/explorar">Videoteca de Clases</Link></li>
-              <li><Link href="/alumna/progreso">Mi Constancia y Racha</Link></li>
-              <li><Link href="/alumna/comunidad">Comunidad de Apoyo</Link></li>
+              <li><Link href="/alumna/explorar">Videoteca</Link></li>
+              <li><Link href="/alumna/progreso">Mi Progreso</Link></li>
+              <li><Link href="/alumna/comunidad">Comunidad</Link></li>
             </ul>
           </div>
 
