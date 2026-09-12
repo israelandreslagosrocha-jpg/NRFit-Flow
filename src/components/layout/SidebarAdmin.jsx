@@ -1,9 +1,14 @@
+'use client';
+
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, CreditCard, DollarSign, Video, BarChart3, Settings } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { LayoutDashboard, Users, CreditCard, DollarSign, Video, BarChart3 } from 'lucide-react';
 import './SidebarAdmin.css';
 
 export default function SidebarAdmin() {
+  const pathname = usePathname();
+
   const adminItems = [
     { path: '/admin/dashboard', label: 'Dashboard Home', icon: LayoutDashboard },
     { path: '/admin/alumnas', label: 'Gestión Alumnas', icon: Users },
@@ -23,17 +28,16 @@ export default function SidebarAdmin() {
       <div className="sidebar-nav-list">
         {adminItems.map((item) => {
           const Icon = item.icon;
+          const isActive = pathname === item.path;
           return (
-            <NavLink
+            <Link
               key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `sidebar-item admin-item ${isActive ? 'active-admin' : ''}`
-              }
+              href={item.path}
+              className={`sidebar-item admin-item ${isActive ? 'active-admin' : ''}`}
             >
               <Icon size={20} className="sidebar-icon" />
               <span className="sidebar-label">{item.label}</span>
-            </NavLink>
+            </Link>
           );
         })}
       </div>

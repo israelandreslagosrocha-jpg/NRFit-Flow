@@ -2,11 +2,20 @@
 
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Shield, User, Flame, Bell, Sparkles } from 'lucide-react';
+import { Flame, Bell } from 'lucide-react';
 import './HeaderDashboard.css';
 
-export default function HeaderDashboard() {
-  const { role, toggleRole, activeSystem, changeSystem, user } = useAuth();
+export default function HeaderDashboard({ serverUser }) {
+  const { role: contextRole, activeSystem, changeSystem, user: contextUser } = useAuth();
+  
+  const user = serverUser ? {
+    ...contextUser,
+    id: serverUser.id,
+    name: serverUser.full_name || serverUser.email?.split('@')[0] || contextUser.name,
+    email: serverUser.email || contextUser.email,
+  } : contextUser;
+
+  const role = serverUser?.role || contextRole;
 
   return (
     <header className="dashboard-header glass-card">
@@ -31,24 +40,6 @@ export default function HeaderDashboard() {
       </div>
 
       <div className="header-right">
-        {/* Role Switcher Button for instant demo/testing */}
-        <button 
-          onClick={() => toggleRole()} 
-          className={`role-switcher-btn ${role === 'admin' ? 'is-admin' : 'is-alumna'}`}
-          title="Cambiar entre vista de Alumna y Administrador"
-        >
-          {role === 'alumna' ? (
-            <>
-              <Shield size={16} />
-              <span>Ver Modo Admin</span>
-            </>
-          ) : (
-            <>
-              <User size={16} />
-              <span>Ver Modo Alumna</span>
-            </>
-          )}
-        </button>
 
         {role === 'alumna' && (
           <div className="streak-badge" title="Tus días consecutivos entrenando">

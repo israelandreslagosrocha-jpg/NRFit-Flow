@@ -39,7 +39,6 @@ export default function App() {
                 <main style={{ flex: '1 0 auto', paddingTop: '80px' }}>
                   <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/metodo-40-3" element={<Home />} />
                     <Route path="/presencial" element={<Home />} />
                     <Route path="/post-parto" element={<Home />} />
                   </Routes>

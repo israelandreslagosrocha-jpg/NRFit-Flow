@@ -63,7 +63,7 @@ export default function AlumnaExplorar() {
           <h3>Especial Glúteos & Abdomen</h3>
           <p>4 rutinas de alta tensión muscular</p>
         </div>
-        <div className="collection-card col-metodo">
+        <div className="collection-card col-fuerza">
           <Flame size={20} className="col-icon" />
           <h3>Fuerza & Movilidad Exprés</h3>
           <p>Rutinas de 20 a 35 minutos de alta efectividad</p>

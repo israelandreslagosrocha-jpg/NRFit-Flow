@@ -6,11 +6,11 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // Roles: 'alumna' | 'admin'
-  const [role, setRole] = useState('alumna');
+  // Roles: strictly 'alumna' for student portal; admin is verified via server RLS
+  const role = 'alumna';
   
-  // Active training system for student: 'gap-en-casa' | 'metodo-40-3' | 'post-parto' | 'presencial'
-  const [activeSystem, setActiveSystem] = useState('gap-en-casa');
+  // Active training system for student: 'team-naty'
+  const [activeSystem, setActiveSystem] = useState('team-naty');
 
   // Simulated or Supabase user
   const [user, setUser] = useState({
@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
     level: 'Intermedio'
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   useEffect(() => {
     if (isSupabaseConfigured && supabase) {
@@ -44,10 +44,6 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const toggleRole = (newRole) => {
-    setRole(newRole || (role === 'alumna' ? 'admin' : 'alumna'));
-  };
-
   const changeSystem = (systemKey) => {
     const systemNames = {
       'team-naty': 'Team Naty Online'
@@ -59,8 +55,6 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       role,
-      setRole,
-      toggleRole,
       activeSystem,
       changeSystem,
       user,
