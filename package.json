@@ -9,6 +9,7 @@
     "build": "vite build",
     "build:next": "next build",
     "lint": "oxlint",
+    "test": "node --test src/tests/mercadopago-fase2.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {
