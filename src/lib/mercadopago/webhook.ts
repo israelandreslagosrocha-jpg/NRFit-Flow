@@ -10,10 +10,10 @@ export interface WebhookVerificationResult {
 
 /**
  * Validador criptográfico de firmas de Webhooks de Mercado Pago (Chile)
- * Especificación oficial:
+ * Especificación oficial Subscriptions Chile:
  * 1. Extraer x-signature (ts y v1)
- * 2. Extraer x-request-id y data.id
- * 3. Validar ventana anti-replay (máx 5 minutos de diferencia)
+ * 2. Extraer x-request-id y data.id (proveniente de la fuente contractual oficial)
+ * 3. Validar formato numérico de ts y aplicar ventana anti-replay (máx 5 minutos)
  * 4. Manifest canónico: "id:[data_id];request-id:[x-request-id];ts:[ts];"
  * 5. HMAC-SHA256 con MERCADOPAGO_WEBHOOK_SECRET
  * 6. Comparación en tiempo constante (timingSafeEqual)
@@ -51,11 +51,11 @@ export function verifyMercadoPagoSignature(params: {
   if (!params.dataId) {
     return {
       isValid: false,
-      error: 'Falta identificador data.id',
+      error: 'Falta identificador contractual data.id',
     };
   }
 
-  // Parsear ts y v1 de la cabecera x-signature (ej: "ts=1700000000,v1=abcdef...")
+  // Parsear ts y v1 de la cabecera x-signature (ej: "ts=1704908010,v1=abcdef...")
   const parts = params.xSignatureHeader.split(',');
   let ts: string | undefined;
   let v1: string | undefined;
@@ -74,13 +74,38 @@ export function verifyMercadoPagoSignature(params: {
     };
   }
 
-  // Protección anti-replay: verificar que el timestamp no sea más antiguo de 5 minutos (300 segundos)
+  // Validación estricta de formato del timestamp ts (Fail-closed)
+  // Subscriptions Chile envía ts en segundos (10 dígitos) o milisegundos (13 dígitos)
+  if (!/^\d{10}$|^\d{13}$/.test(ts)) {
+    return {
+      isValid: false,
+      error: 'Formato numérico de ts inválido o no reconocido (fail-closed)',
+      dataId: params.dataId,
+      requestId: params.xRequestIdHeader,
+      ts,
+    };
+  }
+
+  const numTs = Number(ts);
+  if (!Number.isFinite(numTs) || numTs <= 0) {
+    return {
+      isValid: false,
+      error: 'Timestamp ts no finito o menor a cero (fail-closed)',
+      dataId: params.dataId,
+      requestId: params.xRequestIdHeader,
+      ts,
+    };
+  }
+
+  // Normalizar a milisegundos según longitud
+  const eventTimeMs = ts.length === 10 ? numTs * 1000 : numTs;
+
+  // Ventana anti-replay de la aplicación: tolerancia de 5 minutos (300 segundos)
   const currentTime = params.nowMs ?? Date.now();
-  const eventTime = Number(ts) * 1000;
-  const timeDifference = Math.abs(currentTime - eventTime);
+  const timeDifference = Math.abs(currentTime - eventTimeMs);
   const maxAllowedToleranceMs = 5 * 60 * 1000; // 5 minutos
 
-  if (isNaN(timeDifference) || timeDifference > maxAllowedToleranceMs) {
+  if (timeDifference > maxAllowedToleranceMs) {
     return {
       isValid: false,
       error: `Timestamp de evento fuera de ventana permitida (diferencia: ${Math.round(timeDifference / 1000)}s)`,
@@ -91,7 +116,7 @@ export function verifyMercadoPagoSignature(params: {
   }
 
   // Construir manifest canónico de Mercado Pago
-  // Formato: id:[data.id];request-id:[x-request-id];ts:[ts];
+  // Formato oficial: id:[data.id];request-id:[x-request-id];ts:[ts];
   const manifest = `id:${params.dataId};request-id:${params.xRequestIdHeader};ts:${ts};`;
 
   // Calcular HMAC-SHA256
@@ -100,7 +125,7 @@ export function verifyMercadoPagoSignature(params: {
     .update(manifest)
     .digest('hex');
 
-  // Comparar de forma segura en tiempo constante para mitigar ataques de timing
+  // Comparación en tiempo constante para mitigar ataques de temporización
   const calculatedBuffer = Buffer.from(calculatedHash);
   const receivedBuffer = Buffer.from(v1);
 

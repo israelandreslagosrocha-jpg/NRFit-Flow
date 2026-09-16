@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyMercadoPagoSignature } from '../../../../lib/mercadopago/webhook';
-import { processWebhookEvent } from '../../../../lib/mercadopago/processor';
-import { createAdminClient } from '../../../../lib/supabase/admin';
+import { NextRequest, NextResponse } from 'next/server.js';
+import { verifyMercadoPagoSignature } from '../../../../lib/mercadopago/webhook.ts';
+import { processWebhookEvent } from '../../../../lib/mercadopago/processor.ts';
+import { createAdminClient } from '../../../../lib/supabase/admin.ts';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,16 +17,24 @@ export async function POST(req: NextRequest) {
       // Puede llegar sin body en algunos tipos de notificación
     }
 
-    // Extraer data.id y tipo de evento (prioridad searchParams, luego body)
-    const dataId = url.searchParams.get('data.id') || body.data?.id || body.id;
-    const eventType = url.searchParams.get('type') || url.searchParams.get('topic') || body.type || body.topic || 'unknown';
-    const action = body.action || url.searchParams.get('action') || 'notify';
+    // En el contrato oficial de Webhooks de Subscriptions Chile,
+    // data.id se envía en el query string de la petición HTTP (req.query['data.id'])
+    const dataId = url.searchParams.get('data.id');
+    const eventType = url.searchParams.get('type') || url.searchParams.get('topic') || body?.type || body?.topic || 'unknown';
+    const action = url.searchParams.get('action') || body?.action || 'notify';
+
+    if (!dataId) {
+      return NextResponse.json(
+        { error: 'Falta parámetro contractual data.id en query' },
+        { status: 400 }
+      );
+    }
 
     // 1. Verificación criptográfica estricta (Firma + Timestamp Anti-Replay)
     const verification = verifyMercadoPagoSignature({
       xSignatureHeader: xSignature,
       xRequestIdHeader: xRequestId,
-      dataId: dataId ? String(dataId) : null,
+      dataId: String(dataId),
     });
 
     if (!verification.isValid) {

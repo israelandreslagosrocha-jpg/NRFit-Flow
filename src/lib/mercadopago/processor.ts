@@ -1,4 +1,5 @@
 import * as defaultMpClient from './client.ts';
+import { logger } from '../logger.ts';
 
 /**
  * Lógica transaccional aislada del Webhook
@@ -28,6 +29,12 @@ export async function processWebhookEvent(params: {
     .single();
 
   if (existingEvent) {
+    logger.info('Inbound duplicate event skipped (Inbound Idempotency)', {
+      gateway_event_id: gatewayEventId,
+      event_type: eventType,
+      resource_id: dataId,
+      status_result: 'ALREADY_PROCESSED',
+    });
     return {
       status: 'ALREADY_PROCESSED',
       message: 'Evento ya procesado previamente (Inbound Idempotency)',
@@ -174,10 +181,37 @@ export async function processWebhookEvent(params: {
       return { status: 'IGNORED', message: 'Cobro sin membresía asociada' };
     }
 
+    // Validar que la membresía exista efectivamente en public.memberships
+    const { data: membership } = await supabase
+      .from('memberships')
+      .select('id, status')
+      .eq('id', membershipId)
+      .single();
+
+    if (!membership) {
+      await supabase.from('payment_events').insert({
+        gateway_event_id: gatewayEventId,
+        event_type: eventType,
+        resource_id: dataId,
+        payload,
+        status: 'IGNORED_NO_MEMBERSHIP',
+      });
+
+      logger.warn('Payment event with non-existent membership ignored', {
+        gateway_event_id: gatewayEventId,
+        canonical_payment_id: canonicalPaymentId,
+        event_type: eventType,
+        resource_id: dataId,
+        membership_id: membershipId,
+      });
+
+      return { status: 'IGNORED', message: 'Cobro sin membresía existente en base de datos' };
+    }
+
     if (canonical.status === 'approved') {
       // Cobro aprobado: Transacción Atómica
-      // 1. Insertar transacción financiera canónica
-      await supabase.from('payment_transactions').insert({
+      // 1. Insertar transacción financiera canónica con captura robusta de concurrencia (Código 23505)
+      const txInsertResult = await supabase.from('payment_transactions').insert({
         membership_id: membershipId,
         gateway_payment_id: canonicalPaymentId,
         amount: canonical.amount || 25000,
@@ -185,6 +219,43 @@ export async function processWebhookEvent(params: {
         status: 'APPROVED',
         payment_date: new Date().toISOString(),
       });
+
+      const txError = txInsertResult?.error;
+      if (txError) {
+        const isUniqueViolation =
+          txError.code === '23505' ||
+          String(txError.message || '').toLowerCase().includes('unique') ||
+          String(txError.message || '').toLowerCase().includes('duplicate key');
+
+        if (isUniqueViolation) {
+          logger.info('Concurrent duplicate transaction captured (unique_violation 23505)', {
+            gateway_event_id: gatewayEventId,
+            canonical_payment_id: canonicalPaymentId,
+            membership_id: membershipId,
+            status_result: 'ALREADY_PROCESSED',
+          });
+
+          await supabase.from('payment_events').insert({
+            gateway_event_id: gatewayEventId,
+            event_type: eventType,
+            resource_id: dataId,
+            payload,
+            status: 'ALREADY_PROCESSED',
+          });
+
+          return {
+            status: 'ALREADY_PROCESSED',
+            message: `Transacción financiera ${canonicalPaymentId} ya registrada concurrentemente (23505)`,
+          };
+        }
+
+        logger.error('Database error inserting payment transaction', {
+          canonical_payment_id: canonicalPaymentId,
+          membership_id: membershipId,
+          gateway_event_id: gatewayEventId,
+        }, txError);
+        throw txError;
+      }
 
       // 2. Actualizar estado de membresía a ACTIVE
       await supabase
@@ -208,6 +279,13 @@ export async function processWebhookEvent(params: {
           paymentDate: new Date().toLocaleDateString('es-CL'),
         },
       });
+
+      logger.info('Payment processed and active membership confirmed', {
+        gateway_event_id: gatewayEventId,
+        canonical_payment_id: canonicalPaymentId,
+        membership_id: membershipId,
+        status_result: 'PROCESSED',
+      });
     } else if (canonical.status === 'rejected') {
       // Cobro rechazado: la membresía pasa a PAST_DUE
       // (Mercado Pago reintentará el cobro según su motor; internamente Naty aplica su política de gracia)
@@ -228,6 +306,13 @@ export async function processWebhookEvent(params: {
         payload: {
           amount: canonical.amount || 25000,
         },
+      });
+
+      logger.warn('Payment rejected, membership transitioned to PAST_DUE', {
+        gateway_event_id: gatewayEventId,
+        canonical_payment_id: canonicalPaymentId,
+        membership_id: membershipId,
+        status_result: 'PROCESSED',
       });
     }
 
@@ -250,6 +335,12 @@ export async function processWebhookEvent(params: {
     resource_id: dataId,
     payload,
     status: 'IGNORED_TOPIC',
+  });
+
+  logger.info('Non-transactional webhook topic ignored', {
+    gateway_event_id: gatewayEventId,
+    event_type: eventType,
+    resource_id: dataId,
   });
 
   return { status: 'IGNORED', message: `Tópico ${eventType} no requiere acción transaccional` };

@@ -45,7 +45,10 @@ export interface AccessEvaluation {
  *    - Requiere inicio válido (start_date <= now) y (current_period_end ?? end_date) en el futuro.
  *    - NO exige trial_ends_at.
  *    - FALLA CERRADO: Si faltan ambas fechas de fin, se deniega acceso.
- * 3. PAUSED, PAST_DUE, PENDING_PAYMENT, CANCELLED, EXPIRED, NO_MEMBERSHIP:
+ * 3. CANCELLED:
+ *    - Si la suscripción fue cancelada pero current_period_end >= now, mantiene acceso (status: ACTIVE) hasta término de ciclo.
+ *    - Si no tiene ciclo pagado o ya venció, se deniega acceso.
+ * 4. PAUSED, PAST_DUE, PENDING_PAYMENT, EXPIRED, NO_MEMBERSHIP:
  *    - Denegación estricta de acceso sin excepciones.
  */
 export function validateMembershipDates(
@@ -118,7 +121,33 @@ export function validateMembershipDates(
     };
   }
 
-  // 5. Otros estados bloqueados: PENDING_PAYMENT, CANCELLED, EXPIRED
+  // 5. Estado CANCELLED:
+  // Si la suscripción fue cancelada pero el período actual ya fue pagado (current_period_end >= now),
+  // la alumna retiene acceso legítimo hasta el término del ciclo pagado.
+  // Si no tiene current_period_end o ya venció, se bloquea el acceso.
+  if (statusUpper === 'CANCELLED') {
+    const isStarted = membership.start_date != null && new Date(membership.start_date) <= now;
+    const periodEnd = membership.current_period_end ?? membership.end_date;
+    const isPeriodActive = periodEnd != null && new Date(periodEnd) >= now;
+
+    if (isStarted && isPeriodActive) {
+      return {
+        hasAccess: true,
+        status: 'ACTIVE',
+        reason: 'Suscripción cancelada con período pagado vigente',
+        membership,
+      };
+    }
+
+    return {
+      hasAccess: false,
+      status: 'CANCELLED',
+      reason: 'Suscripción cancelada y sin período pagado vigente',
+      membership,
+    };
+  }
+
+  // 6. Otros estados bloqueados: PENDING_PAYMENT, EXPIRED
   return {
     hasAccess: false,
     status: statusUpper,

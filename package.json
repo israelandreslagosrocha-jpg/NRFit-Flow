@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "oxlint",
-    "test": "node --test src/tests/mercadopago-fase2.test.ts",
+    "test": "node --test src/tests/mercadopago-fase2.test.ts src/tests/m09-sandbox-audit.test.ts",
+    "test:sandbox": "node --test src/tests/m09-sandbox-audit.test.ts",
     "test:integration": "node --test src/tests/m08-integration.test.ts"
   },
   "dependencies": {

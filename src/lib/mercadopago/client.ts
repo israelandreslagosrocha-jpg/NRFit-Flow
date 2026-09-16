@@ -19,7 +19,8 @@ function getAccessToken(): string {
 /**
  * Crea una suscripción mensual con 7 días de prueba gratuita en Mercado Pago Chile (/preapproval)
  * Oficial: auto_recurring.free_trial: { frequency: 7, frequency_type: 'days' }, $25.000 CLP
- * external_reference: ID único e inequívoco de la membresía en Supabase
+ * external_reference: ID único de correlación con la membresía en Supabase (NO es garantía contractual de idempotencia).
+ * REGLA: No enviar X-Idempotency-Key (no documentado para /preapproval en la API oficial de Mercado Pago).
  */
 export async function createSubscription(params: {
   email: string;
