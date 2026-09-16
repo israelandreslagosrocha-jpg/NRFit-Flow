@@ -3,19 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Compass, Calendar, Film, TrendingUp, Users } from 'lucide-react';
+import { Sparkles, CreditCard } from 'lucide-react';
 import './SidebarAlumna.css';
 
 export default function SidebarAlumna() {
   const pathname = usePathname();
 
   const navItems = [
-    { path: '/alumna/para-ti', label: 'Para ti', icon: Sparkles },
-    { path: '/alumna/explorar', label: 'Explorar', icon: Compass },
-    { path: '/alumna/mi-plan', label: 'Mi plan', icon: Calendar },
-    { path: '/alumna/biblioteca', label: 'Biblioteca', icon: Film },
-    { path: '/alumna/progreso', label: 'Progreso', icon: TrendingUp },
-    { path: '/alumna/comunidad', label: 'Comunidad', icon: Users },
+    { path: '/para-ti', label: 'Para ti', icon: Sparkles },
+    { path: '/checkout', label: 'Membresía', icon: CreditCard },
   ];
 
   return (

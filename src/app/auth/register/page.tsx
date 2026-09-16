@@ -62,7 +62,7 @@ function RegisterForm() {
 
       // Si Supabase no requiere confirmación de email y devuelve sesión directa
       if (data?.session) {
-        router.push('/para-ti');
+        router.push('/checkout');
         router.refresh();
       } else {
         setSuccessMsg('¡Cuenta creada con éxito! Revisa tu bandeja de entrada para confirmar tu correo e iniciar tu prueba.');

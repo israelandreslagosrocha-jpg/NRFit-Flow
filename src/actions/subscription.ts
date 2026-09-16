@@ -23,30 +23,18 @@ export async function createCheckoutSubscriptionAction() {
 
   const adminClient = createAdminClient();
 
-  // 1. Obtener o crear el perfil de alumna en students
-  const { data: student } = await adminClient
-    .from('students')
-    .select('id')
-    .eq('profile_id', user.id)
-    .single();
+  // 1. Resolver jerarquía de identidad: auth.users.id -> profiles.user_id -> students.profile_id
+  const { ensureStudentProfile } = await import('../lib/supabase/profile-helpers');
+  const resolution = await ensureStudentProfile(adminClient, user);
 
-  let studentId = student?.id;
-
-  if (!studentId) {
-    const { data: newStudent, error: studentError } = await adminClient
-      .from('students')
-      .insert({ profile_id: user.id })
-      .select('id')
-      .single();
-
-    if (studentError || !newStudent) {
-      return {
-        success: false,
-        error: 'No se pudo vincular el perfil de alumna.',
-      };
-    }
-    studentId = newStudent.id;
+  if (!resolution.student) {
+    return {
+      success: false,
+      error: 'No se pudo vincular el perfil de alumna.',
+    };
   }
+
+  const studentId = resolution.student.id;
 
   // 2. Obtener el plan de Membresía Mensual ($25.000 CLP)
   const { data: plan } = await adminClient
@@ -135,15 +123,13 @@ export async function cancelSubscriptionAction() {
 
   const adminClient = createAdminClient();
 
-  // Buscar la membresía activa o en trial de la alumna
-  const { data: student } = await adminClient
-    .from('students')
-    .select('id')
-    .eq('profile_id', user.id)
-    .single();
+  // Buscar la ficha de alumna respetando la jerarquía de identidades
+  const { getStudentProfileByUserId } = await import('../lib/supabase/profile-helpers');
+  const resolution = await getStudentProfileByUserId(adminClient, user.id);
+  const student = resolution.student;
 
   if (!student) {
-    return { success: false, error: 'Perfil no encontrado' };
+    return { success: false, error: 'Perfil de alumna no encontrado' };
   }
 
   const { data: membership } = await adminClient

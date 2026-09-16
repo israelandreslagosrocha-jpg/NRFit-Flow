@@ -61,7 +61,7 @@ export default function Navbar() {
           </ul>
 
           <div className="nav-actions">
-            <Link href="/alumna/para-ti" className="btn btn-secondary btn-sm">
+            <Link href="/para-ti" className="btn btn-secondary btn-sm">
               MI DASHBOARD
             </Link>
             <Link href="/#oferta" className="btn btn-primary btn-sm" style={{ background: 'var(--nt-pink, #FF2D78)', borderColor: 'var(--nt-pink, #FF2D78)' }}>
@@ -102,7 +102,7 @@ export default function Navbar() {
               PROBAR 7 DÍAS GRATIS
             </Link>
             <Link
-              href="/alumna/para-ti"
+              href="/para-ti"
               className="btn btn-secondary btn-full text-center"
               onClick={() => setIsOpen(false)}
             >

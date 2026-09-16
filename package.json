@@ -1,16 +1,15 @@
 {
-  "name": "temp-vite",
+  "name": "naty-entrenadora",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:next": "next dev",
-    "build": "vite build",
-    "build:next": "next build",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "oxlint",
     "test": "node --test src/tests/mercadopago-fase2.test.ts",
-    "preview": "vite preview"
+    "test:integration": "node --test src/tests/m08-integration.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

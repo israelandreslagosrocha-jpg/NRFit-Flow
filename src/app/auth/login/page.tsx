@@ -38,7 +38,40 @@ export default function LoginPage() {
       }
 
       if (data?.session) {
-        router.push('/para-ti');
+        // Evaluar membresía de la usuaria para decidir destino
+        const { data: memberships } = await supabase
+          .from('memberships')
+          .select('status, start_date, trial_ends_at, current_period_end, end_date')
+          .order('created_at', { ascending: false });
+
+        const now = new Date();
+        const hasValidAccess = memberships?.some((m) => {
+          const status = (m.status || '').toUpperCase();
+          if (status === 'TRIAL') {
+            return (
+              m.start_date != null &&
+              new Date(m.start_date) <= now &&
+              m.trial_ends_at != null &&
+              new Date(m.trial_ends_at) >= now
+            );
+          }
+          if (status === 'ACTIVE') {
+            const periodEnd = m.current_period_end ?? m.end_date;
+            return (
+              m.start_date != null &&
+              new Date(m.start_date) <= now &&
+              periodEnd != null &&
+              new Date(periodEnd) >= now
+            );
+          }
+          return false;
+        });
+
+        if (hasValidAccess) {
+          router.push('/para-ti');
+        } else {
+          router.push('/checkout');
+        }
         router.refresh();
       }
     } catch {

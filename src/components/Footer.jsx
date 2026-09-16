@@ -65,14 +65,14 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Nav Col 2: Alumnas */}
+          {/* Nav Col 2: Alumna */}
           <div className="footer-links-col">
             <h4 className="footer-col-title">Alumna</h4>
             <ul className="footer-links-list-react">
-              <li><Link href="/alumna/para-ti">Mi Dashboard</Link></li>
-              <li><Link href="/alumna/explorar">Videoteca</Link></li>
-              <li><Link href="/alumna/progreso">Mi Progreso</Link></li>
-              <li><Link href="/alumna/comunidad">Comunidad</Link></li>
+              <li><Link href="/para-ti">Mi Dashboard</Link></li>
+              <li><Link href="/checkout">Membresía</Link></li>
+              <li><Link href="/auth/login">Iniciar Sesión</Link></li>
+              <li><Link href="/auth/register">Prueba 7 Días</Link></li>
             </ul>
           </div>
 
@@ -100,8 +100,11 @@ export default function Footer() {
       <div className="footer-bottom-react">
         <div className="container footer-bottom-flex">
           <p className="copyright-text">&copy; {new Date().getFullYear()} Naty Entrenadora (www.natyentrenadora.cl). Todos los derechos reservados.</p>
-          <div className="legal-links">
-            <span style={{ fontSize: '0.85rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>Pagos seguros • Privacidad protegida</span>
+          <div className="legal-links" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <Link href="/terminos" style={{ fontSize: '0.8rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>Términos del Servicio</Link>
+            <Link href="/privacidad" style={{ fontSize: '0.8rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>Privacidad</Link>
+            <Link href="/cookies" style={{ fontSize: '0.8rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>Cookies</Link>
+            <Link href="/cancelacion" style={{ fontSize: '0.8rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>Política de Cancelación</Link>
           </div>
         </div>
       </div>

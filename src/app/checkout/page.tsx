@@ -112,7 +112,7 @@ export default function CheckoutPage() {
         <div className="cancellation-note">
           <Info size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
           <span>
-            <strong>Sin compromiso:</strong> Puedes cancelar antes de tu próximo cobro para evitar futuras renovaciones. Si cancelas durante los 7 días de prueba, no se realizará ningún cobro.
+            <strong>Sin compromiso:</strong> Puedes cancelar antes de tu próximo cobro para evitar futuras renovaciones. Si cancelas durante los 7 días de prueba, no se realizará ningún cobro. Consulta nuestra <Link href="/cancelacion" className="terms-link">política de cancelación</Link>.
           </span>
         </div>
 
