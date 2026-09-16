@@ -6,7 +6,7 @@ import { verifyMercadoPagoSignature } from '../lib/mercadopago/webhook.ts';
 import { processWebhookEvent } from '../lib/mercadopago/processor.ts';
 import { reconcileMemberships } from '../lib/mercadopago/reconciler.ts';
 import { validateMembershipDates, type MembershipRecord } from '../lib/supabase/membership-helpers.ts';
-import { logger, sanitizeValue, formatLog } from '../lib/logger.ts';
+import { sanitizeValue, formatLog } from '../lib/logger.ts';
 import { setMockSmtpFailure } from '../lib/email/mailer.ts';
 import { processEmailOutbox } from '../lib/email/outbox-worker.ts';
 import { POST as webhookRouteHandler } from '../app/api/webhooks/mercadopago/route.ts';
@@ -687,8 +687,6 @@ describe('FASE M-09.1 — Suite de Certificación Sandbox/Staging', () => {
 
   // 10. Seguridad de Endpoints Cron
   describe('10. Seguridad de Endpoints Cron (/api/cron/*)', () => {
-    const originalCronSecret = process.env.CRON_SECRET;
-
     beforeEach(() => {
       process.env.CRON_SECRET = 'audit_cron_secret_777';
     });
