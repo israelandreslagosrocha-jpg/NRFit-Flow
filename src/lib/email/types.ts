@@ -14,12 +14,25 @@ export interface EmailOutboxRecord {
   subject: string;
   template_id: EmailTemplateId;
   payload: Record<string, any>;
-  status: 'PENDING' | 'SENT' | 'FAILED';
+  status: 'PENDING' | 'PROCESSING' | 'SENT' | 'FAILED' | 'DEAD_LETTER';
   attempts: number;
   max_attempts: number;
+  claimed_at?: string | null;
+  claimed_by?: string | null;
+  next_attempt_at?: string | null;
   last_error?: string | null;
   created_at: string;
   processed_at?: string | null;
+}
+
+/**
+ * Genera un Message-ID RFC 5322 determinista preservado entre reintentos
+ * para trazabilidad y deduplicación downstream en MTAs receptores.
+ */
+export function generateDeterministicMessageId(outboxId: string, dedupeKey: string): string {
+  const cleanId = outboxId.replace(/[^a-zA-Z0-9-]/g, '');
+  const cleanKey = dedupeKey.replace(/[^a-zA-Z0-9_-]/g, '_');
+  return `<${cleanId}.${cleanKey}@natyentrenadora.com>`;
 }
 
 export interface EmailTemplateContent {

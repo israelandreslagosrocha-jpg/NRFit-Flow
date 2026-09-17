@@ -5,12 +5,17 @@ export interface SendEmailParams {
   to: string;
   templateId: EmailTemplateId;
   payload: Record<string, any>;
+  messageId?: string;
 }
 
 export interface SendEmailResult {
   success: boolean;
+  status?: 'ACCEPTED_BY_SMTP' | 'FAILED';
   messageId?: string;
   error?: string;
+  protocol?: string;
+  cipher?: string;
+  response?: string;
 }
 
 // Hook de testing para simular caídas del servidor SMTP (Caso H)
@@ -23,12 +28,14 @@ export function setMockSmtpFailure(fail: boolean) {
 /**
  * Envío de correos mediante Hostinger SMTP (smtp.hostinger.com)
  * Casilla oficial: team@natyentrenadora.com
+ * Soporta TLS 1.2+ con validación estricta de certificados x509 (rejectUnauthorized: true).
  */
 export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
   // Verificación de simulación para pruebas de tolerancia a fallos
   if (mockSmtpFailure) {
     return {
       success: false,
+      status: 'FAILED',
       error: 'SMTP_CONNECTION_TIMEOUT: No se pudo conectar con smtp.hostinger.com:465',
     };
   }
@@ -39,11 +46,14 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   const user = process.env.SMTP_USER || 'team@natyentrenadora.com';
   const pass = process.env.SMTP_PASS;
 
+  const msgId = params.messageId || `<msg-${Date.now()}.${Math.random().toString(36).slice(2)}@natyentrenadora.com>`;
+
   // Si no hay credenciales configuradas (modo local/test), simular despacho exitoso
   if (!pass) {
     return {
       success: true,
-      messageId: `mock-msg-${Date.now()}`,
+      status: 'ACCEPTED_BY_SMTP',
+      messageId: msgId,
     };
   }
 
@@ -53,7 +63,9 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
         {
           host,
           port,
-          rejectUnauthorized: false,
+          servername: host,
+          minVersion: 'TLSv1.2',
+          rejectUnauthorized: true, // Validación criptográfica estricta de certificados x509
         },
         () => {
           let step = 0;
@@ -94,6 +106,8 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
                 `From: "Team Naty Entrenadora" <${user}>`,
                 `To: <${params.to}>`,
                 `Subject: ${subject}`,
+                `Message-ID: ${msgId}`,
+                `Date: ${new Date().toUTCString()}`,
                 'MIME-Version: 1.0',
                 'Content-Type: text/html; charset=UTF-8',
                 '',
@@ -105,14 +119,21 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
               step++;
               send('QUIT');
               socket.end();
+              const protocol = socket.getProtocol?.() || 'TLS';
+              const cipher = socket.getCipher?.()?.name || 'unknown';
               resolve({
                 success: true,
-                messageId: `hostinger-${Date.now()}`,
+                status: 'ACCEPTED_BY_SMTP',
+                messageId: msgId,
+                protocol,
+                cipher,
+                response: lastLine,
               });
             } else if (lastLine.startsWith('4') || lastLine.startsWith('5')) {
               socket.destroy();
               resolve({
                 success: false,
+                status: 'FAILED',
                 error: `Error SMTP (${lastLine.slice(0, 3)}): ${lastLine}`,
               });
             }
@@ -121,6 +142,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
           socket.on('error', (err) => {
             resolve({
               success: false,
+              status: 'FAILED',
               error: `Error de socket SMTP: ${err.message}`,
             });
           });
@@ -129,6 +151,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
             socket.destroy();
             resolve({
               success: false,
+              status: 'FAILED',
               error: 'Timeout de conexión con servidor Hostinger SMTP',
             });
           });
@@ -138,14 +161,17 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
       socket.on('error', (err) => {
         resolve({
           success: false,
+          status: 'FAILED',
           error: `Error de conexión TLS: ${err.message}`,
         });
       });
     } catch (err: any) {
       resolve({
         success: false,
+        status: 'FAILED',
         error: `Excepción en mailer: ${err?.message || String(err)}`,
       });
     }
   });
 }
+

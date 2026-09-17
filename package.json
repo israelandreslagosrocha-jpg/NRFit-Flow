@@ -11,7 +11,8 @@
     "test": "node --test src/tests/mercadopago-fase2.test.ts src/tests/m09-sandbox-audit.test.ts",
     "test:sandbox": "node --test src/tests/m09-sandbox-audit.test.ts",
     "test:flow": "node --test src/tests/m09r-flow-audit.test.ts",
-    "test:integration": "node --test src/tests/m08-integration.test.ts"
+    "test:integration": "node --test src/tests/m08-integration.test.ts",
+    "test:outbox": "node --test src/tests/m09_2-outbox-concurrency.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
