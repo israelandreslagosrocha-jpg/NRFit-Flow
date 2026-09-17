@@ -29,8 +29,9 @@ export interface UpdateEmailStatusParams {
  * ni el estado de una membresía. Su única función es registrar el estado 'SENT', 'FAILED'
  * o 'DEAD_LETTER' en la tabla email_outbox.
  * 
- * Semántica: At-least-once delivery con mitigación activa de duplicados
- * y header Message-ID determinista RFC 5322 preservado entre retries.
+ * Semántica: At-least-once processing con mitigación activa de duplicados
+ * y header Message-ID determinista RFC 5322 preservado entre retries
+ * (sin asumir que el MTA receptor elimine duplicados).
  */
 export async function processEmailOutbox(
   fetchClaimedEmails: () => Promise<EmailOutboxRecord[]>,

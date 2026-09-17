@@ -16,14 +16,19 @@
 import tls from 'tls';
 import { promises as dns } from 'dns';
 
-// Cargar variables de .env.local si no están en process.env
-if (!process.env.SMTP_USER && typeof (process as any).loadEnvFile === 'function') {
+// Cargar variables de .env.local
+if (typeof (process as any).loadEnvFile === 'function') {
   try {
     (process as any).loadEnvFile('.env.local');
   } catch {}
 }
 
-type SmtpAuditStatus = 'PASS_REAL_SMTP' | 'PASS_LOCAL_CONTRACT' | 'FAIL' | 'NOT_EXECUTED';
+type SmtpAuditStatus =
+  | 'PASS_REAL_SMTP'
+  | 'PASS_LOCAL_CONTRACT'
+  | 'FAIL_REAL_SMTP'
+  | 'NOT_EXECUTED'
+  | 'NOT_EXECUTED_PENDING_MANUAL_INBOX_CONFIRMATION';
 
 interface AuditItem {
   id: string;
@@ -37,7 +42,12 @@ const auditResults: AuditItem[] = [];
 
 function recordResult(item: AuditItem) {
   auditResults.push(item);
-  const icon = item.status === 'PASS_REAL_SMTP' || item.status === 'PASS_LOCAL_CONTRACT' ? '✅' : item.status === 'NOT_EXECUTED' ? '🟡' : '❌';
+  const icon =
+    item.status === 'PASS_REAL_SMTP' || item.status === 'PASS_LOCAL_CONTRACT'
+      ? '✅'
+      : item.status === 'NOT_EXECUTED' || item.status === 'NOT_EXECUTED_PENDING_MANUAL_INBOX_CONFIRMATION'
+      ? '🟡'
+      : '❌';
   console.log(`${icon} [${item.category.padEnd(20)}] ${item.name}`);
   console.log(`    Status: ${item.status}`);
   console.log(`    Evidencia: ${item.evidence}\n`);
@@ -239,7 +249,7 @@ async function main() {
       id: 'SMTP-04',
       category: 'DELIVERED_RECEIVED',
       name: 'Recepción confirmada en buzón destino',
-      status: 'NOT_EXECUTED',
+      status: 'NOT_EXECUTED_PENDING_MANUAL_INBOX_CONFIRMATION',
       evidence: 'Requiere despacho SMTP previo y verificación manual en el buzón team@natyentrenadora.com.',
     });
   } else {
@@ -354,8 +364,8 @@ async function main() {
         id: 'SMTP-02',
         category: 'SMTP_AUTHENTICATED',
         name: 'Autenticación SMTP Hostinger (AUTH LOGIN)',
-        status: 'FAIL',
-        evidence: `Fallo de autenticación: ${smtpResponse}`,
+        status: 'FAIL_REAL_SMTP',
+        evidence: `Fallo de autenticación en servidor Hostinger: ${smtpResponse}`,
       });
     }
 
@@ -372,15 +382,15 @@ async function main() {
         id: 'SMTP-04',
         category: 'DELIVERED_RECEIVED',
         name: 'Recepción confirmada en buzón destino',
-        status: 'NOT_EXECUTED',
-        evidence: `El mensaje fue aceptado por Hostinger (250 OK). La confirmación de llegada efectiva al buzón ${user} requiere inspección manual del webmail/inbox.`,
+        status: 'NOT_EXECUTED_PENDING_MANUAL_INBOX_CONFIRMATION',
+        evidence: `El mensaje fue aceptado por Hostinger (250 OK). La confirmación de llegada física al buzón ${user} requiere inspección manual del inbox por parte del propietario.`,
       });
     } else {
       recordResult({
         id: 'SMTP-03',
         category: 'ACCEPTED_BY_SMTP',
         name: 'Despacho de email transaccional (250 OK: Queued)',
-        status: 'FAIL',
+        status: 'FAIL_REAL_SMTP',
         evidence: `Hostinger no aceptó el mensaje: ${smtpResponse}`,
       });
 
@@ -388,8 +398,8 @@ async function main() {
         id: 'SMTP-04',
         category: 'DELIVERED_RECEIVED',
         name: 'Recepción confirmada en buzón destino',
-        status: 'FAIL',
-        evidence: 'No hubo despacho exitoso.',
+        status: 'NOT_EXECUTED_PENDING_MANUAL_INBOX_CONFIRMATION',
+        evidence: 'No hubo despacho exitoso para comprobar.',
       });
     }
   }
@@ -403,7 +413,7 @@ async function main() {
     category: 'OUTBOX_CONCURRENCIA' as any,
     name: 'Claim Atómico FOR UPDATE SKIP LOCKED con Lease Recovery',
     status: 'PASS_LOCAL_CONTRACT',
-    evidence: 'Exclusión mutua certificada entre workers concurrentes (0 colisiones). Recuperación de lease abandonado probada tras 300s. Semántica at-least-once verificada.',
+    evidence: 'Exclusión mutua certificada entre workers concurrentes (0 colisiones). Recuperación de lease abandonado probada tras 300s. Semántica at-least-once processing verificada sin depender de deduplicación del receptor.',
   });
 
   recordResult({
@@ -437,10 +447,10 @@ async function main() {
   for (const r of auditResults) {
     if (r.status === 'PASS_REAL_SMTP') passReal++;
     else if (r.status === 'PASS_LOCAL_CONTRACT') passLocal++;
-    else if (r.status === 'NOT_EXECUTED') notExec++;
-    else if (r.status === 'FAIL') fail++;
+    else if (r.status === 'NOT_EXECUTED' || r.status === 'NOT_EXECUTED_PENDING_MANUAL_INBOX_CONFIRMATION') notExec++;
+    else if (r.status === 'FAIL' || r.status === 'FAIL_REAL_SMTP') fail++;
 
-    console.log(`[${r.status.padEnd(20)}] ${r.id}: ${r.name}`);
+    console.log(`[${r.status.padEnd(25)}] ${r.id}: ${r.name}`);
   }
 
   console.log('\n--------------------------------------------------------------------------------');

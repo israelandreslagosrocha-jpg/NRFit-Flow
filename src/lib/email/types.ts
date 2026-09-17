@@ -27,7 +27,9 @@ export interface EmailOutboxRecord {
 
 /**
  * Genera un Message-ID RFC 5322 determinista preservado entre reintentos
- * para trazabilidad y deduplicación downstream en MTAs receptores.
+ * para trazabilidad y mitigación de duplicados downstream.
+ * NOTA DE ARQUITECTURA: La semántica del sistema es estrictamente at-least-once processing;
+ * no se asume ni se garantiza que el MTA receptor elimine o deduplique mensajes.
  */
 export function generateDeterministicMessageId(outboxId: string, dedupeKey: string): string {
   const cleanId = outboxId.replace(/[^a-zA-Z0-9-]/g, '');
