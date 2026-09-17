@@ -282,30 +282,38 @@ async function main() {
               const lines = buffer.trim().split('\n');
               const lastLine = lines[lines.length - 1] || '';
 
-              if (step === 0 && lastLine.startsWith('220')) {
+              if (step === 0 && (lastLine.startsWith('220 ') || lastLine.startsWith('220'))) {
                 step++;
+                buffer = '';
                 send('EHLO natyentrenadora.com');
-              } else if (step === 1 && lastLine.startsWith('250')) {
+              } else if (step === 1 && lastLine.startsWith('250 ')) {
                 step++;
+                buffer = '';
                 send('AUTH LOGIN');
               } else if (step === 2 && lastLine.startsWith('334')) {
                 step++;
+                buffer = '';
                 send(Buffer.from(user).toString('base64'));
               } else if (step === 3 && lastLine.startsWith('334')) {
                 step++;
+                buffer = '';
                 send(Buffer.from(pass).toString('base64'));
               } else if (step === 4 && lastLine.startsWith('235')) {
                 authSuccess = true;
                 step++;
+                buffer = '';
                 send(`MAIL FROM:<${user}>`);
               } else if (step === 5 && lastLine.startsWith('250')) {
                 step++;
+                buffer = '';
                 send(`RCPT TO:<${user}>`); // Envío exclusivo a la casilla oficial de control
               } else if (step === 6 && lastLine.startsWith('250')) {
                 step++;
+                buffer = '';
                 send('DATA');
               } else if (step === 7 && lastLine.startsWith('354')) {
                 step++;
+                buffer = '';
                 const emailContent = [
                   `From: "Team Naty Entrenadora" <${user}>`,
                   `To: <${user}>`,
@@ -323,6 +331,7 @@ async function main() {
                 acceptedBySmtp = true;
                 smtpResponse = lastLine;
                 step++;
+                buffer = '';
                 send('QUIT');
                 socket.end();
                 resolve();
