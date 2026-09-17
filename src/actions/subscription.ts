@@ -2,12 +2,12 @@
 
 import { createClient } from '../lib/supabase/server';
 import { createAdminClient } from '../lib/supabase/admin';
-import { createSubscription, cancelSubscription } from '../lib/mercadopago/client';
+import { getPaymentGateway } from '../lib/payments';
 
 /**
- * Server Action para iniciar el checkout de suscripción con Mercado Pago
- * Ciclo de vida: La membresía se crea en estado 'PENDING_PAYMENT'.
- * NO otorga acceso hasta que Mercado Pago confirme 'authorized' vía webhook.
+ * Server Action para iniciar el checkout de suscripción con Flow Chile (Fase M-09R)
+ * Arquitectura desacoplada: Consume PaymentGateway (soporta AUTOMATIC_RECURRING y SUBSCRIPTION_PAYMENT_LINK).
+ * Jerarquía de identidad: auth.users.id -> profiles.user_id -> students.profile_id -> Flow Customer (externalId = student.id)
  */
 export async function createCheckoutSubscriptionAction() {
   const supabase = await createClient();
@@ -35,8 +35,9 @@ export async function createCheckoutSubscriptionAction() {
   }
 
   const studentId = resolution.student.id;
+  const studentName = resolution.profile?.full_name || 'Alumna';
 
-  // 2. Obtener el plan de Membresía Mensual ($25.000 CLP)
+  // 2. Obtener plan mensual ($25.000 CLP)
   const { data: plan } = await adminClient
     .from('plans')
     .select('id, price')
@@ -48,7 +49,7 @@ export async function createCheckoutSubscriptionAction() {
   const planId = plan?.id || '00000000-0000-0000-0000-000000000001';
   const price = plan?.price || 25000;
 
-  // 3. Crear registro de membresía en PENDING_PAYMENT (Anclaje Inequívoco)
+  // 3. Crear registro de membresía en PENDING_PAYMENT (Anclaje Inequívoco, $0 hoy)
   const startDate = new Date().toISOString().split('T')[0];
   const endDate = new Date(Date.now() + 37 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 7 trial + 30 ciclo
 
@@ -63,6 +64,7 @@ export async function createCheckoutSubscriptionAction() {
       end_date: endDate,
       auto_renew: true,
       renewal_mode: 'AUTO_CHARGE',
+      gateway: 'FLOW',
     })
     .select('id')
     .single();
@@ -74,44 +76,95 @@ export async function createCheckoutSubscriptionAction() {
     };
   }
 
-  // 4. Invocar API de Mercado Pago con external_reference = membership.id
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const returnUrl = `${appUrl}/checkout/success?membership_id=${membership.id}`;
+  // 4. Invocar pasarela neutra (PaymentGateway / Flow)
+  const gateway = getPaymentGateway();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://natyentrenadora.com';
 
   try {
-    const mpResponse = await createSubscription({
+    // 4.1 Asegurar cliente en Flow vinculado a student.id (1:1 estable)
+    const customer = await gateway.createCustomer({
       email: user.email,
-      membershipId: membership.id,
-      returnUrl,
+      name: studentName,
+      externalId: studentId, // Corrección 1: externalId = student.id
     });
 
-    // Guardar el gateway_subscription_id generado
+    // Guardar referencia del cliente
     await adminClient
       .from('memberships')
       .update({
-        gateway_subscription_id: mpResponse.id,
-        gateway_status: mpResponse.status || 'pending',
+        gateway_customer_id: customer.id,
       })
       .eq('id', membership.id);
 
+    // 4.2 Si la capacidad de Cargo Automático está activa, enrolar tarjeta
+    if (gateway.mode === 'AUTOMATIC_RECURRING') {
+      const returnUrl = `${appUrl}/checkout/flow-return?mem_ref=${membership.id}`;
+      const registerRes = await gateway.registerPaymentMethod({
+        customerId: customer.id,
+        returnUrl,
+      });
+
+      return {
+        success: true,
+        mode: 'AUTOMATIC_RECURRING',
+        redirectUrl: registerRes.redirectUrl,
+      };
+    }
+
+    // 4.3 Modo SUBSCRIPTION_PAYMENT_LINK (Suscripción sin tarjeta forzada)
+    // Se crea la suscripción con 7 días de trial. Al vencer, Flow emite factura con paymentLink
+    const flowPlanId = process.env.FLOW_PLAN_ID || 'naty-mensual-25k-v1';
+    const sub = await gateway.createSubscription({
+      planId: flowPlanId,
+      customerId: customer.id,
+      trialPeriodDays: 7,
+    });
+
+    const trialEndsAt = sub.trialEndsAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Activar membresía en estado TRIAL por 7 días exactos
+    await adminClient
+      .from('memberships')
+      .update({
+        status: 'TRIAL',
+        gateway_subscription_id: sub.id,
+        gateway_status: 'trial',
+        trial_ends_at: trialEndsAt,
+      })
+      .eq('id', membership.id);
+
+    // Encolar email de bienvenida a prueba gratuita
+    await adminClient.from('email_outbox').insert({
+      dedupe_key: `flow-trial-start:${membership.id}`,
+      recipient_email: user.email,
+      subject: '¡Comienza tu prueba de 7 días con Natalia Riquelme!',
+      template_id: 'flow_trial_welcome',
+      payload: {
+        studentName,
+        trialEndsAt,
+        amount: price,
+      },
+    });
+
     return {
       success: true,
-      initPoint: mpResponse.init_point,
+      mode: 'SUBSCRIPTION_PAYMENT_LINK',
+      redirectUrl: '/checkout/success',
     };
   } catch (err: any) {
-    console.error('Error al invocar Mercado Pago:', err);
+    console.error('Error al iniciar suscripción con Flow:', err);
     return {
       success: false,
-      error: `No se pudo conectar con Mercado Pago: ${err.message}`,
+      error: `Error al conectar con la pasarela Flow: ${err.message}`,
     };
   }
 }
 
 /**
- * Server Action para cancelar la suscripción
- * - Invoca PUT /preapproval/{id} con { status: "canceled" }
- * - Traduce a estado interno 'CANCELLED'
- * - Diferencia entre cancelación durante Trial vs cancelación de Membresía Activa
+ * Server Action para cancelar la suscripción (Política Oficial Naty)
+ * - Durante TRIAL: Conserva acceso hasta trial_ends_at -> cero cobros ($0 CLP total).
+ * - Durante ACTIVE: Conserva acceso hasta current_period_end -> cero renovaciones futuras.
+ * - Invoca Flow cancelSubscription con at_period_end = 1.
  */
 export async function cancelSubscriptionAction() {
   const supabase = await createClient();
@@ -123,7 +176,7 @@ export async function cancelSubscriptionAction() {
 
   const adminClient = createAdminClient();
 
-  // Buscar la ficha de alumna respetando la jerarquía de identidades
+  // Buscar ficha de alumna
   const { getStudentProfileByUserId } = await import('../lib/supabase/profile-helpers');
   const resolution = await getStudentProfileByUserId(adminClient, user.id);
   const student = resolution.student;
@@ -134,7 +187,7 @@ export async function cancelSubscriptionAction() {
 
   const { data: membership } = await adminClient
     .from('memberships')
-    .select('id, status, gateway_subscription_id, trial_ends_at, current_period_end')
+    .select('id, status, gateway_subscription_id, trial_ends_at, current_period_end, auto_renew')
     .eq('student_id', student.id)
     .in('status', ['TRIAL', 'ACTIVE', 'PAST_DUE'])
     .order('created_at', { ascending: false })
@@ -145,46 +198,54 @@ export async function cancelSubscriptionAction() {
     return { success: false, error: 'No tienes una membresía activa para cancelar.' };
   }
 
+  const gateway = getPaymentGateway();
+
   if (membership.gateway_subscription_id) {
     try {
-      // Llamada oficial a Mercado Pago con { status: "canceled" }
-      await cancelSubscription(membership.gateway_subscription_id);
+      // Flow cancelSubscription con at_period_end = 1 (mantiene vigencia pagada)
+      await gateway.cancelSubscription(membership.gateway_subscription_id, true);
     } catch (err: any) {
-      console.warn('Aviso: cancelación en pasarela falló o ya estaba cancelada:', err.message);
+      console.warn('Aviso: cancelación en pasarela falló o ya estaba programada:', err.message);
     }
   }
 
   const isTrial = membership.status === 'TRIAL';
+  const periodEndFormatted = isTrial
+    ? (membership.trial_ends_at ? new Date(membership.trial_ends_at).toLocaleDateString('es-CL') : 'el fin de tus 7 días')
+    : (membership.current_period_end ? new Date(membership.current_period_end).toLocaleDateString('es-CL') : 'el fin del período pagado');
 
-  // Actualizar estado interno a CANCELLED
+  // Política Naty: Desactivar auto_renew pero preservar el acceso durante los días restantes
   await adminClient
     .from('memberships')
     .update({
-      status: 'CANCELLED',
-      gateway_status: 'canceled',
+      auto_renew: false,
       cancelled_at: new Date().toISOString(),
-      cancel_reason: isTrial ? 'Cancelación voluntaria en período de prueba' : 'Cancelación voluntaria de membresía activa',
+      cancel_reason: isTrial
+        ? 'Cancelación voluntaria de renovación en período de prueba'
+        : 'Cancelación voluntaria de renovación de membresía activa',
     })
     .eq('id', membership.id);
 
-  // Encolar email según corresponda
+  // Encolar email de confirmación
   const templateId = isTrial ? 'trial_cancellation' : 'active_cancellation';
   await adminClient.from('email_outbox').insert({
-    dedupe_key: `cancel-user:${membership.id}`,
-    recipient_email: user.email || 'alumna@natyentrenadora.cl',
-    subject: isTrial ? 'Confirmación de cancelación de tu prueba' : 'Confirmación de cancelación de tu membresía',
+    dedupe_key: `cancel-user:${membership.id}:${Date.now()}`,
+    recipient_email: user.email || 'alumna@natyentrenadora.com',
+    subject: isTrial ? 'Confirmación de cancelación de renovación de prueba' : 'Confirmación de cancelación de suscripción',
     template_id: templateId,
     payload: {
       studentName: user.user_metadata?.full_name || 'Alumna',
-      periodEnd: membership.current_period_end ? new Date(membership.current_period_end).toLocaleDateString('es-CL') : undefined,
+      accessUntil: periodEndFormatted,
+      isTrial,
     },
   });
 
   return {
     success: true,
     isTrial,
+    accessUntil: periodEndFormatted,
     message: isTrial
-      ? 'Tu prueba ha sido cancelada sin ningún cobro ($0 CLP cobrados en total).'
-      : 'Tu suscripción ha sido cancelada. No se realizarán futuras renovaciones automáticas.',
+      ? `Tu renovación ha sido cancelada. Mantendrás acceso gratuito hasta ${periodEndFormatted} y no se realizará ningún cobro ($0 CLP cobrados en total).`
+      : `Tu renovación automática ha sido cancelada. Mantendrás acceso completo hasta ${periodEndFormatted} y no se realizarán futuros cargos.`,
   };
 }

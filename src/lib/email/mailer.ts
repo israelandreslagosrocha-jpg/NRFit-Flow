@@ -22,7 +22,7 @@ export function setMockSmtpFailure(fail: boolean) {
 
 /**
  * Envío de correos mediante Hostinger SMTP (smtp.hostinger.com)
- * Casilla oficial: team@natyentrenadora.cl
+ * Casilla oficial: team@natyentrenadora.com
  */
 export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
   // Verificación de simulación para pruebas de tolerancia a fallos
@@ -36,7 +36,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   const { subject, html } = renderEmailTemplate(params.templateId, params.payload);
   const host = process.env.SMTP_HOST || 'smtp.hostinger.com';
   const port = parseInt(process.env.SMTP_PORT || '465', 10);
-  const user = process.env.SMTP_USER || 'team@natyentrenadora.cl';
+  const user = process.env.SMTP_USER || 'team@natyentrenadora.com';
   const pass = process.env.SMTP_PASS;
 
   // Si no hay credenciales configuradas (modo local/test), simular despacho exitoso
@@ -69,7 +69,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
 
             if (step === 0 && lastLine.startsWith('220')) {
               step++;
-              send(`EHLO natyentrenadora.cl`);
+              send(`EHLO natyentrenadora.com`);
             } else if (step === 1 && lastLine.startsWith('250')) {
               step++;
               send('AUTH LOGIN');

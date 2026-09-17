@@ -1,4 +1,8 @@
 /**
+ * @deprecated [LEGACY_RETAIN_READ_ONLY]
+ * Este módulo se conserva exclusivamente por trazabilidad de migración e histórico.
+ * La pasarela activa para Naty Entrenadora es Flow Chile (src/lib/payments/flow).
+ *
  * Tipos oficiales para la integración con Mercado Pago Subscriptions (Chile)
  * Referencia API oficial: /preapproval, /preapproval_plan, /authorized_payments, /v1/payments
  */

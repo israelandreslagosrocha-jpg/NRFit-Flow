@@ -32,7 +32,7 @@ export default function CookiesPage() {
             Política de Cookies
           </h1>
           <p className="text-sm text-neutral-400">
-            Naty Entrenadora (www.natyentrenadora.cl) · Soporte: team@natyentrenadora.cl
+            Naty Entrenadora (natyentrenadora.com) · Soporte: team@natyentrenadora.com
           </p>
         </div>
 

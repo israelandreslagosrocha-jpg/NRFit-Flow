@@ -32,7 +32,7 @@ export default function PrivacidadPage() {
             Política de Privacidad y Protección de Datos
           </h1>
           <p className="text-sm text-neutral-400">
-            Naty Entrenadora (www.natyentrenadora.cl) · Canal oficial: team@natyentrenadora.cl
+            Naty Entrenadora (natyentrenadora.com) · Canal oficial: team@natyentrenadora.com
           </p>
         </div>
 
@@ -41,7 +41,7 @@ export default function PrivacidadPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">1. Responsable del Tratamiento</h2>
             <p>
-              La plataforma <strong>www.natyentrenadora.cl</strong> es operada por Natalia Riquelme y su equipo técnico. El contacto directo para cualquier asunto vinculado con datos personales es <strong>team@natyentrenadora.cl</strong>.
+              La plataforma <strong>natyentrenadora.com</strong> es operada por Natalia Riquelme y su equipo técnico. El contacto directo para cualquier asunto vinculado con datos personales es <strong>team@natyentrenadora.com</strong>.
             </p>
           </section>
 
@@ -84,7 +84,7 @@ export default function PrivacidadPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">5. Derechos ARCO de la Usuaria</h2>
             <p>
-              Conforme a la Ley N° 19.628 sobre Protección de la Vida Privada de Chile, la usuaria tiene derecho en todo momento a acceder, rectificar, cancelar o solicitar el bloqueo de sus datos personales. Para ejercer estos derechos, basta con enviar un correo formal a <strong>team@natyentrenadora.cl</strong> indicando la solicitud.
+              Conforme a la Ley N° 19.628 sobre Protección de la Vida Privada de Chile, la usuaria tiene derecho en todo momento a acceder, rectificar, cancelar o solicitar el bloqueo de sus datos personales. Para ejercer estos derechos, basta con enviar un correo formal a <strong>team@natyentrenadora.com</strong> indicando la solicitud.
             </p>
           </section>
         </div>

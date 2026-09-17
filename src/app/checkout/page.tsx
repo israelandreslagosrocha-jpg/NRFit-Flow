@@ -42,11 +42,11 @@ export default function CheckoutPage() {
         return;
       }
 
-      if (result.initPoint) {
-        // Redirigir a la pasarela segura de Mercado Pago
-        window.location.href = result.initPoint;
+      if (result.redirectUrl) {
+        // Redirigir a la pasarela Flow / Webpay o a /checkout/success
+        window.location.href = result.redirectUrl;
       } else {
-        setErrorMessage('No se recibió la URL de pago de Mercado Pago.');
+        setErrorMessage('No se recibió la URL de redirección de la pasarela.');
         setLoading(false);
       }
     } catch (err: any) {
@@ -105,14 +105,14 @@ export default function CheckoutPage() {
           </div>
           <div className="summary-row">
             <span className="summary-label">Renovación</span>
-            <span className="summary-value">Mensual automática</span>
+            <span className="summary-value">Mensual tras los 7 días de prueba</span>
           </div>
         </div>
 
         <div className="cancellation-note">
           <Info size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
           <span>
-            <strong>Sin compromiso:</strong> Puedes cancelar antes de tu próximo cobro para evitar futuras renovaciones. Si cancelas durante los 7 días de prueba, no se realizará ningún cobro. Consulta nuestra <Link href="/cancelacion" className="terms-link">política de cancelación</Link>.
+            <strong>Sin compromiso:</strong> Puedes cancelar antes de tu próximo cobro para evitar futuras renovaciones. Si cancelas durante los 7 días de prueba, mantendrás tu acceso hasta completar la semana y no se realizará ningún cobro. Consulta nuestra <Link href="/cancelacion" className="terms-link">política de cancelación</Link>.
           </span>
         </div>
 
@@ -124,7 +124,7 @@ export default function CheckoutPage() {
             onChange={(e) => setAcceptedTerms(e.target.checked)}
           />
           <span>
-            He leído y acepto los <Link href="/terminos" className="terms-link">Términos y Condiciones</Link> y la <Link href="/privacidad" className="terms-link">Política de Privacidad</Link>, y autorizo el cobro recurrente mensual de $25.000 CLP al finalizar los 7 días de prueba si no cancelo previamente.
+            He leído y acepto los <Link href="/terminos" className="terms-link">Términos y Condiciones</Link> y la <Link href="/privacidad" className="terms-link">Política de Privacidad</Link>, y autorizo el cobro mensual de $25.000 CLP al finalizar los 7 días de prueba si no cancelo previamente.
           </span>
         </label>
 
@@ -136,7 +136,7 @@ export default function CheckoutPage() {
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              <span>Conectando con Mercado Pago...</span>
+              <span>Conectando con Flow / Webpay...</span>
             </>
           ) : (
             <>
@@ -148,7 +148,7 @@ export default function CheckoutPage() {
 
         <div className="mp-security-badge">
           <ShieldCheck size={16} />
-          <span>Procesado de forma segura por Mercado Pago Chile. Cero datos de tarjeta almacenados en nuestros servidores.</span>
+          <span>Procesado de forma segura por Flow Chile y Webpay. Cero datos de tarjeta almacenados en nuestros servidores.</span>
         </div>
       </div>
     </div>

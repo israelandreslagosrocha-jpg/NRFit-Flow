@@ -32,7 +32,7 @@ function assertNonProductionEnvironment() {
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  if (supabaseUrl.includes('natyentrenadora.cl') || supabaseUrl.includes('prod-real')) {
+  if (supabaseUrl.includes('natyentrenadora.com') || supabaseUrl.includes('natyentrenadora.cl') || supabaseUrl.includes('prod-real')) {
     throw new Error(`ABORT: Intento de ejecutar pruebas contra URL de producción: ${supabaseUrl}`);
   }
 }
@@ -63,7 +63,7 @@ describe('FASE M-08 — Fundamentos de Lanzamiento: Suite de Integración y Segu
     it('Debe abortar si NEXT_PUBLIC_SUPABASE_URL apunta a dominio productivo', () => {
       const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       try {
-        process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://db.natyentrenadora.cl';
+        process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://db.natyentrenadora.com';
         assert.throws(
           () => assertNonProductionEnvironment(),
           /ABORT: Intento de ejecutar pruebas contra URL de producción/

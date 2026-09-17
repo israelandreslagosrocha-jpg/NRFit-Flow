@@ -32,7 +32,7 @@ export default function TerminosPage() {
             Términos del Servicio
           </h1>
           <p className="text-sm text-neutral-400">
-            Última actualización preliminar: Septiembre 2026 · Naty Entrenadora (www.natyentrenadora.cl)
+            Última actualización preliminar: Septiembre 2026 · Naty Entrenadora (natyentrenadora.com)
           </p>
         </div>
 
@@ -41,7 +41,7 @@ export default function TerminosPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">1. Identificación y Alcance del Servicio</h2>
             <p>
-              El presente contrato regula los términos y condiciones de uso de la plataforma digital disponible en <strong>www.natyentrenadora.cl</strong>, operada por Natalia Riquelme y su equipo técnico (en adelante, “Naty Entrenadora”).
+              El presente contrato regula los términos y condiciones de uso de la plataforma digital disponible en <strong>natyentrenadora.com</strong>, operada por Natalia Riquelme y su equipo técnico (en adelante, “Naty Entrenadora”).
             </p>
             <p>
               Naty Entrenadora ofrece un servicio de entrenamiento físico 100% online continuo para mujeres, consistente en acceso a rutinas guiadas, clases en vivo, material audiovisual formativo y seguimiento general de hábitos saludables.
@@ -67,14 +67,14 @@ export default function TerminosPage() {
               <strong>Membresía Mensual Oficial:</strong> Concluidos los 7 días de prueba sin que medie cancelación previa, la membresía se renovará automáticamente de forma mensual con un valor oficial de <strong>\$25.000 CLP</strong> (veinticinco mil pesos chilenos) por cada período mensual de 30 días.
             </p>
             <p>
-              <strong>Idempotencia y Facturación:</strong> Todos los cobros se procesan de forma electrónica y segura mediante Mercado Pago. No se almacenan datos sensibles de tarjetas ni números de cuenta en los servidores de Naty Entrenadora.
+              <strong>Idempotencia y Facturación:</strong> Todos los cobros se procesan de forma electrónica y segura mediante la pasarela de pagos oficial (Flow Chile / Webpay). No se almacenan datos sensibles de tarjetas ni números de cuenta en los servidores de Naty Entrenadora.
             </p>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">4. Cancelación y No Compromiso</h2>
             <p>
-              La alumna puede cancelar su suscripción en cualquier momento y de forma autónoma desde su perfil en la plataforma o mediante comunicación escrita a <strong>team@natyentrenadora.cl</strong>.
+              La alumna puede cancelar su suscripción en cualquier momento y de forma autónoma desde su perfil en la plataforma o mediante comunicación escrita a <strong>team@natyentrenadora.com</strong>.
             </p>
             <p>
               La cancelación detiene futuros cobros automáticos de manera inmediata. Si la cancelación se produce durante los 7 días de prueba, el cobro será de \$0 CLP. Si se produce durante un período activo ya facturado, el acceso se mantendrá hasta el término del ciclo en curso sin reembolsos proporcionales, salvo las garantías legales imperativas aplicables.

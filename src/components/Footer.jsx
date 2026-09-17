@@ -81,12 +81,12 @@ export default function Footer() {
             <h4 className="footer-col-title">Contacto Oficial</h4>
             <ul className="footer-links-list-react contact-list">
               <li>
-                <a href="mailto:team@natyentrenadora.cl" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Mail size={16} style={{ color: 'var(--nt-pink, #FF2D78)' }} /> team@natyentrenadora.cl
+                <a href="mailto:team@natyentrenadora.com" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Mail size={16} style={{ color: 'var(--nt-pink, #FF2D78)' }} /> team@natyentrenadora.com
                 </a>
               </li>
               <li style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>
-                <span>🌐 www.natyentrenadora.cl</span>
+                <span>🌐 natyentrenadora.com</span>
               </li>
               <li style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>
                 <span>🇨🇱 Chile (Entrenamiento 100% Online)</span>
@@ -99,7 +99,7 @@ export default function Footer() {
       {/* Bottom Legal / Copyright */}
       <div className="footer-bottom-react">
         <div className="container footer-bottom-flex">
-          <p className="copyright-text">&copy; {new Date().getFullYear()} Naty Entrenadora (www.natyentrenadora.cl). Todos los derechos reservados.</p>
+          <p className="copyright-text">&copy; {new Date().getFullYear()} Naty Entrenadora (natyentrenadora.com). Todos los derechos reservados.</p>
           <div className="legal-links" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <Link href="/terminos" style={{ fontSize: '0.8rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>Términos del Servicio</Link>
             <Link href="/privacidad" style={{ fontSize: '0.8rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>Privacidad</Link>

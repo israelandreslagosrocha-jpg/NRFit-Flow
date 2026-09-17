@@ -65,7 +65,7 @@ export default function CancelacionPage() {
               <span>Soporte Directo</span>
             </div>
             <p className="text-xs text-neutral-400">
-              Si tienes dudas o prefieres ayuda, te atendemos directamente en team@natyentrenadora.cl.
+              Si tienes dudas o prefieres ayuda, te atendemos directamente en team@natyentrenadora.com.
             </p>
           </div>
         </div>
@@ -78,14 +78,14 @@ export default function CancelacionPage() {
               Durante el período de prueba de 7 días, la alumna disfruta de acceso completo a todos los beneficios de la plataforma sin costo. Si decides que el programa no se adapta a tus necesidades actuales, puedes cancelar tu suscripción antes del término del séptimo día.
             </p>
             <p className="text-emerald-400 font-medium">
-              Efecto: Se cancela la autorización de cobro en Mercado Pago de forma inmediata y automática, sin ningún cargo a tu tarjeta (\$0 CLP facturados).
+              Efecto: Se cancela la renovación en Flow de forma automática, sin ningún cargo a tu tarjeta (\$0 CLP facturados en total). Mantendrás tu acceso durante los días restantes de prueba.
             </p>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">2. Cancelación de la Membresía Mensual (\$25.000 CLP)</h2>
             <p>
-              Una vez iniciado el período pagado, la suscripción se renueva mes a mes. Puedes cancelar la renovación automática en cualquier instante antes de la siguiente fecha de cobro.
+              Una vez iniciado el período pagado, la suscripción se renueva mes a mes. Puedes cancelar la renovación en cualquier instante antes de la siguiente fecha de cobro.
             </p>
             <p>
               Al cancelar una suscripción activa:
@@ -103,20 +103,20 @@ export default function CancelacionPage() {
               Dado que se otorga un período de prueba completo de 7 días sin costo (\$0 hoy) para evaluar el servicio antes de cualquier cargo, una vez ejecutado el cobro mensual regular de \$25.000 CLP no se efectúan reembolsos proporcionales por fracciones de mes no utilizadas, conforme a los términos aceptados y a la naturaleza de entrega inmediata de contenidos digitales.
             </p>
             <p>
-              En caso de eventuales cobros duplicados por incidencia técnica, el equipo de soporte gestionará el reintegro íntegro a través de Mercado Pago en un plazo máximo de 5 días hábiles tras recibir la notificación en <strong>team@natyentrenadora.cl</strong>.
+              En caso de eventuales cobros duplicados por incidencia técnica, el equipo de soporte gestionará el reintegro íntegro a través de la pasarela de pagos (Flow) en un plazo máximo de 5 días hábiles tras recibir la notificación en <strong>team@natyentrenadora.com</strong>.
             </p>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">4. Procedimiento para Cancelar</h2>
             <ol className="list-decimal pl-5 space-y-2 text-neutral-300">
-              <li>Inicia sesión con tu cuenta en <Link href="/auth/login" className="text-rose-400 underline">natyentrenadora.cl</Link>.</li>
+              <li>Inicia sesión con tu cuenta en <Link href="/auth/login" className="text-rose-400 underline">natyentrenadora.com</Link>.</li>
               <li>Dirígete a tu menú de perfil o membresía y haz clic en <strong>“Cancelar suscripción”</strong>.</li>
               <li>Confirma la cancelación en la ventana de verificación.</li>
               <li>Recibirás un correo electrónico de confirmación con el comprobante de cancelación.</li>
             </ol>
             <p className="pt-2 text-neutral-400 text-xs">
-              Alternativamente, puedes solicitar la cancelación enviando un correo a <strong>team@natyentrenadora.cl</strong> con al menos 24 horas hábiles de anticipación a tu fecha de renovación.
+              Alternativamente, puedes solicitar la cancelación enviando un correo a <strong>team@natyentrenadora.com</strong> con al menos 24 horas hábiles de anticipación a tu fecha de renovación.
             </p>
           </section>
         </div>

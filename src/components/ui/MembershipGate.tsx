@@ -97,7 +97,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
             </Link>
 
             <a
-              href="mailto:team@natyentrenadora.cl"
+              href="mailto:team@natyentrenadora.com"
               className="hover:text-neutral-300 transition-colors flex items-center gap-1.5"
             >
               <Mail className="w-3.5 h-3.5" />

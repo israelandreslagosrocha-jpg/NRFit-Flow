@@ -1,3 +1,8 @@
+/**
+ * @deprecated [LEGACY_RETAIN_READ_ONLY]
+ * Este módulo se conserva exclusivamente por trazabilidad de migración e histórico.
+ * La pasarela activa para Naty Entrenadora es Flow Chile (src/lib/payments/flow).
+ */
 import type {
   CreatePreapprovalPayload,
   MercadoPagoPreapprovalResponse,
