@@ -25,7 +25,7 @@ if (!process.env.FLOW_API_KEY && typeof (process as any).loadEnvFile === 'functi
   }
 }
 
-type TestStatus = 'PASS_REAL_SANDBOX' | 'FAIL_REAL_SANDBOX' | 'NOT_SUPPORTED_BY_SANDBOX' | 'NOT_EXECUTED';
+type TestStatus = 'PASS_REAL_SANDBOX' | 'FAIL_REAL_SANDBOX' | 'NOT_SUPPORTED_BY_SANDBOX' | 'NOT_EXECUTED' | 'NOT_EXECUTED_REQUIRES_PUBLIC_HTTPS_ENDPOINT';
 
 interface AuditResult {
   id: string;
@@ -453,8 +453,8 @@ async function main() {
   recordResult(
     'CHK-CB-01',
     'Recepción de callbacks asíncronos inbound desde Flow Sandbox',
-    'NOT_SUPPORTED_BY_SANDBOX',
-    'Flow Sandbox requiere un endpoint HTTPS público enrutado hacia internet para despachar webhooks inbound. En este entorno local (sin túnel HTTPS público), no se simula tráfico externo ni se inventa recepción. La resolución y contrato S2S de callbacks se certifica vía FlowGatewayAdapter.resolveCallback.'
+    'NOT_EXECUTED_REQUIRES_PUBLIC_HTTPS_ENDPOINT',
+    'Flow Sandbox requiere un endpoint HTTPS público enrutado hacia internet para despachar webhooks inbound. La ausencia de endpoint HTTPS público local no demuestra falta de soporte de callbacks en Flow Sandbox; queda formalmente pendiente para staging público. La resolución y contrato S2S de callbacks se certifica vía FlowGatewayAdapter.resolveCallback.'
   );
 
   // --------------------------------------------------------------------------------
@@ -468,22 +468,25 @@ async function main() {
   let failCount = 0;
   let notSupportedCount = 0;
   let notExecutedCount = 0;
+  let notExecutedEndpointCount = 0;
 
   for (const r of auditResults) {
     if (r.status === 'PASS_REAL_SANDBOX') passCount++;
     else if (r.status === 'FAIL_REAL_SANDBOX') failCount++;
     else if (r.status === 'NOT_SUPPORTED_BY_SANDBOX') notSupportedCount++;
+    else if (r.status === 'NOT_EXECUTED_REQUIRES_PUBLIC_HTTPS_ENDPOINT') notExecutedEndpointCount++;
     else if (r.status === 'NOT_EXECUTED') notExecutedCount++;
 
-    console.log(`[${r.status.padEnd(24)}] ${r.id}: ${r.name}`);
+    console.log(`[${r.status.padEnd(44)}] ${r.id}: ${r.name}`);
   }
 
   console.log('\n--------------------------------------------------------------------------------');
   console.log(`TOTAL AUDITADOS: ${auditResults.length}`);
-  console.log(`  PASS_REAL_SANDBOX:        ${passCount}`);
-  console.log(`  NOT_SUPPORTED_BY_SANDBOX: ${notSupportedCount}`);
-  console.log(`  FAIL_REAL_SANDBOX:        ${failCount}`);
-  console.log(`  NOT_EXECUTED:             ${notExecutedCount}`);
+  console.log(`  PASS_REAL_SANDBOX:                           ${passCount}`);
+  console.log(`  NOT_EXECUTED_REQUIRES_PUBLIC_HTTPS_ENDPOINT: ${notExecutedEndpointCount}`);
+  console.log(`  NOT_SUPPORTED_BY_SANDBOX:                    ${notSupportedCount}`);
+  console.log(`  FAIL_REAL_SANDBOX:                           ${failCount}`);
+  console.log(`  NOT_EXECUTED:                                ${notExecutedCount}`);
   console.log('--------------------------------------------------------------------------------\n');
 
   if (failCount > 0) {
