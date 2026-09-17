@@ -118,7 +118,7 @@ export class FlowGatewayAdapter implements PaymentGateway {
         paymentId: `flow_inv_${inv.id}`,
         subscriptionId: inv.subscriptionId,
         customerId: inv.customerId,
-        amount: inv.amount,
+        amount: Number(inv.amount),
         currency: inv.currency || 'CLP',
         status,
         paymentDate: inv.payment?.date || new Date().toISOString(),
@@ -142,7 +142,7 @@ export class FlowGatewayAdapter implements PaymentGateway {
 
       const paymentResult: GatewayPaymentResult = {
         paymentId: `flow_pay_${pay.flowOrder}`,
-        amount: pay.amount,
+        amount: Number(pay.amount),
         currency: pay.currency || 'CLP',
         status,
         paymentDate: pay.paymentData?.date || pay.requestDate || new Date().toISOString(),

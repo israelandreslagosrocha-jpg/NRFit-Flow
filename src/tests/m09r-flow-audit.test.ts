@@ -708,4 +708,82 @@ describe('FASE M-09R — Suite de Certificación Pasarela Flow Chile y Desacopla
       assert.strictEqual(json.status, 'FLOW_CALLBACK_ENDPOINT_READY');
     });
   });
+
+  // ============================================================================
+  // 13. MÉTODOS DE CONSULTA FLOWCLIENT (getPlan, listPlans, getCustomer)
+  // ============================================================================
+  describe('13. Métodos de consulta S2S FlowClient', () => {
+    it('FlowClient instancia correctamente con configuración de Sandbox', () => {
+      const client = new FlowClient({
+        apiKey: 'TEST_API_KEY',
+        secretKey: 'TEST_SECRET_KEY',
+        baseUrl: 'https://sandbox.flow.cl/api',
+        env: 'sandbox',
+      });
+      assert.strictEqual(client.getBaseUrl(), 'https://sandbox.flow.cl/api');
+    });
+
+    it('FlowClient incluye firma HMAC y apiKey en peticiones', async () => {
+      let interceptedUrl = '';
+      const originalFetch = globalThis.fetch;
+      try {
+        globalThis.fetch = (async (url: string | URL | Request) => {
+          interceptedUrl = String(url);
+          return {
+            ok: true,
+            json: async () => ({ planId: 'plan-naty-fit-monthly', name: 'Plan Mensual', amount: 25000, currency: 'CLP', interval: 3, trial_period_days: 7 }),
+          } as any;
+        }) as any;
+
+        const client = new FlowClient({
+          apiKey: 'TEST_KEY_123',
+          secretKey: 'TEST_SECRET_ABC',
+          baseUrl: 'https://sandbox.flow.cl/api',
+          env: 'sandbox',
+        });
+
+        const plan = await client.getPlan('plan-naty-fit-monthly');
+        assert.strictEqual(plan.planId, 'plan-naty-fit-monthly');
+        assert.ok(interceptedUrl.includes('apiKey=TEST_KEY_123'));
+        assert.ok(interceptedUrl.includes('planId=plan-naty-fit-monthly'));
+        assert.ok(interceptedUrl.includes('&s='));
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it('getCustomer recupera roundtrip de externalId (student.id)', async () => {
+      const originalFetch = globalThis.fetch;
+      try {
+        globalThis.fetch = (async () => {
+          return {
+            ok: true,
+            json: async () => ({
+              customerId: 'cus_test_123',
+              created: '2026-09-16 22:00:00',
+              email: 'alumna@natyentrenadora.com',
+              name: 'Alumna Test',
+              pay_mode: 'manual',
+              externalId: 'stu-uuid-12345',
+              status: '1',
+            }),
+          } as any;
+        }) as any;
+
+        const client = new FlowClient({
+          apiKey: 'TEST_KEY_123',
+          secretKey: 'TEST_SECRET_ABC',
+          baseUrl: 'https://sandbox.flow.cl/api',
+          env: 'sandbox',
+        });
+
+        const cust = await client.getCustomer('cus_test_123');
+        assert.strictEqual(cust.externalId, 'stu-uuid-12345');
+        assert.strictEqual(cust.pay_mode, 'manual');
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+  });
 });
+

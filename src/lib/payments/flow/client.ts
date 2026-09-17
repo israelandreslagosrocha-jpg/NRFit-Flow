@@ -180,6 +180,40 @@ export class FlowClient {
     });
   }
 
+  async getPlan(planId: string) {
+    return this.request<{
+      planId: string;
+      name: string;
+      currency: string;
+      amount: number;
+      interval: number;
+      interval_count: number;
+      created: string;
+      trial_period_days: number;
+      days_until_due: number;
+      periods_number: number;
+      urlCallback?: string;
+      status?: number;
+    }>('GET', '/plans/get', { planId });
+  }
+
+  async listPlans(params?: { start?: number; limit?: number; filter?: string; status?: number }) {
+    return this.request<{
+      total: number;
+      hasMore: boolean;
+      data: Array<{
+        planId: string;
+        name: string;
+        currency: string;
+        amount: number;
+        interval: number;
+        interval_count: number;
+        trial_period_days: number;
+        periods_number: number;
+      }>;
+    }>('GET', '/plans/list', params || {});
+  }
+
   // --- Clientes ---
   async createCustomer(params: {
     name: string;
@@ -187,6 +221,21 @@ export class FlowClient {
     externalId: string; // student.id (identidad persistente y estable de la alumna)
   }) {
     return this.request<{ customerId: string; created: string; status: string }>('POST', '/customer/create', params);
+  }
+
+  async getCustomer(customerId: string) {
+    return this.request<{
+      customerId: string;
+      created: string;
+      email: string;
+      name: string;
+      pay_mode?: string;
+      creditCardType?: string;
+      last4CardDigits?: string;
+      externalId: string;
+      status: string;
+      registerDate?: string;
+    }>('GET', '/customer/get', { customerId });
   }
 
   // --- Registro de Tarjetas (Webpay Enrolment) ---
@@ -214,17 +263,30 @@ export class FlowClient {
     return this.request<{
       subscriptionId: string;
       planId: string;
+      plan_name?: string;
       customerId: string;
       created: string;
       subscription_start: string;
-      subscription_end?: string;
+      subscription_end?: string | null;
       period_start: string;
       period_end: string;
-      trial_start?: string;
-      trial_end?: string;
+      next_invoice_date?: string | null;
+      trial_period_days?: number;
+      trial_start?: string | null;
+      trial_end?: string | null;
       status: number; // 0=inactiva, 1=activa, 2=trial, 4=cancelada
       morose: number; // 0=al día, 1=vencido, 2=pendiente no vencido
       cancel_at_period_end: number;
+      cancel_at?: string | null;
+      invoices?: Array<{
+        id: number;
+        subscriptionId?: string;
+        customerId?: string;
+        amount: number | string;
+        status: number;
+        due_date: string;
+        paymentLink?: string | null;
+      }>;
     }>('POST', '/subscription/create', {
       planId: params.planId,
       customerId: params.customerId,
@@ -238,23 +300,29 @@ export class FlowClient {
     return this.request<{
       subscriptionId: string;
       planId: string;
+      plan_name?: string;
       customerId: string;
       created: string;
       subscription_start: string;
-      subscription_end?: string;
+      subscription_end?: string | null;
       period_start: string;
       period_end: string;
-      trial_start?: string;
-      trial_end?: string;
+      next_invoice_date?: string | null;
+      trial_period_days?: number;
+      trial_start?: string | null;
+      trial_end?: string | null;
       status: number;
       morose: number;
       cancel_at_period_end: number;
+      cancel_at?: string | null;
       invoices?: Array<{
         id: number;
-        amount: number;
+        subscriptionId?: string;
+        customerId?: string;
+        amount: number | string;
         status: number;
         due_date: string;
-        paymentLink?: string;
+        paymentLink?: string | null;
       }>;
     }>('GET', '/subscription/get', { subscriptionId });
   }
