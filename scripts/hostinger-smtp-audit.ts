@@ -26,6 +26,7 @@ if (typeof (process as any).loadEnvFile === 'function') {
 type SmtpAuditStatus =
   | 'PASS_REAL_SMTP'
   | 'PASS_LOCAL_CONTRACT'
+  | 'FAIL'
   | 'FAIL_REAL_SMTP'
   | 'NOT_EXECUTED'
   | 'NOT_EXECUTED_PENDING_MANUAL_INBOX_CONFIRMATION';
