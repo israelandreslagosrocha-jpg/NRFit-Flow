@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPaymentGateway } from '../index.ts';
-import { logger } from '../../logger.ts';
+import { logger, generateTraceId, sanitizeValue } from '../../logger.ts';
 
 export interface ProcessFlowCallbackInput {
   supabase: SupabaseClient;
@@ -13,9 +13,15 @@ export interface ProcessFlowCallbackOutput {
   success: boolean;
   statusResult: 'PROCESSED' | 'ALREADY_PROCESSED' | 'IGNORED' | 'ERROR';
   gatewayEventId?: string;
+  traceId?: string;
   error?: string;
 }
 
+/**
+ * Procesador de callbacks y webhooks de Flow Chile (Fase M-09R / M-09.3B)
+ * Incorpora recuperación determinista de trace_id sin depender de metadata de pasarela.
+ * Requisito M-09.3B.4: No confía en parámetros de cliente ni navegador como autoridad.
+ */
 export async function processFlowCallback(
   input: ProcessFlowCallbackInput
 ): Promise<ProcessFlowCallbackOutput> {
@@ -26,10 +32,17 @@ export async function processFlowCallback(
   const callbackResult = await gateway.resolveCallback(token, resourceHint);
 
   if (callbackResult.resourceType === 'unknown') {
-    logger.warn('Flow callback could not be resolved server-to-server', { token, resourceHint });
+    const errorTraceId = generateTraceId();
+    logger.warn('Flow callback could not be resolved server-to-server', {
+      trace_id: errorTraceId,
+      gateway: 'FLOW',
+      resourceHint,
+      result: 'ERROR',
+    });
     return {
       success: false,
       statusResult: 'ERROR',
+      traceId: errorTraceId,
       error: 'No se pudo resolver el recurso S2S de Flow',
     };
   }
@@ -55,7 +68,30 @@ export async function processFlowCallback(
 
   const gatewayEventId = `flow_${eventResource}_${eventResourceId}_${eventStatus}`;
 
-  // 3. Idempotencia Inbound en public.payment_events (Postgres Unique Constraint 23505)
+  // 3. Recuperación determinista del trace_id local sin depender de metadata de Flow (M-09.3B.4)
+  // Se ignora cualquier trace_id que venga en payload o parámetros de cliente.
+  const targetSubId = callbackResult.subscription?.id || callbackResult.payment?.subscriptionId;
+  const targetCustomerId = callbackResult.subscription?.customerId || callbackResult.payment?.customerId;
+
+  let membershipQuery = supabase
+    .from('memberships')
+    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_end');
+
+  if (targetSubId) {
+    membershipQuery = membershipQuery.eq('gateway_subscription_id', targetSubId);
+  } else if (targetCustomerId) {
+    membershipQuery = membershipQuery.eq('gateway_customer_id', targetCustomerId);
+  }
+
+  const { data: matchedMembership } = await membershipQuery
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  // Si existe membresía local vinculada, recuperar su trace_id; si no, generar nuevo trace_id backend
+  const localTraceId = matchedMembership?.trace_id || generateTraceId();
+
+  // 4. Idempotencia Inbound en public.payment_events (Postgres Unique Constraint 23505)
   const { error: eventInsertError } = await supabase
     .from('payment_events')
     .insert({
@@ -63,7 +99,11 @@ export async function processFlowCallback(
       gateway: 'FLOW',
       event_type: `flow_${eventResource}`,
       resource_id: eventResourceId,
-      payload: { token, callbackResult, payload },
+      payload: {
+        token: '[REDACTED_TOKEN]',
+        callbackResult: sanitizeValue(callbackResult),
+        trace_id: localTraceId,
+      },
       status: 'PROCESSED',
       processed_at: new Date().toISOString(),
     });
@@ -76,52 +116,55 @@ export async function processFlowCallback(
 
     if (isDuplicate) {
       logger.info('Flow callback duplicate event skipped (Inbound Idempotency)', {
+        trace_id: localTraceId,
+        gateway: 'FLOW',
         gateway_event_id: gatewayEventId,
-        status_result: 'ALREADY_PROCESSED',
+        membership_id: matchedMembership?.id,
+        result: 'ALREADY_PROCESSED',
       });
       return {
         success: true,
         statusResult: 'ALREADY_PROCESSED',
         gatewayEventId,
+        traceId: localTraceId,
       };
     }
 
-    logger.error('Error inserting inbound event into payment_events', { error: eventInsertError.message });
+    logger.error('Error inserting inbound event into payment_events', {
+      trace_id: localTraceId,
+      gateway: 'FLOW',
+      gateway_event_id: gatewayEventId,
+      result: 'ERROR',
+    }, eventInsertError);
     return {
       success: false,
       statusResult: 'ERROR',
+      gatewayEventId,
+      traceId: localTraceId,
       error: eventInsertError.message,
     };
   }
 
-  // 4. Procesamiento según tipo de recurso
+  // 5. Procesamiento según tipo de recurso
   // Caso A: Evento de Pago o Factura pagada
   if (callbackResult.payment) {
     const pay = callbackResult.payment;
 
-    // Buscar membresía vinculada
-    let membershipQuery = supabase
-      .from('memberships')
-      .select('id, student_id, status, gateway_subscription_id, current_period_end');
-
-    if (pay.subscriptionId) {
-      membershipQuery = membershipQuery.eq('gateway_subscription_id', pay.subscriptionId);
-    } else if (pay.customerId) {
-      membershipQuery = membershipQuery.eq('gateway_customer_id', pay.customerId);
-    }
-
-    const { data: membership } = await membershipQuery.order('created_at', { ascending: false }).limit(1).single();
-
-    if (!membership) {
-      logger.warn('Payment received for untracked membership in Flow', { pay });
-      return { success: true, statusResult: 'PROCESSED', gatewayEventId };
+    if (!matchedMembership) {
+      logger.warn('Payment received for untracked membership in Flow', {
+        trace_id: localTraceId,
+        gateway: 'FLOW',
+        gateway_payment_id: pay.paymentId,
+        result: 'PROCESSED_UNTRACKED',
+      });
+      return { success: true, statusResult: 'PROCESSED', gatewayEventId, traceId: localTraceId };
     }
 
     // Idempotencia Financiera en public.payment_transactions (gateway_payment_id UNIQUE)
     const { error: txError } = await supabase
       .from('payment_transactions')
       .insert({
-        membership_id: membership.id,
+        membership_id: matchedMembership.id,
         gateway_payment_id: pay.paymentId,
         gateway: 'FLOW',
         amount: pay.amount,
@@ -139,9 +182,13 @@ export async function processFlowCallback(
 
       if (isTxDuplicate) {
         logger.info('Flow transaction already recorded (Financial Idempotency)', {
+          trace_id: localTraceId,
+          gateway: 'FLOW',
+          membership_id: matchedMembership.id,
           gateway_payment_id: pay.paymentId,
+          result: 'ALREADY_PROCESSED',
         });
-        return { success: true, statusResult: 'ALREADY_PROCESSED', gatewayEventId };
+        return { success: true, statusResult: 'ALREADY_PROCESSED', gatewayEventId, traceId: localTraceId };
       }
     }
 
@@ -159,9 +206,9 @@ export async function processFlowCallback(
           current_period_start: newPeriodStart,
           current_period_end: newPeriodEnd,
         })
-        .eq('id', membership.id);
+        .eq('id', matchedMembership.id);
 
-      // Encolar email de confirmación de renovación en outbox
+      // Encolar email de confirmación de renovación en outbox con trace_id vinculado
       await supabase.from('email_outbox').insert({
         dedupe_key: `flow-pay-success:${pay.paymentId}`,
         recipient_email: 'alumna@natyentrenadora.com',
@@ -171,6 +218,7 @@ export async function processFlowCallback(
           amount: pay.amount,
           currency: pay.currency,
           periodEnd: newPeriodEnd,
+          trace_id: localTraceId,
         },
       });
     } else if (pay.status === 'REJECTED') {
@@ -182,7 +230,7 @@ export async function processFlowCallback(
           gateway: 'FLOW',
           gateway_status: 'past_due',
         })
-        .eq('id', membership.id);
+        .eq('id', matchedMembership.id);
 
       await supabase.from('email_outbox').insert({
         dedupe_key: `flow-pay-failed:${pay.paymentId}`,
@@ -192,6 +240,7 @@ export async function processFlowCallback(
         payload: {
           amount: pay.amount,
           currency: pay.currency,
+          trace_id: localTraceId,
         },
       });
     }
@@ -200,14 +249,8 @@ export async function processFlowCallback(
   // Caso B: Actualización de Suscripción (fechas, morosidad o cancelación)
   if (callbackResult.subscription) {
     const sub = callbackResult.subscription;
-    const { data: membership } = await supabase
-      .from('memberships')
-      .select('id, status, trial_ends_at, current_period_end')
-      .eq('gateway_subscription_id', sub.id)
-      .limit(1)
-      .single();
 
-    if (membership) {
+    if (matchedMembership) {
       const updateData: any = {
         gateway: 'FLOW',
         gateway_status: sub.status.toLowerCase(),
@@ -232,13 +275,23 @@ export async function processFlowCallback(
       await supabase
         .from('memberships')
         .update(updateData)
-        .eq('id', membership.id);
+        .eq('id', matchedMembership.id);
     }
   }
+
+  logger.info('flow_callback_processed', {
+    trace_id: localTraceId,
+    gateway: 'FLOW',
+    membership_id: matchedMembership?.id,
+    gateway_payment_id: callbackResult.payment?.paymentId,
+    gateway_subscription_id: callbackResult.subscription?.id || callbackResult.payment?.subscriptionId,
+    result: 'PROCESSED',
+  });
 
   return {
     success: true,
     statusResult: 'PROCESSED',
     gatewayEventId,
+    traceId: localTraceId,
   };
 }

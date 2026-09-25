@@ -3,13 +3,16 @@
 import { createClient } from '../lib/supabase/server';
 import { createAdminClient } from '../lib/supabase/admin';
 import { getPaymentGateway } from '../lib/payments';
+import { generateTraceId, logger } from '../lib/logger';
 
 /**
- * Server Action para iniciar el checkout de suscripción con Flow Chile (Fase M-09R)
+ * Server Action para iniciar el checkout de suscripción con Flow Chile (Fase M-09R / M-09.3B)
  * Arquitectura desacoplada: Consume PaymentGateway (soporta AUTOMATIC_RECURRING y SUBSCRIPTION_PAYMENT_LINK).
  * Jerarquía de identidad: auth.users.id -> profiles.user_id -> students.profile_id -> Flow Customer (externalId = student.id)
+ * Trazabilidad E2E: Genera trace_id en backend y lo ancla en memberships y email_outbox.
  */
 export async function createCheckoutSubscriptionAction() {
+  const traceId = generateTraceId();
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -49,7 +52,7 @@ export async function createCheckoutSubscriptionAction() {
   const planId = plan?.id || '00000000-0000-0000-0000-000000000001';
   const price = plan?.price || 25000;
 
-  // 3. Crear registro de membresía en PENDING_PAYMENT (Anclaje Inequívoco, $0 hoy)
+  // 3. Crear registro de membresía en PENDING_PAYMENT con trace_id (Anclaje Inequívoco, $0 hoy)
   const startDate = new Date().toISOString().split('T')[0];
   const endDate = new Date(Date.now() + 37 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 7 trial + 30 ciclo
 
@@ -65,16 +68,27 @@ export async function createCheckoutSubscriptionAction() {
       auto_renew: true,
       renewal_mode: 'AUTO_CHARGE',
       gateway: 'FLOW',
+      trace_id: traceId,
     })
     .select('id')
     .single();
 
   if (memError || !membership) {
+    logger.error('checkout_membership_init_failed', {
+      trace_id: traceId,
+      student_id: studentId,
+    }, memError);
     return {
       success: false,
       error: 'Error al inicializar la membresía interna.',
     };
   }
+
+  logger.info('checkout_subscription_initiated', {
+    trace_id: traceId,
+    gateway: 'FLOW',
+    membership_id: membership.id,
+  });
 
   // 4. Invocar pasarela neutra (PaymentGateway / Flow)
   const gateway = getPaymentGateway();
@@ -133,7 +147,7 @@ export async function createCheckoutSubscriptionAction() {
       })
       .eq('id', membership.id);
 
-    // Encolar email de bienvenida a prueba gratuita
+    // Encolar email de bienvenida a prueba gratuita con trace_id vinculado
     await adminClient.from('email_outbox').insert({
       dedupe_key: `flow-trial-start:${membership.id}`,
       recipient_email: user.email,
@@ -143,6 +157,7 @@ export async function createCheckoutSubscriptionAction() {
         studentName,
         trialEndsAt,
         amount: price,
+        trace_id: traceId,
       },
     });
 

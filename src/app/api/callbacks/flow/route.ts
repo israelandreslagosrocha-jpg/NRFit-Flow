@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server.js';
 import { createAdminClient } from '../../../../lib/supabase/admin.ts';
 import { processFlowCallback } from '../../../../lib/payments/flow/processor.ts';
+import { logger } from '../../../../lib/logger.ts';
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
-    console.error('Error interno en callback Flow:', error);
+    logger.error('flow_callback_route_error', { gateway: 'FLOW' }, error);
     return NextResponse.json(
       { error: 'Error interno al procesar callback Flow', details: error.message },
       { status: 500 }
