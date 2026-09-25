@@ -87,6 +87,7 @@ export const CANONICAL_TABLES = [
   'payment_events',
   'payment_transactions',
   'email_outbox',
+  'security_audit_events',
 ] as const;
 
 /**

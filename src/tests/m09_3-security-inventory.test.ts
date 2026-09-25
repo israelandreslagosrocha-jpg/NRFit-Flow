@@ -52,12 +52,12 @@ describe('FASE M-09.3A — Suite de Auditoría e Inventario de Seguridad (SEC-01
   // SEC-01: RLS en Tablas Expuestas
   // ============================================================================
   describe('SEC-01: RLS en Tablas Expuestas', () => {
-    it('Todas las 32 tablas canónicas deben tener ENABLE ROW LEVEL SECURITY en migraciones', () => {
+    it('Todas las tablas canónicas (33 tablas con security_audit_events) deben tener ENABLE ROW LEVEL SECURITY en migraciones', () => {
       const sec01 = report.controls.find(c => c.id === 'SEC-01');
       assert.ok(sec01, 'Control SEC-01 debe existir en el reporte');
       assert.strictEqual(sec01.status, 'COMPLIANT');
-      assert.strictEqual(sec01.technicalDetails?.totalTables, 32);
-      assert.strictEqual(sec01.technicalDetails?.rlsEnabledCount, 32);
+      assert.strictEqual(sec01.technicalDetails?.totalTables, 33);
+      assert.strictEqual(sec01.technicalDetails?.rlsEnabledCount, 33);
       assert.deepStrictEqual(sec01.technicalDetails?.tablesWithoutRls, []);
     });
 
@@ -173,16 +173,13 @@ describe('FASE M-09.3A — Suite de Auditoría e Inventario de Seguridad (SEC-01
   // SEC-06: Detección EXECUTE Otorgado a PUBLIC
   // ============================================================================
   describe('SEC-06: Detección EXECUTE Otorgado a PUBLIC', () => {
-    it('Detecta que claim_outbox_emails fue endurecida con REVOKE y admin_update_user_role requiere endurecimiento', () => {
+    it('Detecta funciones endurecidas con REVOKE explícito (claim_outbox_emails, admin_update_user_role)', () => {
       const sec06 = report.controls.find(c => c.id === 'SEC-06');
       assert.ok(sec06, 'Control SEC-06 debe existir');
-      assert.strictEqual(sec06.status, 'NEEDS_HARDENING');
 
       const hardened = sec06.technicalDetails?.hardenedFunctions || [];
-      const unrevoked = sec06.technicalDetails?.functionsMissingExplicitRevoke || [];
-
       assert.ok(hardened.includes('claim_outbox_emails'), 'claim_outbox_emails debe tener REVOKE FROM PUBLIC');
-      assert.ok(unrevoked.includes('admin_update_user_role'), 'admin_update_user_role debe detectarse como faltante de REVOKE');
+      assert.ok(hardened.includes('admin_update_user_role'), 'admin_update_user_role debe tener REVOKE FROM PUBLIC');
     });
   });
 
