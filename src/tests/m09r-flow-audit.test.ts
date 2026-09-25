@@ -159,6 +159,51 @@ class MockFlowAuditDB {
       },
     };
   }
+
+  rpc(name: string, params: any) {
+    if (name === 'apply_membership_transition_atomic') {
+      const mem = this.memberships.find((m: any) => m.id === params.p_membership_id);
+      if (!mem) return Promise.resolve({ data: { success: false, status: 'NOT_FOUND' }, error: null });
+      if (
+        params.p_gateway_snapshot_observed_at &&
+        mem.last_gateway_snapshot_observed_at &&
+        params.p_gateway_snapshot_observed_at < mem.last_gateway_snapshot_observed_at
+      ) {
+        return Promise.resolve({
+          data: {
+            success: true,
+            status: 'STALE_SNAPSHOT_SKIPPED',
+            membership_id: mem.id,
+            current_status: mem.status,
+          },
+          error: null,
+        });
+      }
+      const prevStatus = mem.status;
+      mem.status = params.p_new_status;
+      mem.gateway_status = params.p_gateway_status || mem.gateway_status;
+      if (params.p_current_period_start) mem.current_period_start = params.p_current_period_start;
+      if (params.p_current_period_end) mem.current_period_end = params.p_current_period_end;
+      if (params.p_trial_ends_at) mem.trial_ends_at = params.p_trial_ends_at;
+      if (params.p_new_status === 'CANCELLED' && !mem.cancelled_at) {
+        mem.cancelled_at = new Date().toISOString();
+      }
+      mem.last_gateway_snapshot_observed_at = params.p_gateway_snapshot_observed_at || new Date().toISOString();
+      mem.updated_at = new Date().toISOString();
+      return Promise.resolve({
+        data: {
+          success: true,
+          status: 'TRANSITIONED',
+          membership_id: mem.id,
+          previous_status: prevStatus,
+          new_status: params.p_new_status,
+          reason: params.p_reason,
+        },
+        error: null,
+      });
+    }
+    return Promise.resolve({ data: null, error: { message: `Unknown RPC function: ${name}` } });
+  }
 }
 
 function tableToProp(table: string): string {

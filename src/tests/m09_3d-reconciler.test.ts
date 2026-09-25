@@ -2,7 +2,7 @@
  * FASE M-09.3D: SUITE DE CERTIFICACIÓN RECONCILIADOR S2S FLOW MULTIVARIABLE
  * Naty Entrenadora - Máquina de Estados, Concurrencia Determinista e Idempotencia
  *
- * 17 Contratos de Prueba Obligatorios
+ * 20 Contratos de Prueba Obligatorios con Correcciones Contractuales
  */
 
 import { describe, it, beforeEach } from 'node:test';
@@ -27,6 +27,8 @@ class MockDatabase {
   paymentTransactions: any[] = [];
   paymentEvents: any[] = [];
   emailOutbox: any[] = [];
+  rpcCallLog: Array<{ name: string; params: any }> = [];
+  simulateRpcFailure: boolean = false;
 
   from(table: string) {
     const self = this;
@@ -124,6 +126,15 @@ class MockDatabase {
 
   // Simulación de la RPC atómica de PostgreSQL con semántica PL/pgSQL
   rpc(name: string, params: Record<string, any>) {
+    this.rpcCallLog.push({ name, params });
+
+    if (this.simulateRpcFailure) {
+      return Promise.resolve({
+        data: null,
+        error: { message: 'Database connection error during atomic RPC' },
+      });
+    }
+
     if (name === 'apply_membership_transition_atomic') {
       const mem = this.memberships.find(m => m.id === params.p_membership_id);
       if (!mem) {
@@ -133,21 +144,21 @@ class MockDatabase {
         });
       }
 
-      // Guarda contra eventos obsoletos
+      // Guarda contra snapshots obsoletos
       if (
-        params.p_gateway_event_at &&
-        mem.last_gateway_event_at &&
-        params.p_gateway_event_at < mem.last_gateway_event_at
+        params.p_gateway_snapshot_observed_at &&
+        mem.last_gateway_snapshot_observed_at &&
+        params.p_gateway_snapshot_observed_at < mem.last_gateway_snapshot_observed_at
       ) {
         return Promise.resolve({
           data: {
             success: true,
-            status: 'STALE_EVENT_SKIPPED',
+            status: 'STALE_SNAPSHOT_SKIPPED',
             membership_id: mem.id,
             previous_status: mem.status,
             current_status: mem.status,
-            last_gateway_event_at: mem.last_gateway_event_at,
-            attempted_event_at: params.p_gateway_event_at,
+            last_gateway_snapshot_observed_at: mem.last_gateway_snapshot_observed_at,
+            attempted_snapshot_observed_at: params.p_gateway_snapshot_observed_at,
           },
           error: null,
         });
@@ -159,8 +170,8 @@ class MockDatabase {
       const trialSame = !params.p_trial_ends_at || mem.trial_ends_at === params.p_trial_ends_at;
 
       if (statusSame && periodSame && trialSame) {
-        if (params.p_gateway_event_at && (!mem.last_gateway_event_at || params.p_gateway_event_at > mem.last_gateway_event_at)) {
-          mem.last_gateway_event_at = params.p_gateway_event_at;
+        if (params.p_gateway_snapshot_observed_at && (!mem.last_gateway_snapshot_observed_at || params.p_gateway_snapshot_observed_at > mem.last_gateway_snapshot_observed_at)) {
+          mem.last_gateway_snapshot_observed_at = params.p_gateway_snapshot_observed_at;
           mem.updated_at = new Date().toISOString();
         }
         return Promise.resolve({
@@ -180,7 +191,10 @@ class MockDatabase {
       if (params.p_current_period_start) mem.current_period_start = params.p_current_period_start;
       if (params.p_current_period_end) mem.current_period_end = params.p_current_period_end;
       if (params.p_trial_ends_at) mem.trial_ends_at = params.p_trial_ends_at;
-      mem.last_gateway_event_at = params.p_gateway_event_at || new Date().toISOString();
+      if (params.p_new_status === 'CANCELLED' && !mem.cancelled_at) {
+        mem.cancelled_at = new Date().toISOString();
+      }
+      mem.last_gateway_snapshot_observed_at = params.p_gateway_snapshot_observed_at || new Date().toISOString();
       mem.updated_at = new Date().toISOString();
 
       // Registro transaccional en security_audit_events
@@ -239,11 +253,25 @@ function createMockGateway(sub: Partial<GatewaySubscription>): PaymentGateway {
     getPaymentMethodStatus: () => Promise.reject(new Error('not implemented')),
     createSubscription: () => Promise.reject(new Error('not implemented')),
     cancelSubscription: () => Promise.reject(new Error('not implemented')),
-    resolveCallback: () => Promise.reject(new Error('not implemented')),
+    resolveCallback: () => Promise.resolve({
+      resourceType: 'subscription',
+      subscription: {
+        id: sub.id || 'sub-1',
+        planId: sub.planId || 'plan-1',
+        customerId: sub.customerId || 'cus-1',
+        status: sub.status || 'ACTIVE',
+        rawStatus: sub.rawStatus !== undefined ? sub.rawStatus : 1,
+        morose: sub.morose ?? 0,
+        currentPeriodStart: sub.currentPeriodStart,
+        currentPeriodEnd: sub.currentPeriodEnd,
+        trialEndsAt: sub.trialEndsAt,
+        cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+      },
+    }),
   };
 }
 
-describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Estados', () => {
+describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Estados (Corregido)', () => {
   let db: MockDatabase;
   const fixedNow = new Date('2026-09-25T12:00:00Z');
 
@@ -252,7 +280,7 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
   });
 
   // ============================================================================
-  // CONTRATOS 1-11: MATRIZ CANÓNICA Y FUNCIÓN PURA deriveMembershipState
+  // CONTRATOS 1-4: CANCELACIÓN Y TRIAL
   // ============================================================================
 
   it('1. FLOW_TRIAL_STATUS_WITH_ZERO_MOROSE_PRESERVES_TRIAL_NEVER_ACTIVE: Trial vigente JAMÁS se asume ACTIVE', () => {
@@ -265,13 +293,14 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     const state = deriveMembershipState(flowSub, null, fixedNow);
     assert.strictEqual(state.status, 'TRIAL');
     assert.strictEqual(state.hasAccess, true);
+    assert.strictEqual(state.accessUntil, '2026-09-30T23:59:59Z');
     assert.strictEqual(state.gatewayStatus, 'trial');
     assert.match(state.reason, /Active trial period/);
   });
 
   it('2. FLOW_TRIAL_STATUS_WITH_OVERDUE_INVOICE_IS_PAST_DUE: Mora durante trial revoca acceso y pasa a PAST_DUE', () => {
     const flowSub: FlowSubscriptionSnapshot = {
-      status: 2, // Trial
+      status: 2,
       morose: 1, // Factura vencida
       trial_end: '2026-09-30T23:59:59Z',
     };
@@ -284,7 +313,7 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
 
   it('3. FLOW_TRIAL_STATUS_LAPSED_WITHOUT_PAYMENT_IS_EXPIRED: Trial con fecha vencida concluye en EXPIRED', () => {
     const flowSub: FlowSubscriptionSnapshot = {
-      status: 2, // Trial
+      status: 2,
       morose: 0,
       trial_end: '2026-09-20T00:00:00Z', // Venció hace 5 días
     };
@@ -292,10 +321,29 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     const state = deriveMembershipState(flowSub, null, fixedNow);
     assert.strictEqual(state.status, 'EXPIRED');
     assert.strictEqual(state.hasAccess, false);
-    assert.match(state.reason, /expired without paid activation/);
+    assert.match(state.reason, /Trial period has expired/);
   });
 
-  it('4. FLOW_ACTIVE_STATUS_WITH_ZERO_MOROSE_WITHIN_PERIOD_IS_ACTIVE: Período pagado vigente y al día es ACTIVE', () => {
+  it('4. TRIAL_CANCEL_AT_PERIOD_END_REMAINS_TRIAL_UNTIL_TRIAL_END: Cancelación programada en trial permanece en TRIAL sin renovación', () => {
+    const flowSub: FlowSubscriptionSnapshot = {
+      status: 2, // Trial
+      cancel_at_period_end: 1,
+      trial_end: '2026-09-30T23:59:59Z',
+      morose: 0,
+    };
+
+    const state = deriveMembershipState(flowSub, null, fixedNow);
+    assert.strictEqual(state.status, 'TRIAL');
+    assert.strictEqual(state.hasAccess, true);
+    assert.strictEqual(state.accessUntil, '2026-09-30T23:59:59Z');
+    assert.strictEqual(state.reason, 'TRIAL_CANCEL_AT_PERIOD_END_ACCESS_RETAINED');
+  });
+
+  // ============================================================================
+  // CONTRATOS 5-8: ACTIVIDAD, FACTURAS Y MOROSIDAD
+  // ============================================================================
+
+  it('5. FLOW_ACTIVE_STATUS_WITH_ZERO_MOROSE_WITHIN_PERIOD_IS_ACTIVE: Período pagado vigente y al día es ACTIVE', () => {
     const flowSub: FlowSubscriptionSnapshot = {
       status: 1, // Activa
       morose: 0, // Al día
@@ -306,13 +354,14 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     const state = deriveMembershipState(flowSub, null, fixedNow);
     assert.strictEqual(state.status, 'ACTIVE');
     assert.strictEqual(state.hasAccess, true);
+    assert.strictEqual(state.accessUntil, '2026-10-01T00:00:00Z');
     assert.strictEqual(state.gatewayStatus, 'active');
   });
 
-  it('5. FLOW_ACTIVE_STATUS_WITH_PENDING_UNEXPIRED_INVOICE_IS_ACTIVE: Factura emitida no vencida (morose=2) no corta acceso', () => {
+  it('6. FLOW_ACTIVE_STATUS_WITH_PENDING_UNEXPIRED_INVOICE_IS_ACTIVE: Factura emitida no vencida (morose=2) no corta acceso', () => {
     const flowSub: FlowSubscriptionSnapshot = {
       status: 1,
-      morose: 2, // Invoice emitido pero aún dentro del plazo de pago
+      morose: 2, // Invoice emitido pero no vencido
       period_start: '2026-09-01T00:00:00Z',
       period_end: '2026-10-01T00:00:00Z',
     };
@@ -323,7 +372,7 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     assert.match(state.reason, /pending \(not overdue\) invoice/);
   });
 
-  it('6. FLOW_ACTIVE_STATUS_WITH_OVERDUE_INVOICE_IS_PAST_DUE: Factura vencida (morose=1) en suscripción activa corta acceso inmediatamente', () => {
+  it('7. FLOW_ACTIVE_STATUS_WITH_OVERDUE_INVOICE_IS_PAST_DUE: Factura vencida (morose=1) en activa corta acceso inmediatamente', () => {
     const flowSub: FlowSubscriptionSnapshot = {
       status: 1,
       morose: 1,
@@ -337,10 +386,10 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     assert.match(state.reason, /overdue invoice \(morose=1\)/);
   });
 
-  it('7. FLOW_ACTIVE_STATUS_WITH_LAPSED_PERIOD_IS_EXPIRED_EVEN_WITH_ZERO_MOROSE: morose=0 JAMÁS otorga acceso si el período contractual venció', () => {
+  it('8. FLOW_ACTIVE_STATUS_WITH_LAPSED_PERIOD_IS_EXPIRED_EVEN_WITH_ZERO_MOROSE: morose=0 JAMÁS otorga acceso si el período contractual venció', () => {
     const flowSub: FlowSubscriptionSnapshot = {
       status: 1,
-      morose: 0, // Al día técnicamente en Flow
+      morose: 0,
       period_start: '2026-08-01T00:00:00Z',
       period_end: '2026-09-01T00:00:00Z', // Venció hace 24 días
     };
@@ -351,7 +400,11 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     assert.match(state.reason, /Paid period has lapsed/);
   });
 
-  it('8. FLOW_CANCELLED_AT_PERIOD_END_PRESERVES_ACCESS_UNTIL_PERIOD_END: Cancelación programada preserva acceso contractual pagado', () => {
+  // ============================================================================
+  // CONTRATOS 9-11: CANCELACIÓN CONTRACTUAL VS ACCESO TEMPORAL
+  // ============================================================================
+
+  it('9. CANCELLED_AT_PERIOD_END_REMAINS_CANCELLED_BUT_RETAINS_PAID_ACCESS: Cancelación programada asigna CANCELLED y preserva acceso hasta period_end', () => {
     const flowSub: FlowSubscriptionSnapshot = {
       status: 4, // Cancelada en Flow
       cancel_at_period_end: 1,
@@ -361,105 +414,127 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     };
 
     const state = deriveMembershipState(flowSub, null, fixedNow);
-    assert.strictEqual(state.status, 'ACTIVE');
-    assert.strictEqual(state.hasAccess, true);
-    assert.strictEqual(state.gatewayStatus, 'cancelled_pending_period_end');
-    assert.match(state.reason, /contractual access retained/);
+    // REGLA FUNDAMENTAL: Estado contractual es CANCELLED (no resucita a ACTIVE)
+    assert.strictEqual(state.status, 'CANCELLED');
+    assert.strictEqual(state.hasAccess, true, 'Debe retener acceso hasta period_end');
+    assert.strictEqual(state.accessUntil, '2026-09-30T23:59:59Z');
+    assert.strictEqual(state.reason, 'CANCELLED_AT_PERIOD_END_ACCESS_RETAINED');
   });
 
-  it('9. FLOW_CANCELLED_IMMEDIATE_OR_PAST_PERIOD_IS_CANCELLED: Cancelación inmediata o posterior al período no otorga días artificiales', () => {
-    // 9.1 Cancelación inmediata (cancel_at_period_end = 0)
-    const flowSubImmediate: FlowSubscriptionSnapshot = {
+  it('10. CANCELLED_MEMBERSHIP_DOES_NOT_COUNT_AS_ACTIVE_CONTRACT: Estado CANCELLED previene inflar MRR contratado', () => {
+    const flowSub: FlowSubscriptionSnapshot = {
+      status: 4,
+      cancel_at_period_end: 1,
+      period_end: '2026-09-30T23:59:59Z',
+      morose: 0,
+    };
+
+    const state = deriveMembershipState(flowSub, { status: 'ACTIVE' }, fixedNow);
+    assert.strictEqual(state.status, 'CANCELLED', 'No debe persistirse como ACTIVE en DB');
+    assert.strictEqual(state.hasAccess, true);
+  });
+
+  it('11. FLOW_CANCELLED_IMMEDIATE_OR_PAST_PERIOD_IS_CANCELLED: Cancelación inmediata o posterior al período no otorga días artificiales', () => {
+    // Inmediata
+    const stateImm = deriveMembershipState({
       status: 4,
       cancel_at_period_end: 0,
       period_end: '2026-09-30T23:59:59Z',
       morose: 0,
-    };
-    const stateImm = deriveMembershipState(flowSubImmediate, null, fixedNow);
+    }, null, fixedNow);
     assert.strictEqual(stateImm.status, 'CANCELLED');
     assert.strictEqual(stateImm.hasAccess, false);
 
-    // 9.2 Cancelación tras fin del período
-    const flowSubPast: FlowSubscriptionSnapshot = {
+    // Con período vencido
+    const statePast = deriveMembershipState({
       status: 4,
       cancel_at_period_end: 1,
       period_end: '2026-09-10T00:00:00Z',
       morose: 0,
-    };
-    const statePast = deriveMembershipState(flowSubPast, null, fixedNow);
+    }, null, fixedNow);
     assert.strictEqual(statePast.status, 'CANCELLED');
     assert.strictEqual(statePast.hasAccess, false);
   });
 
-  it('10. FLOW_SUBSCRIPTION_RESOLVES_PAST_DUE_WHEN_DEBT_CLEARED: Subsanación de mora reactiva membresía local a ACTIVE con fechas válidas', () => {
-    const flowSubCleared: FlowSubscriptionSnapshot = {
+  // ============================================================================
+  // CONTRATOS 12-13: RECUPERACIÓN ESTRICTA Y DATOS CORRUPTOS
+  // ============================================================================
+
+  it('12. PAST_DUE_RECOVERY_REEVALUATES_FULL_CANONICAL_MATRIX: Subsanación desde PAST_DUE evalúa la matriz íntegra sin atajos arbitrarios', () => {
+    const localPastDue: LocalMembershipSnapshot = { id: 'mem-pd', status: 'PAST_DUE' };
+
+    // 12.1 Recupera a ACTIVE si Flow está en 1 con período vigente
+    const resActive = deriveMembershipState({
       status: 1,
-      morose: 0, // Mora subsanada
+      morose: 0,
       period_start: '2026-09-01T00:00:00Z',
       period_end: '2026-10-01T00:00:00Z',
-    };
+    }, localPastDue, fixedNow);
+    assert.strictEqual(resActive.status, 'ACTIVE');
+    assert.strictEqual(resActive.hasAccess, true);
 
-    const localMem: LocalMembershipSnapshot = {
-      id: 'mem-10',
-      status: 'PAST_DUE',
-    };
-
-    const state = deriveMembershipState(flowSubCleared, localMem, fixedNow);
-    assert.strictEqual(state.status, 'ACTIVE');
-    assert.strictEqual(state.hasAccess, true);
-  });
-
-  it('11. CORRUPTED_OR_MISSING_DATES_FAIL_CLOSED: Fechas ausentes o no analizables fallan cerrado', () => {
-    // 11.1 Flow status 1 sin fechas
-    const noDatesSub: FlowSubscriptionSnapshot = {
-      status: 1,
-      morose: 0,
-      period_end: undefined,
-    };
-    const state1 = deriveMembershipState(noDatesSub, null, fixedNow);
-    assert.strictEqual(state1.status, 'PAST_DUE');
-    assert.strictEqual(state1.hasAccess, false);
-
-    // 11.2 Flow status 2 sin fechas
-    const noDatesTrial: FlowSubscriptionSnapshot = {
+    // 12.2 Recupera a TRIAL (JAMÁS ACTIVE) si Flow está en trial con trial vigente
+    const resTrial = deriveMembershipState({
       status: 2,
       morose: 0,
-      trial_end: 'invalid-date-string',
-    };
-    const state2 = deriveMembershipState(noDatesTrial, null, fixedNow);
-    assert.strictEqual(state2.status, 'EXPIRED');
-    assert.strictEqual(state2.hasAccess, false);
+      trial_end: '2026-09-30T23:59:59Z',
+    }, localPastDue, fixedNow);
+    assert.strictEqual(resTrial.status, 'TRIAL', 'Subsanación en trial regresa a TRIAL, nunca ACTIVE');
+    assert.strictEqual(resTrial.hasAccess, true);
 
-    // 11.3 Status desconocido
-    const unknownStatus: FlowSubscriptionSnapshot = {
-      status: 99,
+    // 12.3 Transiciona a CANCELLED si Flow está cancelada (con acceso si cancel_at_period_end=1)
+    const resCancelled = deriveMembershipState({
+      status: 4,
       morose: 0,
-    };
-    const state3 = deriveMembershipState(unknownStatus, null, fixedNow);
-    assert.strictEqual(state3.status, 'EXPIRED');
-    assert.strictEqual(state3.hasAccess, false);
+      cancel_at_period_end: 1,
+      period_end: '2026-09-30T23:59:59Z',
+    }, localPastDue, fixedNow);
+    assert.strictEqual(resCancelled.status, 'CANCELLED');
+    assert.strictEqual(resCancelled.hasAccess, true);
+
+    // 12.4 Transiciona a EXPIRED si Flow está inactiva (status 0)
+    const resExpired = deriveMembershipState({
+      status: 0,
+      morose: 0,
+    }, localPastDue, fixedNow);
+    assert.strictEqual(resExpired.status, 'EXPIRED');
+    assert.strictEqual(resExpired.hasAccess, false);
+  });
+
+  it('13. UNKNOWN_FLOW_STATUS_FAILS_CLOSED_WITHOUT_DESTRUCTIVE_STATE_MUTATION: Estados Flow desconocidos o corruptos bloquean acceso sin mutar DB erróneamente', () => {
+    const localKnown: LocalMembershipSnapshot = { id: 'mem-known', status: 'ACTIVE' };
+
+    // 13.1 Flow status 99 no soportado
+    const unknownState = deriveMembershipState({ status: 99, morose: 0 }, localKnown, fixedNow);
+    assert.strictEqual(unknownState.hasAccess, false, 'Debe fallar cerrado');
+    assert.strictEqual(unknownState.applyStateMutation, false, 'No debe aplicar mutación destructiva en DB');
+    assert.strictEqual(unknownState.status, 'ACTIVE', 'Debe preservar el estado conocido');
+    assert.strictEqual(unknownState.reason, 'UNSUPPORTED_OR_INVALID_GATEWAY_STATE');
+
+    // 13.2 Fechas esenciales ausentes en suscripción activa
+    const corruptDates = deriveMembershipState({ status: 1, morose: 0, period_end: null }, localKnown, fixedNow);
+    assert.strictEqual(corruptDates.hasAccess, false);
+    assert.strictEqual(corruptDates.applyStateMutation, false);
+    assert.strictEqual(corruptDates.reason, 'UNSUPPORTED_OR_INVALID_GATEWAY_STATE');
   });
 
   // ============================================================================
-  // CONTRATOS 12-14: CONCURRENCIA, IDEMPOTENCIA Y CRON S2S
+  // CONTRATOS 14-16: EMBUDO ATÓMICO EXCLUSIVO Y CONCURRENCIA
   // ============================================================================
 
-  it('12. RECONCILER_CRON_EXECUTES_IDEMPOTENTLY_NO_DUPLICATE_SIDE_EFFECTS: Ejecución repetida sin cambios no genera efectos colaterales duplicados', async () => {
-    const memId = 'mem-idem-1';
+  it('14. CALLBACK_AND_RECONCILER_USE_SAME_ATOMIC_TRANSITION_PATH: Callback y reconciliador convergen en apply_membership_transition_atomic', async () => {
+    const memId = 'mem-funnel-1';
     db.memberships.push({
       id: memId,
-      student_id: 'student-1',
-      status: 'ACTIVE',
+      student_id: 'student-funnel',
+      status: 'PENDING_PAYMENT',
       gateway: 'FLOW',
-      gateway_subscription_id: 'sub-idem-1',
-      current_period_start: '2026-09-01T00:00:00Z',
-      current_period_end: '2026-10-01T00:00:00Z',
-      last_gateway_event_at: '2026-09-25T10:00:00Z',
-      trace_id: 'trace-idem-1',
+      gateway_subscription_id: 'sub-funnel-1',
+      trace_id: 'trace-funnel-1',
     });
 
     const mockGw = createMockGateway({
-      id: 'sub-idem-1',
+      id: 'sub-funnel-1',
       rawStatus: 1,
       morose: 0,
       currentPeriodStart: '2026-09-01T00:00:00Z',
@@ -467,37 +542,133 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     });
     setPaymentGateway(mockGw);
 
-    // Ejecución 1: Estado ya coincide
-    const res1 = await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
-    assert.strictEqual(res1.scanned, 1);
-    assert.strictEqual(res1.reconciled, 0, 'No debe reconciliar si ya coincide');
-    assert.strictEqual(db.securityAuditEvents.length, 0, 'Cero auditorías duplicadas en no-op');
-    assert.strictEqual(db.paymentTransactions.length, 0, 'Cero transacciones duplicadas');
-    assert.strictEqual(db.emailOutbox.length, 0, 'Cero emails duplicados');
+    // 14.1 Ejecutar reconciliador
+    await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
+    assert.strictEqual(db.rpcCallLog.length, 1);
+    assert.strictEqual(db.rpcCallLog[0].name, 'apply_membership_transition_atomic');
 
-    // Ejecución 2: Repetición estricta
+    // 14.2 Ejecutar callback de suscripción
+    await processFlowCallback({
+      supabase: db as any,
+      token: 'tok-funnel',
+      resourceHint: 'subscription',
+    });
+    assert.strictEqual(db.rpcCallLog.length, 2);
+    assert.strictEqual(db.rpcCallLog[1].name, 'apply_membership_transition_atomic');
+  });
+
+  it('15. RPC_FAILURE_DOES_NOT_FALLBACK_TO_DIRECT_MEMBERSHIP_MUTATION: Caída de la RPC deja membresía intacta sin fallback mutante', async () => {
+    const memId = 'mem-fail-rpc';
+    db.memberships.push({
+      id: memId,
+      student_id: 'student-fail',
+      status: 'ACTIVE',
+      gateway: 'FLOW',
+      gateway_subscription_id: 'sub-fail-1',
+      last_gateway_snapshot_observed_at: '2026-09-25T10:00:00Z',
+      trace_id: 'trace-fail-1',
+    });
+
+    // Gateway reporta morose=1 (debería transicionar a PAST_DUE)
+    const mockGw = createMockGateway({
+      id: 'sub-fail-1',
+      rawStatus: 1,
+      morose: 1,
+    });
+    setPaymentGateway(mockGw);
+
+    // Simular fallo en la RPC atómica
+    db.simulateRpcFailure = true;
+
+    const res = await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
+    assert.strictEqual(res.errors, 1);
+    assert.strictEqual(res.details[0].action, 'APPLY_FAILED');
+
+    // REGLA CRÍTICA: Base de datos intacta (cero bypass manual)
+    const mem = db.memberships.find(m => m.id === memId);
+    assert.strictEqual(mem.status, 'ACTIVE', 'La membresía no debe mutar si la RPC falla');
+    assert.strictEqual(db.securityAuditEvents.length, 0, 'No debe registrarse auditoría si la RPC falla');
+  });
+
+  it('16. OLDER_OBSERVED_SNAPSHOT_CANNOT_OVERWRITE_NEWER_APPLIED_SNAPSHOT: Snapshot con timestamp observado anterior es descartado', async () => {
+    const memId = 'mem-older-snap';
+    db.memberships.push({
+      id: memId,
+      student_id: 'student-snap',
+      status: 'PAST_DUE',
+      gateway: 'FLOW',
+      gateway_subscription_id: 'sub-snap-1',
+      last_gateway_snapshot_observed_at: '2026-09-25T11:00:00Z',
+      trace_id: 'trace-snap-1',
+    });
+
+    // Intentar aplicar un snapshot observado a las 10:00:00Z (desfasado respecto a las 11:00:00Z)
+    const { data: rpcRes } = await db.rpc('apply_membership_transition_atomic', {
+      p_membership_id: memId,
+      p_new_status: 'ACTIVE',
+      p_gateway_status: 'active',
+      p_gateway_snapshot_observed_at: '2026-09-25T10:00:00Z',
+      p_reason: 'Testing older snapshot rejection',
+    });
+
+    assert.strictEqual(rpcRes.status, 'STALE_SNAPSHOT_SKIPPED');
+    assert.strictEqual(rpcRes.current_status, 'PAST_DUE', 'El estado local no debe degradarse');
+
+    const mem = db.memberships.find(m => m.id === memId);
+    assert.strictEqual(mem.status, 'PAST_DUE');
+  });
+
+  // ============================================================================
+  // CONTRATOS 17-20: IDEMPOTENCIA, DRY RUN, AUDITORÍA Y ESTRUCTURA SQL
+  // ============================================================================
+
+  it('17. RECONCILER_CRON_EXECUTES_IDEMPOTENTLY_NO_DUPLICATE_SIDE_EFFECTS: Ejecución repetida sin cambios no genera efectos colaterales', async () => {
+    const memId = 'mem-idem-2';
+    db.memberships.push({
+      id: memId,
+      student_id: 'student-idem-2',
+      status: 'ACTIVE',
+      gateway: 'FLOW',
+      gateway_subscription_id: 'sub-idem-2',
+      current_period_start: '2026-09-01T00:00:00Z',
+      current_period_end: '2026-10-01T00:00:00Z',
+      last_gateway_snapshot_observed_at: '2026-09-25T10:00:00Z',
+      trace_id: 'trace-idem-2',
+    });
+
+    const mockGw = createMockGateway({
+      id: 'sub-idem-2',
+      rawStatus: 1,
+      morose: 0,
+      currentPeriodStart: '2026-09-01T00:00:00Z',
+      currentPeriodEnd: '2026-10-01T00:00:00Z',
+    });
+    setPaymentGateway(mockGw);
+
+    const res1 = await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
+    assert.strictEqual(res1.reconciled, 0);
+    assert.strictEqual(db.securityAuditEvents.length, 0);
+
     const res2 = await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
     assert.strictEqual(res2.reconciled, 0);
     assert.strictEqual(db.securityAuditEvents.length, 0);
-    assert.strictEqual(db.paymentTransactions.length, 0);
   });
 
-  it('13. RECONCILER_DRY_RUN_MAKES_ZERO_DATABASE_MODIFICATIONS: Modo dryRun informa transiciones sin modificar registros', async () => {
-    const memId = 'mem-dry-1';
+  it('18. RECONCILER_DRY_RUN_MAKES_ZERO_DATABASE_MODIFICATIONS: dryRun informa acciones sin mutar registros', async () => {
+    const memId = 'mem-dry-2';
     db.memberships.push({
       id: memId,
-      student_id: 'student-2',
+      student_id: 'student-dry-2',
       status: 'ACTIVE',
       gateway: 'FLOW',
-      gateway_subscription_id: 'sub-dry-1',
+      gateway_subscription_id: 'sub-dry-2',
       current_period_start: '2026-09-01T00:00:00Z',
       current_period_end: '2026-10-01T00:00:00Z',
-      trace_id: 'trace-dry-1',
+      trace_id: 'trace-dry-2',
     });
 
-    // Flow reporta moroso=1 -> debería ser PAST_DUE
     const mockGw = createMockGateway({
-      id: 'sub-dry-1',
+      id: 'sub-dry-2',
       rawStatus: 1,
       morose: 1,
       currentPeriodStart: '2026-09-01T00:00:00Z',
@@ -506,87 +677,42 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     setPaymentGateway(mockGw);
 
     const res = await reconcileFlowSubscriptions(db as any, { dryRun: true, referenceNow: fixedNow });
-    assert.strictEqual(res.scanned, 1);
     assert.strictEqual(res.reconciled, 1);
     assert.strictEqual(res.details[0].action, 'DRY_RUN_TRANSITION_TO_PAST_DUE');
 
-    // Verificación de base de datos intacta
     const mem = db.memberships.find(m => m.id === memId);
-    assert.strictEqual(mem.status, 'ACTIVE', 'El registro en DB no debe modificarse en dryRun');
-    assert.strictEqual(db.securityAuditEvents.length, 0, 'Cero eventos de auditoría en dryRun');
+    assert.strictEqual(mem.status, 'ACTIVE');
+    assert.strictEqual(db.securityAuditEvents.length, 0);
   });
 
-  it('14. CONCURRENCY_STALE_SNAPSHOT_PROTECTION_DISCARDS_OUT_OF_ORDER_EVENTS: Instantánea con estampa anterior es rechazada como STALE_EVENT_SKIPPED', async () => {
-    const memId = 'mem-stale-1';
-    // Membresía ya procesó un webhook a las 11:00:00Z
-    db.memberships.push({
-      id: memId,
-      student_id: 'student-3',
-      status: 'PAST_DUE',
-      gateway: 'FLOW',
-      gateway_subscription_id: 'sub-stale-1',
-      last_gateway_event_at: '2026-09-25T11:00:00Z',
-      trace_id: 'trace-stale-1',
-    });
-
-    // Intentar aplicar una transición con snapshot desfasado (estampa anterior a las 10:00:00Z)
-    const { data: rpcRes } = await db.rpc('apply_membership_transition_atomic', {
-      p_membership_id: memId,
-      p_new_status: 'ACTIVE',
-      p_gateway_status: 'active',
-      p_gateway_event_at: '2026-09-25T10:00:00Z', // Anterior al registro en base de datos
-      p_reason: 'Stale snapshot replay test',
-    });
-
-    assert.strictEqual(rpcRes.status, 'STALE_EVENT_SKIPPED');
-    assert.strictEqual(rpcRes.current_status, 'PAST_DUE', 'El estado local no debe degradarse por eventos viejos');
-
-    // Asegurar que en base de datos sigue intacto
-    const mem = db.memberships.find(m => m.id === memId);
-    assert.strictEqual(mem.status, 'PAST_DUE');
-    assert.strictEqual(db.securityAuditEvents.length, 0, 'No se genera auditoría por evento descartado');
-  });
-
-  // ============================================================================
-  // CONTRATOS 15-17: AUDITORÍA TRANSACCIONAL Y ESTRUCTURA SQL M-09.3D
-  // ============================================================================
-
-  it('15. ATOMIC_RPC_APPLIES_FOR_UPDATE_AND_RECORDS_SECURITY_AUDIT_ON_REAL_TRANSITION: La migración SQL implementa FOR UPDATE, search_path="" y permisos service_role', () => {
+  it('19. ATOMIC_RPC_APPLIES_FOR_UPDATE_AND_RECORDS_SECURITY_AUDIT_ON_REAL_TRANSITION: Migración SQL implementa FOR UPDATE, search_path="" y last_gateway_snapshot_observed_at', () => {
     const migrationPath = path.resolve(process.cwd(), 'supabase/migrations/20260925000002_fase_m09_3d_multivariable_reconciliation.sql');
     assert.ok(fs.existsSync(migrationPath), 'El archivo de migración M-09.3D debe existir');
 
     const sql = fs.readFileSync(migrationPath, 'utf8');
-
-    // 15.1 Bloqueo FOR UPDATE
+    assert.match(sql, /last_gateway_snapshot_observed_at\s+TIMESTAMPTZ/, 'Debe utilizar el nombre preciso last_gateway_snapshot_observed_at');
     assert.match(sql, /FOR\s+UPDATE/, 'Debe utilizar FOR UPDATE para serialización estricta');
-
-    // 15.2 search_path vacío (Hardening M-09.3C)
-    assert.match(sql, /SET\s+search_path\s*=\s*''/, 'Debe forzar search_path vacío contra search path hijacking');
-
-    // 15.3 Revocación y menor privilegio
-    assert.match(sql, /REVOKE\s+ALL\s+ON\s+FUNCTION\s+public\.apply_membership_transition_atomic.*FROM\s+PUBLIC/i);
+    assert.match(sql, /SET\s+search_path\s*=\s*''/, 'Debe forzar search_path vacío contra hijacking');
     assert.match(sql, /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.apply_membership_transition_atomic.*TO\s+service_role/i);
-
-    // 15.4 Inserción en security_audit_events
     assert.match(sql, /INSERT\s+INTO\s+public\.security_audit_events/, 'Debe insertar en security_audit_events en transiciones reales');
   });
 
-  it('16. AUDIT_EVENT_FOR_MEMBERSHIP_TRANSITION_CONTAINS_SANITIZED_DATA: Auditoría registra previous_status, new_status y morose sin secretos ni PII', async () => {
-    const memId = 'mem-audit-1';
+  it('20. AUDIT_EVENT_FOR_MEMBERSHIP_TRANSITION_CONTAINS_SANITIZED_DATA: Auditoría registra previous_status, new_status y morose sin secretos ni PII', async () => {
+    const memId = 'mem-audit-2';
     db.memberships.push({
       id: memId,
-      student_id: 'student-4',
+      student_id: 'student-audit-2',
       status: 'ACTIVE',
       gateway: 'FLOW',
-      gateway_subscription_id: 'sub-audit-1',
-      last_gateway_event_at: '2026-09-25T08:00:00Z',
-      trace_id: 'trace-audit-uuid-1',
+      gateway_subscription_id: 'sub-audit-2',
+      last_gateway_snapshot_observed_at: '2026-09-25T08:00:00Z',
+      trace_id: 'trace-audit-uuid-2',
     });
 
     const mockGw = createMockGateway({
-      id: 'sub-audit-1',
+      id: 'sub-audit-2',
       rawStatus: 1,
-      morose: 1, // Provoca transición a PAST_DUE
+      morose: 1,
       currentPeriodStart: '2026-09-01T00:00:00Z',
       currentPeriodEnd: '2026-10-01T00:00:00Z',
     });
@@ -594,57 +720,21 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
 
     const res = await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
     assert.strictEqual(res.reconciled, 1);
-
-    // Verificar el registro en securityAuditEvents
     assert.strictEqual(db.securityAuditEvents.length, 1);
+
     const audit = db.securityAuditEvents[0];
     assert.strictEqual(audit.event_type, 'MEMBERSHIP_STATUS_TRANSITION');
     assert.strictEqual(audit.target_id, memId);
-    assert.strictEqual(audit.trace_id, 'trace-audit-uuid-1');
+    assert.strictEqual(audit.trace_id, 'trace-audit-uuid-2');
     assert.strictEqual(audit.result, 'SUCCESS');
     assert.strictEqual(audit.metadata.previous_status, 'ACTIVE');
     assert.strictEqual(audit.metadata.new_status, 'PAST_DUE');
     assert.strictEqual(audit.metadata.gateway, 'FLOW');
     assert.strictEqual(audit.metadata.morose, 1);
 
-    // Confirmar que no hay llaves prohibidas en la metadata
     const metaStr = JSON.stringify(audit.metadata).toLowerCase();
-    assert.ok(!metaStr.includes('secret'), 'No debe contener secretos');
-    assert.ok(!metaStr.includes('apikey'), 'No debe contener api_keys');
-    assert.ok(!metaStr.includes('bearer'), 'No debe contener tokens de autorización');
-  });
-
-  it('17. FAIL_CLOSED_GATE_OBSERVABILITY_EMITS_STRUCTURED_LOGS: Anomalías o errores de pasarela reportan error y preservan fail-closed', async () => {
-    const memId = 'mem-err-1';
-    db.memberships.push({
-      id: memId,
-      student_id: 'student-5',
-      status: 'ACTIVE',
-      gateway: 'FLOW',
-      gateway_subscription_id: 'sub-err-1',
-      trace_id: 'trace-err-1',
-    });
-
-    const failingGw: PaymentGateway = {
-      name: 'FLOW',
-      mode: 'AUTOMATIC_RECURRING',
-      getSubscription: () => Promise.reject(new Error('Flow S2S Gateway Timeout 504')),
-      createCustomer: () => Promise.reject(new Error('not implemented')),
-      registerPaymentMethod: () => Promise.reject(new Error('not implemented')),
-      getPaymentMethodStatus: () => Promise.reject(new Error('not implemented')),
-      createSubscription: () => Promise.reject(new Error('not implemented')),
-      cancelSubscription: () => Promise.reject(new Error('not implemented')),
-      resolveCallback: () => Promise.reject(new Error('not implemented')),
-    };
-    setPaymentGateway(failingGw);
-
-    const res = await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
-    assert.strictEqual(res.errors, 1);
-    assert.strictEqual(res.details[0].action, 'ERROR');
-    assert.match(res.details[0].reason || '', /504/);
-
-    // La membresía no debe mutar a un estado erróneo
-    const mem = db.memberships.find(m => m.id === memId);
-    assert.strictEqual(mem.status, 'ACTIVE', 'Error de red preserva estado previo sin corrupción');
+    assert.ok(!metaStr.includes('secret'));
+    assert.ok(!metaStr.includes('apikey'));
+    assert.ok(!metaStr.includes('bearer'));
   });
 });

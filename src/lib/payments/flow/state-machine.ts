@@ -36,7 +36,7 @@ export interface LocalMembershipSnapshot {
   trial_ends_at?: string | null;
   current_period_end?: string | null;
   current_period_start?: string | null;
-  last_gateway_event_at?: string | null;
+  last_gateway_snapshot_observed_at?: string | null;
   trace_id?: string | null;
 }
 
@@ -44,6 +44,8 @@ export interface DerivedMembershipState {
   status: CanonicalMembershipStatus;
   gatewayStatus: string;
   hasAccess: boolean;
+  accessUntil?: string | null;
+  applyStateMutation: boolean;
   reason: string;
   effectivePeriodStart?: string | null;
   effectivePeriodEnd?: string | null;
@@ -52,14 +54,14 @@ export interface DerivedMembershipState {
 
 /**
  * Función pura de derivación de estado multivariable.
- * Evalúa conjuntamente:
- * - flowSub.status (0, 1, 2, 4)
- * - flowSub.morose (0=al día, 1=overdue, 2=pending unexpired)
- * - Fechas contractuales (trial_end, period_end, now)
- * - Indicador cancel_at_period_end
- * - Estado local previo (para subsanación o transición)
  *
- * Cumple exhaustivamente con la Matriz Canónica M-09.3D.
+ * Principios rectores:
+ * 1. Estado contractual != Derecho de acceso temporal.
+ *    Cancelación programada asigna estado CANCELLED con hasAccess=true hasta period_end.
+ *    Jamás resucita ACTIVE para mantener acceso.
+ * 2. Cero atajos desde PAST_DUE: La subsanación evalúa la matriz canónica completa.
+ * 3. Falla cerrada no destructiva ante datos corruptos o estados desconocidos:
+ *    hasAccess=false, applyStateMutation=false, preservando el estado previo en DB.
  */
 export function deriveMembershipState(
   flowSub: FlowSubscriptionSnapshot,
@@ -87,15 +89,19 @@ export function deriveMembershipState(
     flowSub.cancel_at_period_end === true ||
     flowSub.cancelAtPeriodEnd === true;
 
+  const fallbackLocalStatus = (localMem?.status as CanonicalMembershipStatus) || 'PAST_DUE';
+
   // 1. CASO FLOW STATUS = 2 (TRIAL / PERÍODO DE PRUEBA)
   if (flowSub.status === 2) {
-    // Si la fecha de fin de trial es inválida o faltante -> Fail-closed
+    // Si la fecha de fin de trial es inválida o faltante -> Fail-closed no destructivo
     if (trialEndMs === null) {
       return {
-        status: 'EXPIRED',
-        gatewayStatus: 'trial',
+        status: fallbackLocalStatus,
+        gatewayStatus: 'unsupported_or_invalid_gateway_state',
         hasAccess: false,
-        reason: 'Flow reports trial status but trial end date is missing or invalid',
+        accessUntil: null,
+        applyStateMutation: false,
+        reason: 'UNSUPPORTED_OR_INVALID_GATEWAY_STATE',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
         effectiveTrialEnd: rawTrialEnd,
@@ -108,6 +114,8 @@ export function deriveMembershipState(
         status: 'EXPIRED',
         gatewayStatus: 'trial_expired',
         hasAccess: false,
+        accessUntil: null,
+        applyStateMutation: true,
         reason: 'Trial period has expired without paid activation',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -115,13 +123,15 @@ export function deriveMembershipState(
       };
     }
 
-    // Si el trial está dentro de la ventana de tiempo:
+    // Trial vigente en fechas:
     // Si morose = 1 (factura vencida en trial) -> PAST_DUE
     if (flowSub.morose === 1) {
       return {
         status: 'PAST_DUE',
         gatewayStatus: 'past_due',
         hasAccess: false,
+        accessUntil: null,
+        applyStateMutation: true,
         reason: 'Flow reports overdue invoice during trial (morose=1)',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -129,11 +139,28 @@ export function deriveMembershipState(
       };
     }
 
-    // morose = 0 o morose = 2 dentro del trial vigente -> TRIAL legítimo (CONTRATO: JAMÁS ACTIVE)
+    // Cancelación programada durante trial (observada en Sandbox)
+    if (isCancelAtPeriodEnd) {
+      return {
+        status: 'TRIAL',
+        gatewayStatus: 'trial_cancelled_pending_end',
+        hasAccess: true,
+        accessUntil: rawTrialEnd,
+        applyStateMutation: true,
+        reason: 'TRIAL_CANCEL_AT_PERIOD_END_ACCESS_RETAINED',
+        effectivePeriodStart: rawPeriodStart,
+        effectivePeriodEnd: rawPeriodEnd,
+        effectiveTrialEnd: rawTrialEnd,
+      };
+    }
+
+    // morose = 0 o 2 dentro de trial vigente -> TRIAL legítimo (CONTRATO: JAMÁS ACTIVE)
     return {
       status: 'TRIAL',
       gatewayStatus: 'trial',
       hasAccess: true,
+      accessUntil: rawTrialEnd,
+      applyStateMutation: true,
       reason: 'Active trial period within contractual trial window',
       effectivePeriodStart: rawPeriodStart,
       effectivePeriodEnd: rawPeriodEnd,
@@ -143,12 +170,14 @@ export function deriveMembershipState(
 
   // 2. CASO FLOW STATUS = 1 (SUSCRIPCIÓN ACTIVA EN FLOW)
   if (flowSub.status === 1) {
-    // Morosidad crítica: morose = 1 (al menos una factura vencida) -> PAST_DUE inmediato
+    // Morosidad crítica: morose = 1 (factura vencida) -> PAST_DUE inmediato
     if (flowSub.morose === 1) {
       return {
         status: 'PAST_DUE',
         gatewayStatus: 'past_due',
         hasAccess: false,
+        accessUntil: null,
+        applyStateMutation: true,
         reason: 'Flow reports overdue invoice (morose=1)',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -156,14 +185,15 @@ export function deriveMembershipState(
       };
     }
 
-    // Si morose = 0 o morose = 2: Validar ventana de período pagado
+    // Si morose = 0 o 2: Validar ventana de período pagado
     if (periodEndMs === null) {
-      // Falta de fecha en período activo -> Fail-closed
       return {
-        status: 'PAST_DUE',
-        gatewayStatus: 'active_incomplete_dates',
+        status: fallbackLocalStatus,
+        gatewayStatus: 'unsupported_or_invalid_gateway_state',
         hasAccess: false,
-        reason: 'Flow reports active subscription but period end date is missing or invalid',
+        accessUntil: null,
+        applyStateMutation: false,
+        reason: 'UNSUPPORTED_OR_INVALID_GATEWAY_STATE',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
         effectiveTrialEnd: rawTrialEnd,
@@ -176,6 +206,8 @@ export function deriveMembershipState(
         status: 'EXPIRED',
         gatewayStatus: 'period_lapsed',
         hasAccess: false,
+        accessUntil: null,
+        applyStateMutation: true,
         reason: 'Paid period has lapsed past current_period_end',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -193,6 +225,8 @@ export function deriveMembershipState(
       status: 'ACTIVE',
       gatewayStatus: 'active',
       hasAccess: true,
+      accessUntil: rawPeriodEnd,
+      applyStateMutation: true,
       reason: reasonText,
       effectivePeriodStart: rawPeriodStart,
       effectivePeriodEnd: rawPeriodEnd,
@@ -202,25 +236,32 @@ export function deriveMembershipState(
 
   // 3. CASO FLOW STATUS = 4 (SUSCRIPCIÓN CANCELADA EN FLOW)
   if (flowSub.status === 4) {
-    // Si fue cancelada al final del período (cancel_at_period_end = 1) y el período aún está vigente
+    // REGLA FUNDAMENTAL: Estado contractual CANCELLED != Acceso temporal.
+    // Si la cancelación es al final del período y el período pagado sigue vigente:
+    // targetState = CANCELLED (para no inflar MRR ni desvirtuar estado empresarial)
+    // hasAccess = true hasta period_end.
     if (isCancelAtPeriodEnd && periodEndMs !== null && nowMs <= periodEndMs) {
       return {
-        status: 'ACTIVE',
+        status: 'CANCELLED',
         gatewayStatus: 'cancelled_pending_period_end',
         hasAccess: true,
-        reason: 'Subscription cancelled with contractual access retained until current_period_end',
+        accessUntil: rawPeriodEnd,
+        applyStateMutation: true,
+        reason: 'CANCELLED_AT_PERIOD_END_ACCESS_RETAINED',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
         effectiveTrialEnd: rawTrialEnd,
       };
     }
 
-    // Cancelación inmediata o período concluido -> CANCELLED (cero días artificiales)
+    // Cancelación inmediata o período ya concluido -> CANCELLED sin acceso (cero días de gracia)
     return {
       status: 'CANCELLED',
       gatewayStatus: 'cancelled',
       hasAccess: false,
-      reason: 'Subscription cancelled without active contractual period',
+      accessUntil: null,
+      applyStateMutation: true,
+      reason: 'CANCELLED_IMMEDIATE_OR_PERIOD_LAPSED',
       effectivePeriodStart: rawPeriodStart,
       effectivePeriodEnd: rawPeriodEnd,
       effectiveTrialEnd: rawTrialEnd,
@@ -233,6 +274,8 @@ export function deriveMembershipState(
       status: 'EXPIRED',
       gatewayStatus: 'inactive',
       hasAccess: false,
+      accessUntil: null,
+      applyStateMutation: true,
       reason: 'Flow reports subscription status 0 (inactive)',
       effectivePeriodStart: rawPeriodStart,
       effectivePeriodEnd: rawPeriodEnd,
@@ -240,12 +283,14 @@ export function deriveMembershipState(
     };
   }
 
-  // 5. ESTADO DESCONOCIDO O ANÓMALO -> FAIL-CLOSED
+  // 5. ESTADO FLOW DESCONOCIDO O NO SOPORTADO (E.G. STATUS = 5, 99) -> FALLA CERRADA NO DESTRUCTIVA
   return {
-    status: 'EXPIRED',
+    status: fallbackLocalStatus,
     gatewayStatus: `unknown_${flowSub.status}`,
     hasAccess: false,
-    reason: `Unrecognized Flow subscription status: ${flowSub.status}`,
+    accessUntil: null,
+    applyStateMutation: false,
+    reason: 'UNSUPPORTED_OR_INVALID_GATEWAY_STATE',
     effectivePeriodStart: rawPeriodStart,
     effectivePeriodEnd: rawPeriodEnd,
     effectiveTrialEnd: rawTrialEnd,

@@ -2,7 +2,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPaymentGateway } from '../index.ts';
 import { logger, generateTraceId, sanitizeValue } from '../../logger.ts';
 import { deriveMembershipState, type FlowSubscriptionSnapshot } from './state-machine.ts';
-import { recordSecurityAuditEvent } from '../../audit.ts';
 
 export interface ProcessFlowCallbackInput {
   supabase: SupabaseClient;
@@ -77,7 +76,7 @@ export async function processFlowCallback(
 
   let membershipQuery = supabase
     .from('memberships')
-    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_event_at');
+    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_snapshot_observed_at');
 
   if (targetSubId) {
     membershipQuery = membershipQuery.eq('gateway_subscription_id', targetSubId);
@@ -194,41 +193,36 @@ export async function processFlowCallback(
       }
     }
 
-    // Actualizar ciclo de membresía si el pago fue aprobado
+    // Actualizar ciclo de membresía si el pago fue aprobado mediante embudo atómico exclusivo
     if (pay.status === 'APPROVED') {
-      const nowIso = new Date().toISOString();
-      const newPeriodStart = nowIso;
+      const snapshotObservedAt = new Date().toISOString();
+      const newPeriodStart = snapshotObservedAt;
       const newPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-      await supabase
-        .from('memberships')
-        .update({
-          status: 'ACTIVE',
-          gateway: 'FLOW',
-          gateway_status: 'active',
-          current_period_start: newPeriodStart,
-          current_period_end: newPeriodEnd,
-          updated_at: nowIso,
-          last_gateway_event_at: nowIso,
-        })
-        .eq('id', matchedMembership.id);
-
-      if (matchedMembership.status !== 'ACTIVE') {
-        await recordSecurityAuditEvent({
-          eventType: 'MEMBERSHIP_STATUS_TRANSITION',
-          targetType: 'memberships',
-          targetId: matchedMembership.id,
-          traceId: localTraceId,
-          result: 'SUCCESS',
-          metadata: {
-            previous_status: matchedMembership.status,
-            new_status: 'ACTIVE',
-            gateway: 'FLOW',
-            reason: 'Payment approved by gateway',
-            payment_id: pay.paymentId,
+      if (typeof supabase.rpc === 'function') {
+        const { error: rpcErr } = await supabase.rpc('apply_membership_transition_atomic', {
+          p_membership_id: matchedMembership.id,
+          p_new_status: 'ACTIVE',
+          p_gateway_status: 'active',
+          p_current_period_start: newPeriodStart,
+          p_current_period_end: newPeriodEnd,
+          p_trial_ends_at: null,
+          p_gateway_snapshot_observed_at: snapshotObservedAt,
+          p_reason: 'Payment approved by gateway',
+          p_actor_profile_id: null,
+          p_metadata: {
             source: 'CALLBACK_PAYMENT',
+            payment_id: pay.paymentId,
           },
-        }, supabase);
+        });
+
+        if (rpcErr) {
+          logger.error('Failed to apply atomic transition for approved payment (Fail-Closed)', {
+            trace_id: localTraceId,
+            membership_id: matchedMembership.id,
+            error: rpcErr.message,
+          });
+        }
       }
 
       // Encolar email de confirmación de renovación en outbox con trace_id vinculado
@@ -245,36 +239,33 @@ export async function processFlowCallback(
         },
       });
     } else if (pay.status === 'REJECTED') {
-      // Regla fail-closed: Si el pago es rechazado, pasar a PAST_DUE
-      const nowIso = new Date().toISOString();
+      // Regla fail-closed: Si el pago es rechazado, pasar a PAST_DUE vía RPC atómica
+      const snapshotObservedAt = new Date().toISOString();
 
-      await supabase
-        .from('memberships')
-        .update({
-          status: 'PAST_DUE',
-          gateway: 'FLOW',
-          gateway_status: 'past_due',
-          updated_at: nowIso,
-          last_gateway_event_at: nowIso,
-        })
-        .eq('id', matchedMembership.id);
-
-      if (matchedMembership.status !== 'PAST_DUE') {
-        await recordSecurityAuditEvent({
-          eventType: 'MEMBERSHIP_STATUS_TRANSITION',
-          targetType: 'memberships',
-          targetId: matchedMembership.id,
-          traceId: localTraceId,
-          result: 'SUCCESS',
-          metadata: {
-            previous_status: matchedMembership.status,
-            new_status: 'PAST_DUE',
-            gateway: 'FLOW',
-            reason: 'Payment rejected by gateway',
-            payment_id: pay.paymentId,
+      if (typeof supabase.rpc === 'function') {
+        const { error: rpcErr } = await supabase.rpc('apply_membership_transition_atomic', {
+          p_membership_id: matchedMembership.id,
+          p_new_status: 'PAST_DUE',
+          p_gateway_status: 'past_due',
+          p_current_period_start: null,
+          p_current_period_end: null,
+          p_trial_ends_at: null,
+          p_gateway_snapshot_observed_at: snapshotObservedAt,
+          p_reason: 'Payment rejected by gateway',
+          p_actor_profile_id: null,
+          p_metadata: {
             source: 'CALLBACK_PAYMENT',
+            payment_id: pay.paymentId,
           },
-        }, supabase);
+        });
+
+        if (rpcErr) {
+          logger.error('Failed to apply atomic transition for rejected payment (Fail-Closed)', {
+            trace_id: localTraceId,
+            membership_id: matchedMembership.id,
+            error: rpcErr.message,
+          });
+        }
       }
 
       await supabase.from('email_outbox').insert({
@@ -296,6 +287,8 @@ export async function processFlowCallback(
     const sub = callbackResult.subscription;
 
     if (matchedMembership) {
+      const snapshotObservedAt = new Date().toISOString();
+
       const flowSubSnapshot: FlowSubscriptionSnapshot = {
         id: sub.id,
         status: (sub as any).rawStatus !== undefined
@@ -319,45 +312,39 @@ export async function processFlowCallback(
       };
 
       const derived = deriveMembershipState(flowSubSnapshot, matchedMembership);
-      const nowIso = new Date().toISOString();
 
-      const updateData: any = {
-        status: derived.status,
-        gateway: 'FLOW',
-        gateway_status: derived.gatewayStatus,
-        updated_at: nowIso,
-        last_gateway_event_at: nowIso,
-      };
-
-      if (derived.effectiveTrialEnd) updateData.trial_ends_at = derived.effectiveTrialEnd;
-      if (derived.effectivePeriodStart) updateData.current_period_start = derived.effectivePeriodStart;
-      if (derived.effectivePeriodEnd) updateData.current_period_end = derived.effectivePeriodEnd;
-      if (derived.status === 'CANCELLED') {
-        updateData.cancelled_at = nowIso;
-      }
-
-      await supabase
-        .from('memberships')
-        .update(updateData)
-        .eq('id', matchedMembership.id);
-
-      if (derived.status !== matchedMembership.status) {
-        await recordSecurityAuditEvent({
-          eventType: 'MEMBERSHIP_STATUS_TRANSITION',
-          targetType: 'memberships',
-          targetId: matchedMembership.id,
-          traceId: localTraceId,
-          result: 'SUCCESS',
-          metadata: {
-            previous_status: matchedMembership.status,
-            new_status: derived.status,
-            gateway: 'FLOW',
-            reason: derived.reason,
+      if (!derived.applyStateMutation) {
+        logger.warn('Unrecognized or corrupted subscription callback data, failing closed without state mutation', {
+          trace_id: localTraceId,
+          membership_id: matchedMembership.id,
+          reason: derived.reason,
+        });
+      } else if (typeof supabase.rpc === 'function') {
+        const { error: rpcErr } = await supabase.rpc('apply_membership_transition_atomic', {
+          p_membership_id: matchedMembership.id,
+          p_new_status: derived.status,
+          p_gateway_status: derived.gatewayStatus,
+          p_current_period_start: derived.effectivePeriodStart || null,
+          p_current_period_end: derived.effectivePeriodEnd || null,
+          p_trial_ends_at: derived.effectiveTrialEnd || null,
+          p_gateway_snapshot_observed_at: snapshotObservedAt,
+          p_reason: derived.reason,
+          p_actor_profile_id: null,
+          p_metadata: {
+            source: 'CALLBACK_SUBSCRIPTION',
             morose: flowSubSnapshot.morose,
             raw_status: flowSubSnapshot.status,
-            source: 'CALLBACK_SUBSCRIPTION',
+            access_until: derived.accessUntil || null,
           },
-        }, supabase);
+        });
+
+        if (rpcErr) {
+          logger.error('Failed to apply atomic transition for subscription callback (Fail-Closed)', {
+            trace_id: localTraceId,
+            membership_id: matchedMembership.id,
+            error: rpcErr.message,
+          });
+        }
       }
     }
   }
