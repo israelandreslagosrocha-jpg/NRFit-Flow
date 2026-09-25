@@ -16,6 +16,7 @@
     "test:security": "node --test src/tests/m09_3-security-inventory.test.ts",
     "test:security:hardening": "node --test src/tests/m09_3c-security-hardening.test.ts",
     "test:trace": "node --test src/tests/m09_3b-trace-context.test.ts",
+    "test:reconciler": "node --test src/tests/m09_3d-reconciler.test.ts",
     "audit:security": "node --experimental-strip-types scripts/security-inventory-audit.ts"
   },
   "dependencies": {

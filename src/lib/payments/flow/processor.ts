@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPaymentGateway } from '../index.ts';
 import { logger, generateTraceId, sanitizeValue } from '../../logger.ts';
+import { deriveMembershipState, type FlowSubscriptionSnapshot } from './state-machine.ts';
+import { recordSecurityAuditEvent } from '../../audit.ts';
 
 export interface ProcessFlowCallbackInput {
   supabase: SupabaseClient;
@@ -75,7 +77,7 @@ export async function processFlowCallback(
 
   let membershipQuery = supabase
     .from('memberships')
-    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_end');
+    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_event_at');
 
   if (targetSubId) {
     membershipQuery = membershipQuery.eq('gateway_subscription_id', targetSubId);
@@ -194,7 +196,8 @@ export async function processFlowCallback(
 
     // Actualizar ciclo de membresía si el pago fue aprobado
     if (pay.status === 'APPROVED') {
-      const newPeriodStart = new Date().toISOString();
+      const nowIso = new Date().toISOString();
+      const newPeriodStart = nowIso;
       const newPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
       await supabase
@@ -205,8 +208,28 @@ export async function processFlowCallback(
           gateway_status: 'active',
           current_period_start: newPeriodStart,
           current_period_end: newPeriodEnd,
+          updated_at: nowIso,
+          last_gateway_event_at: nowIso,
         })
         .eq('id', matchedMembership.id);
+
+      if (matchedMembership.status !== 'ACTIVE') {
+        await recordSecurityAuditEvent({
+          eventType: 'MEMBERSHIP_STATUS_TRANSITION',
+          targetType: 'memberships',
+          targetId: matchedMembership.id,
+          traceId: localTraceId,
+          result: 'SUCCESS',
+          metadata: {
+            previous_status: matchedMembership.status,
+            new_status: 'ACTIVE',
+            gateway: 'FLOW',
+            reason: 'Payment approved by gateway',
+            payment_id: pay.paymentId,
+            source: 'CALLBACK_PAYMENT',
+          },
+        }, supabase);
+      }
 
       // Encolar email de confirmación de renovación en outbox con trace_id vinculado
       await supabase.from('email_outbox').insert({
@@ -223,14 +246,36 @@ export async function processFlowCallback(
       });
     } else if (pay.status === 'REJECTED') {
       // Regla fail-closed: Si el pago es rechazado, pasar a PAST_DUE
+      const nowIso = new Date().toISOString();
+
       await supabase
         .from('memberships')
         .update({
           status: 'PAST_DUE',
           gateway: 'FLOW',
           gateway_status: 'past_due',
+          updated_at: nowIso,
+          last_gateway_event_at: nowIso,
         })
         .eq('id', matchedMembership.id);
+
+      if (matchedMembership.status !== 'PAST_DUE') {
+        await recordSecurityAuditEvent({
+          eventType: 'MEMBERSHIP_STATUS_TRANSITION',
+          targetType: 'memberships',
+          targetId: matchedMembership.id,
+          traceId: localTraceId,
+          result: 'SUCCESS',
+          metadata: {
+            previous_status: matchedMembership.status,
+            new_status: 'PAST_DUE',
+            gateway: 'FLOW',
+            reason: 'Payment rejected by gateway',
+            payment_id: pay.paymentId,
+            source: 'CALLBACK_PAYMENT',
+          },
+        }, supabase);
+      }
 
       await supabase.from('email_outbox').insert({
         dedupe_key: `flow-pay-failed:${pay.paymentId}`,
@@ -251,31 +296,69 @@ export async function processFlowCallback(
     const sub = callbackResult.subscription;
 
     if (matchedMembership) {
-      const updateData: any = {
-        gateway: 'FLOW',
-        gateway_status: sub.status.toLowerCase(),
+      const flowSubSnapshot: FlowSubscriptionSnapshot = {
+        id: sub.id,
+        status: (sub as any).rawStatus !== undefined
+          ? (sub as any).rawStatus
+          : (typeof sub.status === 'number'
+              ? sub.status
+              : (sub.status === 'ACTIVE'
+                  ? 1
+                  : sub.status === 'TRIAL'
+                    ? 2
+                    : sub.status === 'CANCELLED'
+                      ? 4
+                      : 0)),
+        morose: sub.morose ?? (sub as any).raw?.morose ?? 0,
+        trial_end: sub.trialEndsAt || (sub as any).trial_end || null,
+        period_start: sub.currentPeriodStart || (sub as any).period_start || null,
+        period_end: sub.currentPeriodEnd || (sub as any).period_end || null,
+        cancel_at_period_end:
+          sub.cancelAtPeriodEnd ??
+          ((sub as any).cancel_at_period_end === 1 || (sub as any).cancel_at_period_end === true),
       };
 
-      if (sub.trialEndsAt) updateData.trial_ends_at = sub.trialEndsAt;
-      if (sub.currentPeriodStart) updateData.current_period_start = sub.currentPeriodStart;
-      if (sub.currentPeriodEnd) updateData.current_period_end = sub.currentPeriodEnd;
+      const derived = deriveMembershipState(flowSubSnapshot, matchedMembership);
+      const nowIso = new Date().toISOString();
 
-      // Morosidad Flow:
-      // morose = 1: PAST_DUE
-      // morose = 2: no convertir automáticamente a PAST_DUE
-      if (sub.morose === 1) {
-        updateData.status = 'PAST_DUE';
-      } else if (sub.status === 'CANCELLED') {
-        updateData.status = 'CANCELLED';
-        updateData.cancelled_at = new Date().toISOString();
-      } else if (sub.status === 'ACTIVE' && sub.morose === 0) {
-        updateData.status = 'ACTIVE';
+      const updateData: any = {
+        status: derived.status,
+        gateway: 'FLOW',
+        gateway_status: derived.gatewayStatus,
+        updated_at: nowIso,
+        last_gateway_event_at: nowIso,
+      };
+
+      if (derived.effectiveTrialEnd) updateData.trial_ends_at = derived.effectiveTrialEnd;
+      if (derived.effectivePeriodStart) updateData.current_period_start = derived.effectivePeriodStart;
+      if (derived.effectivePeriodEnd) updateData.current_period_end = derived.effectivePeriodEnd;
+      if (derived.status === 'CANCELLED') {
+        updateData.cancelled_at = nowIso;
       }
 
       await supabase
         .from('memberships')
         .update(updateData)
         .eq('id', matchedMembership.id);
+
+      if (derived.status !== matchedMembership.status) {
+        await recordSecurityAuditEvent({
+          eventType: 'MEMBERSHIP_STATUS_TRANSITION',
+          targetType: 'memberships',
+          targetId: matchedMembership.id,
+          traceId: localTraceId,
+          result: 'SUCCESS',
+          metadata: {
+            previous_status: matchedMembership.status,
+            new_status: derived.status,
+            gateway: 'FLOW',
+            reason: derived.reason,
+            morose: flowSubSnapshot.morose,
+            raw_status: flowSubSnapshot.status,
+            source: 'CALLBACK_SUBSCRIPTION',
+          },
+        }, supabase);
+      }
     }
   }
 
