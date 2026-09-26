@@ -10,10 +10,17 @@
  * 5. SEQUENCE_IS_MONOTONIC_PER_MEMBERSHIP: Contadores de secuencia están aislados por membresía (sin contención global).
  * 6. CALLBACK_AND_RECONCILER_REQUIRE_SNAPSHOT_SEQUENCE: Transición sin secuencia falla cerrado (MISSING_SNAPSHOT_SEQUENCE, cero mutación).
  * 7. DYNAMIC_MIGRATION_FUNCTIONS_CATALOG_DERIVATION: Inventario deriva dinámicamente las 9 funciones y reporta NOT_EXECUTED si DATABASE_URL no existe.
+ * 8. EXPECTED_FUNCTION_FINAL_SECURITY_STATE_IS_FOLDED_ACROSS_MIGRATIONS: Plegado cronológico de firmas, SECURITY DEFINER, search_path="" y roles ejecutores.
+ * 9. ANON_CANNOT_RESERVE_GATEWAY_SNAPSHOT_SEQUENCE: Acceso anónimo a reserve_gateway_snapshot_sequence revocado en DDL y denegado en runtime.
+ * 10. AUTHENTICATED_CANNOT_RESERVE_GATEWAY_SNAPSHOT_SEQUENCE: Alumnas y usuarios autenticados no pueden reservar secuencias de pasarela.
+ * 11. SERVICE_ROLE_CAN_RESERVE_GATEWAY_SNAPSHOT_SEQUENCE: Exclusividad operativa de service_role para emisión de secuencia monotónica.
+ * 12. FINANCIAL_TRANSITION_RPC_REMAINS_SERVICE_ROLE_ONLY: apply_membership_transition_atomic restringida exclusivamente a service_role.
  */
 
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 import { NextRequest } from 'next/server.js';
 import { POST as flowCallbackPost } from '../app/api/callbacks/flow/route.ts';
 import { processFlowCallback } from '../lib/payments/flow/processor.ts';
@@ -39,6 +46,7 @@ class MockDatabase {
   securityAuditEvents: any[] = [];
   emailOutbox: any[] = [];
   rpcCallLog: Array<{ name: string; params: any }> = [];
+  callerRole: 'service_role' | 'authenticated' | 'anon' = 'service_role';
 
   from(table: string) {
     const self = this;
@@ -72,6 +80,20 @@ class MockDatabase {
 
   rpc(name: string, params: any) {
     this.rpcCallLog.push({ name, params });
+
+    // Simulación de control de privilegios PostgreSQL (ACLs a nivel de función)
+    if (this.callerRole !== 'service_role') {
+      if (
+        name === 'reserve_gateway_snapshot_sequence' ||
+        name === 'apply_membership_transition_atomic' ||
+        name === 'claim_outbox_emails'
+      ) {
+        return Promise.resolve({
+          data: null,
+          error: { message: `permission denied for function ${name}` },
+        });
+      }
+    }
 
     if (name === 'reserve_gateway_snapshot_sequence') {
       const mem = this.memberships.find((m: any) => m.id === params.p_membership_id);
@@ -497,5 +519,243 @@ describe('FASE M-09.3F-A — Certificación de Código e Infraestructura Pre-Sta
     assert.match(inventoryResult.reason!, /DATABASE_URL no configurada/);
 
     if (prevDbUrl) process.env.DATABASE_URL = prevDbUrl;
+  });
+
+  // ----------------------------------------------------------------------------
+  // CONTRATO 8: Plegado Cronológico del Estado Efectivo de Seguridad DDL
+  // ----------------------------------------------------------------------------
+  it('8. EXPECTED_FUNCTION_FINAL_SECURITY_STATE_IS_FOLDED_ACROSS_MIGRATIONS: Plegado cronológico de firmas, SECURITY DEFINER, search_path="" y roles ejecutores', async () => {
+    const catalog = deriveExpectedFunctionsFromMigrations();
+
+    assert.strictEqual(catalog.expectedFunctions.length, 9);
+
+    // 8.1 admin_update_user_role
+    const adminFn = catalog.functionDetails.find(d => d.name === 'admin_update_user_role');
+    assert.ok(adminFn, 'admin_update_user_role debe existir');
+    assert.strictEqual(adminFn.isSecurityDefiner, true);
+    assert.strictEqual(adminFn.hasEmptySearchPath, true);
+    assert.strictEqual(adminFn.searchPath, "''");
+    assert.deepStrictEqual(adminFn.expectedExecuteRoles, ['authenticated', 'service_role']);
+    assert.strictEqual(adminFn.sourceMigrationFinalDefinition, '20260925000001_fase_m09_3c_security_hardening.sql');
+
+    // 8.2 create_booking_atomic
+    const bookingFn = catalog.functionDetails.find(d => d.name === 'create_booking_atomic');
+    assert.ok(bookingFn, 'create_booking_atomic debe existir');
+    assert.strictEqual(bookingFn.isSecurityDefiner, true);
+    assert.strictEqual(bookingFn.hasEmptySearchPath, true);
+    assert.strictEqual(bookingFn.searchPath, "''");
+    assert.deepStrictEqual(bookingFn.expectedExecuteRoles, ['authenticated', 'service_role']);
+    assert.strictEqual(bookingFn.sourceMigrationFinalDefinition, '20260925000001_fase_m09_3c_security_hardening.sql');
+
+    // 8.3 reserve_gateway_snapshot_sequence
+    const seqFn = catalog.functionDetails.find(d => d.name === 'reserve_gateway_snapshot_sequence');
+    assert.ok(seqFn, 'reserve_gateway_snapshot_sequence debe existir');
+    assert.strictEqual(seqFn.isSecurityDefiner, true);
+    assert.strictEqual(seqFn.hasEmptySearchPath, true);
+    assert.strictEqual(seqFn.searchPath, "''");
+    assert.deepStrictEqual(seqFn.expectedExecuteRoles, ['service_role']);
+    assert.strictEqual(seqFn.sourceMigrationFinalDefinition, '20260926000000_fase_m09_3f_monotonic_sequence.sql');
+
+    // 8.4 apply_membership_transition_atomic
+    const transFn = catalog.functionDetails.find(d => d.name === 'apply_membership_transition_atomic');
+    assert.ok(transFn, 'apply_membership_transition_atomic debe existir');
+    assert.strictEqual(transFn.isSecurityDefiner, true);
+    assert.strictEqual(transFn.hasEmptySearchPath, true);
+    assert.strictEqual(transFn.searchPath, "''");
+    assert.deepStrictEqual(transFn.expectedExecuteRoles, ['service_role']);
+    assert.strictEqual(transFn.sourceMigrationFinalDefinition, '20260926000000_fase_m09_3f_monotonic_sequence.sql');
+
+    // 8.5 check_profile_update_integrity (trigger function: cero roles de ejecución)
+    const checkFn = catalog.functionDetails.find(d => d.name === 'check_profile_update_integrity');
+    assert.ok(checkFn, 'check_profile_update_integrity debe existir');
+    assert.strictEqual(checkFn.isSecurityDefiner, true);
+    assert.strictEqual(checkFn.hasEmptySearchPath, true);
+    assert.deepStrictEqual(checkFn.expectedExecuteRoles, []);
+
+    // 8.6 handle_new_user (hardening diferido)
+    const handleFn = catalog.functionDetails.find(d => d.name === 'handle_new_user');
+    assert.ok(handleFn, 'handle_new_user debe existir');
+    assert.strictEqual(handleFn.isSecurityDefiner, true);
+    assert.strictEqual(handleFn.hasEmptySearchPath, false);
+    assert.strictEqual(handleFn.searchPath, 'public');
+  });
+
+  // ----------------------------------------------------------------------------
+  // CONTRATO 9: Acceso Anónimo a reserve_gateway_snapshot_sequence Revocado
+  // ----------------------------------------------------------------------------
+  it('9. ANON_CANNOT_RESERVE_GATEWAY_SNAPSHOT_SEQUENCE: Acceso anónimo a reserve_gateway_snapshot_sequence revocado en DDL y denegado en runtime', async () => {
+    // 9.1 Verificación en DDL de migración
+    const migrationFile = path.join(process.cwd(), 'supabase/migrations/20260926000000_fase_m09_3f_monotonic_sequence.sql');
+    const sqlContent = fs.readFileSync(migrationFile, 'utf8');
+    assert.match(
+      sqlContent,
+      /REVOKE ALL ON FUNCTION public\.reserve_gateway_snapshot_sequence\(UUID\) FROM anon;/i,
+      'DDL debe revocar explícitamente a anon'
+    );
+    assert.match(
+      sqlContent,
+      /REVOKE ALL ON FUNCTION public\.reserve_gateway_snapshot_sequence\(UUID\) FROM PUBLIC;/i,
+      'DDL debe revocar explícitamente a PUBLIC'
+    );
+
+    // 9.2 Verificación en catálogo plegado
+    const catalog = deriveExpectedFunctionsFromMigrations();
+    const fn = catalog.functionDetails.find(d => d.name === 'reserve_gateway_snapshot_sequence')!;
+    assert.strictEqual(fn.expectedExecuteRoles.includes('anon'), false);
+    assert.strictEqual(fn.expectedExecuteRoles.includes('PUBLIC'), false);
+
+    // 9.3 Verificación en simulación runtime
+    const memId = 'mem-anon-test-1';
+    db.memberships.push({ id: memId, gateway_snapshot_sequence_counter: 10 });
+    db.callerRole = 'anon';
+
+    const { data, error } = await db.rpc('reserve_gateway_snapshot_sequence', { p_membership_id: memId });
+    assert.strictEqual(data, null);
+    assert.ok(error, 'Debe retornar error para rol anónimo');
+    assert.match(error.message, /permission denied/i);
+
+    // El contador permanece intacto
+    const mem = db.memberships.find(m => m.id === memId);
+    assert.strictEqual(mem.gateway_snapshot_sequence_counter, 10);
+  });
+
+  // ----------------------------------------------------------------------------
+  // CONTRATO 10: Usuarios Autenticados (Alumnas) No Pueden Reservar Secuencias
+  // ----------------------------------------------------------------------------
+  it('10. AUTHENTICATED_CANNOT_RESERVE_GATEWAY_SNAPSHOT_SEQUENCE: Alumnas y usuarios autenticados no pueden reservar secuencias de pasarela', async () => {
+    // 10.1 Verificación en DDL de migración
+    const migrationFile = path.join(process.cwd(), 'supabase/migrations/20260926000000_fase_m09_3f_monotonic_sequence.sql');
+    const sqlContent = fs.readFileSync(migrationFile, 'utf8');
+    assert.match(
+      sqlContent,
+      /REVOKE ALL ON FUNCTION public\.reserve_gateway_snapshot_sequence\(UUID\) FROM authenticated;/i,
+      'DDL debe revocar explícitamente a authenticated'
+    );
+
+    // 10.2 Verificación en catálogo plegado
+    const catalog = deriveExpectedFunctionsFromMigrations();
+    const fn = catalog.functionDetails.find(d => d.name === 'reserve_gateway_snapshot_sequence')!;
+    assert.strictEqual(fn.expectedExecuteRoles.includes('authenticated'), false);
+
+    // 10.3 Verificación en simulación runtime
+    const memId = 'mem-auth-test-1';
+    db.memberships.push({ id: memId, gateway_snapshot_sequence_counter: 25 });
+    db.callerRole = 'authenticated';
+
+    const { data, error } = await db.rpc('reserve_gateway_snapshot_sequence', { p_membership_id: memId });
+    assert.strictEqual(data, null);
+    assert.ok(error, 'Debe retornar error para rol authenticated');
+    assert.match(error.message, /permission denied/i);
+
+    // El contador no fue alterado por el usuario
+    const mem = db.memberships.find(m => m.id === memId);
+    assert.strictEqual(mem.gateway_snapshot_sequence_counter, 25);
+  });
+
+  // ----------------------------------------------------------------------------
+  // CONTRATO 11: Exclusividad de service_role para Emisión de Secuencia
+  // ----------------------------------------------------------------------------
+  it('11. SERVICE_ROLE_CAN_RESERVE_GATEWAY_SNAPSHOT_SEQUENCE: Exclusividad operativa de service_role para emisión de secuencia monotónica', async () => {
+    // 11.1 Verificación en DDL de migración
+    const migrationFile = path.join(process.cwd(), 'supabase/migrations/20260926000000_fase_m09_3f_monotonic_sequence.sql');
+    const sqlContent = fs.readFileSync(migrationFile, 'utf8');
+    assert.match(
+      sqlContent,
+      /GRANT EXECUTE ON FUNCTION public\.reserve_gateway_snapshot_sequence\(UUID\) TO service_role;/i,
+      'DDL debe otorgar EXECUTE exclusivamente a service_role'
+    );
+
+    // 11.2 Verificación en catálogo plegado
+    const catalog = deriveExpectedFunctionsFromMigrations();
+    const fn = catalog.functionDetails.find(d => d.name === 'reserve_gateway_snapshot_sequence')!;
+    assert.deepStrictEqual(fn.expectedExecuteRoles, ['service_role']);
+
+    // 11.3 Verificación en simulación runtime
+    const memId = 'mem-srv-test-1';
+    db.memberships.push({ id: memId, gateway_snapshot_sequence_counter: 50 });
+    db.callerRole = 'service_role';
+
+    const { data, error } = await db.rpc('reserve_gateway_snapshot_sequence', { p_membership_id: memId });
+    assert.strictEqual(error, null);
+    assert.strictEqual(data, 51, 'service_role debe recibir el siguiente número monotónico');
+
+    const mem = db.memberships.find(m => m.id === memId);
+    assert.strictEqual(mem.gateway_snapshot_sequence_counter, 51);
+  });
+
+  // ----------------------------------------------------------------------------
+  // CONTRATO 12: apply_membership_transition_atomic Restringida a service_role
+  // ----------------------------------------------------------------------------
+  it('12. FINANCIAL_TRANSITION_RPC_REMAINS_SERVICE_ROLE_ONLY: apply_membership_transition_atomic restringida exclusivamente a service_role', async () => {
+    // 12.1 Verificación en DDL de migración
+    const migrationFile = path.join(process.cwd(), 'supabase/migrations/20260926000000_fase_m09_3f_monotonic_sequence.sql');
+    const sqlContent = fs.readFileSync(migrationFile, 'utf8');
+
+    assert.match(
+      sqlContent,
+      /REVOKE ALL ON FUNCTION public\.apply_membership_transition_atomic\([^)]+\) FROM PUBLIC;/i
+    );
+    assert.match(
+      sqlContent,
+      /REVOKE ALL ON FUNCTION public\.apply_membership_transition_atomic\([^)]+\) FROM anon;/i
+    );
+    assert.match(
+      sqlContent,
+      /REVOKE ALL ON FUNCTION public\.apply_membership_transition_atomic\([^)]+\) FROM authenticated;/i
+    );
+    assert.match(
+      sqlContent,
+      /GRANT EXECUTE ON FUNCTION public\.apply_membership_transition_atomic\([^)]+\) TO service_role;/i
+    );
+
+    // 12.2 Verificación en catálogo plegado
+    const catalog = deriveExpectedFunctionsFromMigrations();
+    const fn = catalog.functionDetails.find(d => d.name === 'apply_membership_transition_atomic')!;
+    assert.deepStrictEqual(
+      fn.expectedExecuteRoles,
+      ['service_role'],
+      'apply_membership_transition_atomic debe estar restringida únicamente a service_role'
+    );
+
+    // 12.3 Verificación runtime: llamada desde rol authenticated o anon es rechazada
+    const memId = 'mem-trans-acl-1';
+    db.memberships.push({ id: memId, status: 'PENDING_PAYMENT', last_applied_snapshot_sequence: 10 });
+
+    db.callerRole = 'authenticated';
+    const { data: authData, error: authError } = await db.rpc('apply_membership_transition_atomic', {
+      p_membership_id: memId,
+      p_new_status: 'ACTIVE',
+      p_gateway_status: 'active',
+      p_snapshot_sequence: 11,
+    });
+    assert.strictEqual(authData, null);
+    assert.ok(authError);
+    assert.match(authError.message, /permission denied/i);
+
+    db.callerRole = 'anon';
+    const { data: anonData, error: anonError } = await db.rpc('apply_membership_transition_atomic', {
+      p_membership_id: memId,
+      p_new_status: 'ACTIVE',
+      p_gateway_status: 'active',
+      p_snapshot_sequence: 11,
+    });
+    assert.strictEqual(anonData, null);
+    assert.ok(anonError);
+    assert.match(anonError.message, /permission denied/i);
+
+    // Solo service_role puede transicionar
+    db.callerRole = 'service_role';
+    const { data: srvData, error: srvError } = await db.rpc('apply_membership_transition_atomic', {
+      p_membership_id: memId,
+      p_new_status: 'ACTIVE',
+      p_gateway_status: 'active',
+      p_snapshot_sequence: 11,
+    });
+    assert.strictEqual(srvError, null);
+    assert.strictEqual(srvData.status, 'TRANSITIONED');
+
+    const mem = db.memberships.find(m => m.id === memId);
+    assert.strictEqual(mem.status, 'ACTIVE');
+    assert.strictEqual(mem.last_applied_snapshot_sequence, 11);
   });
 });
