@@ -20,6 +20,7 @@ import {
 import { processFlowCallback } from '../lib/payments/flow/processor.ts';
 import { setPaymentGateway } from '../lib/payments/index.ts';
 import type { PaymentGateway, GatewaySubscription } from '../lib/payments/types.ts';
+import { validateMembershipDates } from '../lib/supabase/membership-helpers.ts';
 
 class MockDatabase {
   memberships: any[] = [];
@@ -144,11 +145,14 @@ class MockDatabase {
         });
       }
 
+      const reqStartedAt = params.p_gateway_snapshot_request_started_at || params.p_gateway_snapshot_observed_at;
+      const memStartedAt = mem.last_gateway_snapshot_request_started_at || mem.last_gateway_snapshot_observed_at;
+
       // Guarda contra snapshots obsoletos
       if (
-        params.p_gateway_snapshot_observed_at &&
-        mem.last_gateway_snapshot_observed_at &&
-        params.p_gateway_snapshot_observed_at < mem.last_gateway_snapshot_observed_at
+        reqStartedAt &&
+        memStartedAt &&
+        reqStartedAt <= memStartedAt
       ) {
         return Promise.resolve({
           data: {
@@ -157,8 +161,48 @@ class MockDatabase {
             membership_id: mem.id,
             previous_status: mem.status,
             current_status: mem.status,
-            last_gateway_snapshot_observed_at: mem.last_gateway_snapshot_observed_at,
-            attempted_snapshot_observed_at: params.p_gateway_snapshot_observed_at,
+            last_gateway_snapshot_request_started_at: memStartedAt,
+            attempted_snapshot_request_started_at: reqStartedAt,
+          },
+          error: null,
+        });
+      }
+
+      // Caso ANOMALY: Gate de falla cerrada persistente sin mutación destructiva
+      if (params.p_sync_state === 'ANOMALY') {
+        mem.gateway_sync_state = 'ANOMALY';
+        mem.gateway_access_blocked_at = new Date().toISOString();
+        mem.gateway_access_block_reason = params.p_reason;
+        mem.last_gateway_snapshot_request_started_at = reqStartedAt || new Date().toISOString();
+        mem.last_gateway_snapshot_observed_at = mem.last_gateway_snapshot_request_started_at;
+        mem.updated_at = new Date().toISOString();
+
+        this.securityAuditEvents.push({
+          id: `audit-${Date.now()}-${Math.random()}`,
+          event_type: 'MEMBERSHIP_GATEWAY_ANOMALY_BLOCKED',
+          actor_profile_id: params.p_actor_profile_id || null,
+          target_type: 'memberships',
+          target_id: mem.id,
+          trace_id: mem.trace_id,
+          result: 'SUCCESS',
+          metadata: {
+            previous_status: mem.status,
+            current_status: mem.status,
+            gateway_sync_state: 'ANOMALY',
+            gateway: 'FLOW',
+            reason: params.p_reason,
+            ...(params.p_metadata || {}),
+          },
+        });
+
+        return Promise.resolve({
+          data: {
+            success: true,
+            status: 'ANOMALY_BLOCKED',
+            membership_id: mem.id,
+            current_status: mem.status,
+            gateway_sync_state: 'ANOMALY',
+            reason: params.p_reason,
           },
           error: null,
         });
@@ -166,12 +210,14 @@ class MockDatabase {
 
       // Detección de No-Op
       const statusSame = mem.status === params.p_new_status;
+      const syncSame = !mem.gateway_sync_state || mem.gateway_sync_state === 'HEALTHY';
       const periodSame = !params.p_current_period_end || mem.current_period_end === params.p_current_period_end;
       const trialSame = !params.p_trial_ends_at || mem.trial_ends_at === params.p_trial_ends_at;
 
-      if (statusSame && periodSame && trialSame) {
-        if (params.p_gateway_snapshot_observed_at && (!mem.last_gateway_snapshot_observed_at || params.p_gateway_snapshot_observed_at > mem.last_gateway_snapshot_observed_at)) {
-          mem.last_gateway_snapshot_observed_at = params.p_gateway_snapshot_observed_at;
+      if (statusSame && syncSame && periodSame && trialSame) {
+        if (reqStartedAt && (!memStartedAt || reqStartedAt > memStartedAt)) {
+          mem.last_gateway_snapshot_request_started_at = reqStartedAt;
+          mem.last_gateway_snapshot_observed_at = reqStartedAt;
           mem.updated_at = new Date().toISOString();
         }
         return Promise.resolve({
@@ -187,6 +233,9 @@ class MockDatabase {
 
       const prevStatus = mem.status;
       mem.status = params.p_new_status;
+      mem.gateway_sync_state = 'HEALTHY';
+      mem.gateway_access_blocked_at = null;
+      mem.gateway_access_block_reason = null;
       mem.gateway_status = params.p_gateway_status || mem.gateway_status;
       if (params.p_current_period_start) mem.current_period_start = params.p_current_period_start;
       if (params.p_current_period_end) mem.current_period_end = params.p_current_period_end;
@@ -194,7 +243,8 @@ class MockDatabase {
       if (params.p_new_status === 'CANCELLED' && !mem.cancelled_at) {
         mem.cancelled_at = new Date().toISOString();
       }
-      mem.last_gateway_snapshot_observed_at = params.p_gateway_snapshot_observed_at || new Date().toISOString();
+      mem.last_gateway_snapshot_request_started_at = reqStartedAt || new Date().toISOString();
+      mem.last_gateway_snapshot_observed_at = mem.last_gateway_snapshot_request_started_at;
       mem.updated_at = new Date().toISOString();
 
       // Registro transaccional en security_audit_events
@@ -209,6 +259,7 @@ class MockDatabase {
         metadata: {
           previous_status: prevStatus,
           new_status: params.p_new_status,
+          gateway_sync_state: 'HEALTHY',
           gateway: 'FLOW',
           reason: params.p_reason,
           ...(params.p_metadata || {}),
@@ -222,6 +273,7 @@ class MockDatabase {
           membership_id: mem.id,
           previous_status: prevStatus,
           new_status: params.p_new_status,
+          gateway_sync_state: 'HEALTHY',
           reason: params.p_reason,
         },
         error: null,
@@ -492,13 +544,15 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     assert.strictEqual(resCancelled.status, 'CANCELLED');
     assert.strictEqual(resCancelled.hasAccess, true);
 
-    // 12.4 Transiciona a EXPIRED si Flow está inactiva (status 0)
+    // 12.4 Transiciona a EXPIRED si Flow está inactiva con fecha de término concluida (status 0)
     const resExpired = deriveMembershipState({
       status: 0,
       morose: 0,
+      subscription_end: '2026-09-01T00:00:00Z',
     }, localPastDue, fixedNow);
     assert.strictEqual(resExpired.status, 'EXPIRED');
     assert.strictEqual(resExpired.hasAccess, false);
+    assert.strictEqual(resExpired.syncState, 'HEALTHY');
   });
 
   it('13. UNKNOWN_FLOW_STATUS_FAILS_CLOSED_WITHOUT_DESTRUCTIVE_STATE_MUTATION: Estados Flow desconocidos o corruptos bloquean acceso sin mutar DB erróneamente', () => {
@@ -565,7 +619,7 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
       status: 'ACTIVE',
       gateway: 'FLOW',
       gateway_subscription_id: 'sub-fail-1',
-      last_gateway_snapshot_observed_at: '2026-09-25T10:00:00Z',
+      last_gateway_snapshot_request_started_at: '2026-09-25T10:00:00Z',
       trace_id: 'trace-fail-1',
     });
 
@@ -590,32 +644,35 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     assert.strictEqual(db.securityAuditEvents.length, 0, 'No debe registrarse auditoría si la RPC falla');
   });
 
-  it('16. OLDER_OBSERVED_SNAPSHOT_CANNOT_OVERWRITE_NEWER_APPLIED_SNAPSHOT: Snapshot con timestamp observado anterior es descartado', async () => {
-    const memId = 'mem-older-snap';
+  it('16. EARLIER_S2S_REQUEST_RETURNING_LATE_CANNOT_OVERWRITE_LATER_REQUEST: Petición que inició antes y retorna tarde no puede sobreescribir petición que inició después', async () => {
+    const memId = 'mem-race-order';
     db.memberships.push({
       id: memId,
-      student_id: 'student-snap',
+      student_id: 'student-race',
       status: 'PAST_DUE',
       gateway: 'FLOW',
-      gateway_subscription_id: 'sub-snap-1',
-      last_gateway_snapshot_observed_at: '2026-09-25T11:00:00Z',
-      trace_id: 'trace-snap-1',
+      gateway_subscription_id: 'sub-race-1',
+      // Supongamos que la consulta B inició a las 20:00:02Z y ya se aplicó a la base de datos
+      last_gateway_snapshot_request_started_at: '2026-09-25T20:00:02Z',
+      trace_id: 'trace-race-1',
     });
 
-    // Intentar aplicar un snapshot observado a las 10:00:00Z (desfasado respecto a las 11:00:00Z)
+    // La consulta A inició a las 20:00:00Z (anterior a B), pero por lentitud de red terminó después y trata de aplicarse
     const { data: rpcRes } = await db.rpc('apply_membership_transition_atomic', {
       p_membership_id: memId,
       p_new_status: 'ACTIVE',
       p_gateway_status: 'active',
-      p_gateway_snapshot_observed_at: '2026-09-25T10:00:00Z',
-      p_reason: 'Testing older snapshot rejection',
+      p_gateway_snapshot_request_started_at: '2026-09-25T20:00:00Z',
+      p_reason: 'Testing race condition: earlier request returning late',
     });
 
+    // Debe ser rechazada como STALE_SNAPSHOT_SKIPPED
     assert.strictEqual(rpcRes.status, 'STALE_SNAPSHOT_SKIPPED');
-    assert.strictEqual(rpcRes.current_status, 'PAST_DUE', 'El estado local no debe degradarse');
+    assert.strictEqual(rpcRes.current_status, 'PAST_DUE', 'El estado más reciente no debe ser degradado por una petición iniciada previamente');
 
     const mem = db.memberships.find(m => m.id === memId);
     assert.strictEqual(mem.status, 'PAST_DUE');
+    assert.strictEqual(mem.last_gateway_snapshot_request_started_at, '2026-09-25T20:00:02Z');
   });
 
   // ============================================================================
@@ -632,7 +689,7 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
       gateway_subscription_id: 'sub-idem-2',
       current_period_start: '2026-09-01T00:00:00Z',
       current_period_end: '2026-10-01T00:00:00Z',
-      last_gateway_snapshot_observed_at: '2026-09-25T10:00:00Z',
+      last_gateway_snapshot_request_started_at: '2026-09-25T10:00:00Z',
       trace_id: 'trace-idem-2',
     });
 
@@ -685,12 +742,15 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     assert.strictEqual(db.securityAuditEvents.length, 0);
   });
 
-  it('19. ATOMIC_RPC_APPLIES_FOR_UPDATE_AND_RECORDS_SECURITY_AUDIT_ON_REAL_TRANSITION: Migración SQL implementa FOR UPDATE, search_path="" y last_gateway_snapshot_observed_at', () => {
+  it('19. ATOMIC_RPC_APPLIES_FOR_UPDATE_AND_RECORDS_SECURITY_AUDIT_ON_REAL_TRANSITION: Migración SQL implementa FOR UPDATE, search_path="" y last_gateway_snapshot_request_started_at', () => {
     const migrationPath = path.resolve(process.cwd(), 'supabase/migrations/20260925000002_fase_m09_3d_multivariable_reconciliation.sql');
     assert.ok(fs.existsSync(migrationPath), 'El archivo de migración M-09.3D debe existir');
 
     const sql = fs.readFileSync(migrationPath, 'utf8');
-    assert.match(sql, /last_gateway_snapshot_observed_at\s+TIMESTAMPTZ/, 'Debe utilizar el nombre preciso last_gateway_snapshot_observed_at');
+    assert.match(sql, /last_gateway_snapshot_request_started_at\s+TIMESTAMPTZ/, 'Debe utilizar el nombre preciso last_gateway_snapshot_request_started_at');
+    assert.match(sql, /gateway_sync_state\s+VARCHAR\(20\)/, 'Debe persistir columna gateway_sync_state');
+    assert.match(sql, /gateway_access_blocked_at\s+TIMESTAMPTZ/, 'Debe persistir columna gateway_access_blocked_at');
+    assert.match(sql, /gateway_access_block_reason\s+TEXT/, 'Debe persistir columna gateway_access_block_reason');
     assert.match(sql, /FOR\s+UPDATE/, 'Debe utilizar FOR UPDATE para serialización estricta');
     assert.match(sql, /SET\s+search_path\s*=\s*''/, 'Debe forzar search_path vacío contra hijacking');
     assert.match(sql, /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.apply_membership_transition_atomic.*TO\s+service_role/i);
@@ -705,7 +765,7 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
       status: 'ACTIVE',
       gateway: 'FLOW',
       gateway_subscription_id: 'sub-audit-2',
-      last_gateway_snapshot_observed_at: '2026-09-25T08:00:00Z',
+      last_gateway_snapshot_request_started_at: '2026-09-25T08:00:00Z',
       trace_id: 'trace-audit-uuid-2',
     });
 
@@ -736,5 +796,193 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
     assert.ok(!metaStr.includes('secret'));
     assert.ok(!metaStr.includes('apikey'));
     assert.ok(!metaStr.includes('bearer'));
+  });
+
+  // ============================================================================
+  // CONTRATOS 21-28: GATE PERSISTENTE DE ACCESO Y DESAMBIGUACIÓN DE STATUS 0
+  // ============================================================================
+
+  it('21. UNKNOWN_GATEWAY_STATE_BLOCKS_SUBSEQUENT_DATABASE_ACCESS: Estado Flow desconocido activa gate persistente ANOMALY y bloquea acceso en DB', async () => {
+    const memId = 'mem-anomaly-persist';
+    db.memberships.push({
+      id: memId,
+      student_id: 'student-anomaly',
+      status: 'ACTIVE',
+      gateway: 'FLOW',
+      gateway_subscription_id: 'sub-anomaly-1',
+      start_date: '2026-09-01T00:00:00Z',
+      current_period_start: '2026-09-01T00:00:00Z',
+      current_period_end: '2026-10-01T00:00:00Z',
+      gateway_sync_state: 'HEALTHY',
+      trace_id: 'trace-anomaly-1',
+    });
+
+    // Flow retorna un status no reconocido (status = 99)
+    const mockGw = createMockGateway({
+      id: 'sub-anomaly-1',
+      rawStatus: 99,
+      morose: 0,
+    });
+    setPaymentGateway(mockGw);
+
+    const res = await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
+    assert.strictEqual(res.details[0].action, 'ANOMALY_BLOCKED');
+
+    const mem = db.memberships.find(m => m.id === memId);
+    // Preservación comercial: status sigue siendo ACTIVE en PostgreSQL
+    assert.strictEqual(mem.status, 'ACTIVE');
+    // Gate persistente activado
+    assert.strictEqual(mem.gateway_sync_state, 'ANOMALY');
+    assert.ok(mem.gateway_access_blocked_at);
+
+    // Auditoría transaccional de seguridad registrada
+    const audit = db.securityAuditEvents.find(e => e.event_type === 'MEMBERSHIP_GATEWAY_ANOMALY_BLOCKED');
+    assert.ok(audit);
+    assert.strictEqual(audit.metadata.gateway_sync_state, 'ANOMALY');
+
+    // Verificación de acceso real: La alumna es bloqueada por el gate
+    const accessEval = validateMembershipDates(mem, fixedNow);
+    assert.strictEqual(accessEval.hasAccess, false);
+    assert.strictEqual(accessEval.status, 'ACTIVE');
+    assert.match(accessEval.reason!, /UNSUPPORTED_OR_INVALID_GATEWAY_STATE|Bloqueo preventivo/);
+  });
+
+  it('22. VALID_GATEWAY_SNAPSHOT_CLEARS_ANOMALY_ACCESS_BLOCK: Snapshot válido posterior limpia el bloqueo y restaura acceso', async () => {
+    const memId = 'mem-anomaly-recovery';
+    db.memberships.push({
+      id: memId,
+      student_id: 'student-rec',
+      status: 'ACTIVE',
+      gateway: 'FLOW',
+      gateway_subscription_id: 'sub-rec-1',
+      start_date: '2026-09-01T00:00:00Z',
+      current_period_start: '2026-09-01T00:00:00Z',
+      current_period_end: '2026-10-01T00:00:00Z',
+      gateway_sync_state: 'ANOMALY',
+      gateway_access_blocked_at: '2026-09-25T11:00:00Z',
+      gateway_access_block_reason: 'Previous anomaly',
+      last_gateway_snapshot_request_started_at: '2026-09-25T11:00:00Z',
+      trace_id: 'trace-rec-1',
+    });
+
+    // Flow ahora responde de manera saludable con fechas vigentes
+    const mockGw = createMockGateway({
+      id: 'sub-rec-1',
+      rawStatus: 1,
+      morose: 0,
+      currentPeriodStart: '2026-09-01T00:00:00Z',
+      currentPeriodEnd: '2026-10-01T00:00:00Z',
+    });
+    setPaymentGateway(mockGw);
+
+    await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
+
+    const mem = db.memberships.find(m => m.id === memId);
+    assert.strictEqual(mem.status, 'ACTIVE');
+    assert.strictEqual(mem.gateway_sync_state, 'HEALTHY');
+    assert.strictEqual(mem.gateway_access_blocked_at, null);
+    assert.strictEqual(mem.gateway_access_block_reason, null);
+
+    // Acceso restaurado en validateMembershipDates
+    const accessEval = validateMembershipDates(mem, fixedNow);
+    assert.strictEqual(accessEval.hasAccess, true);
+    assert.strictEqual(accessEval.status, 'ACTIVE');
+  });
+
+  it('23. ACTIVE_STATUS_WITH_GATEWAY_ANOMALY_HAS_NO_ACCESS: validateMembershipDates deniega acceso a status ACTIVE si gateway_sync_state es ANOMALY', () => {
+    const mem: any = {
+      id: 'mem-anomaly-direct',
+      student_id: 'student-direct',
+      status: 'ACTIVE',
+      start_date: '2026-01-01T00:00:00Z',
+      current_period_end: '2026-12-31T00:00:00Z',
+      gateway_sync_state: 'ANOMALY',
+      gateway_access_block_reason: 'Bloqueo preventivo por anomalía en sincronización de pasarela',
+    };
+
+    const access = validateMembershipDates(mem, fixedNow);
+    assert.strictEqual(access.hasAccess, false);
+    assert.strictEqual(access.status, 'ACTIVE');
+    assert.match(access.reason!, /Bloqueo preventivo por anomalía/);
+  });
+
+  it('24. CANCELLED_WITH_VALID_PAID_PERIOD_RETAINS_ACCESS_WHEN_SYNC_HEALTHY: CANCELLED con período pagado vigente mantiene acceso si sync es HEALTHY', () => {
+    const mem: any = {
+      id: 'mem-canc-paid',
+      student_id: 'student-canc-paid',
+      status: 'CANCELLED',
+      start_date: '2026-09-01T00:00:00Z',
+      current_period_end: '2026-09-30T23:59:59Z',
+      gateway_sync_state: 'HEALTHY',
+    };
+
+    const access = validateMembershipDates(mem, fixedNow);
+    assert.strictEqual(access.hasAccess, true);
+    assert.strictEqual(access.status, 'ACTIVE');
+    assert.match(access.reason!, /Suscripción cancelada con período pagado vigente/);
+  });
+
+  it('25. CANCELLED_AFTER_PERIOD_END_HAS_NO_ACCESS: CANCELLED tras fin de período pagado no otorga acceso', () => {
+    const mem: any = {
+      id: 'mem-canc-past',
+      student_id: 'student-canc-past',
+      status: 'CANCELLED',
+      start_date: '2026-08-01T00:00:00Z',
+      current_period_end: '2026-09-01T00:00:00Z',
+      gateway_sync_state: 'HEALTHY',
+    };
+
+    const access = validateMembershipDates(mem, fixedNow);
+    assert.strictEqual(access.hasAccess, false);
+    assert.strictEqual(access.status, 'CANCELLED');
+    assert.match(access.reason!, /Suscripción cancelada y sin período pagado vigente/);
+  });
+
+  it('26. FLOW_INACTIVE_FUTURE_START_IS_NOT_EXPIRED: status=0 con inicio futuro es PENDING_PAYMENT, no EXPIRED', () => {
+    const flowSub: FlowSubscriptionSnapshot = {
+      status: 0, // Inactiva
+      morose: 0,
+      subscription_start: '2026-10-01T00:00:00Z', // Inicia en 6 días
+      subscription_end: '2026-11-01T00:00:00Z',
+    };
+
+    const state = deriveMembershipState(flowSub, { status: 'PENDING_PAYMENT' }, fixedNow);
+    assert.strictEqual(state.status, 'PENDING_PAYMENT');
+    assert.strictEqual(state.hasAccess, false);
+    assert.strictEqual(state.applyStateMutation, true);
+    assert.strictEqual(state.syncState, 'HEALTHY');
+    assert.strictEqual(state.reason, 'FLOW_INACTIVE_FUTURE_START');
+  });
+
+  it('27. FLOW_INACTIVE_ENDED_SUBSCRIPTION_IS_EXPIRED: status=0 con término pasado es EXPIRED', () => {
+    const flowSub: FlowSubscriptionSnapshot = {
+      status: 0,
+      morose: 0,
+      subscription_start: '2026-08-01T00:00:00Z',
+      subscription_end: '2026-09-01T00:00:00Z', // Terminó hace 24 días
+    };
+
+    const state = deriveMembershipState(flowSub, { status: 'ACTIVE' }, fixedNow);
+    assert.strictEqual(state.status, 'EXPIRED');
+    assert.strictEqual(state.hasAccess, false);
+    assert.strictEqual(state.applyStateMutation, true);
+    assert.strictEqual(state.syncState, 'HEALTHY');
+    assert.strictEqual(state.reason, 'FLOW_INACTIVE_ENDED_SUBSCRIPTION');
+  });
+
+  it('28. FLOW_INACTIVE_AMBIGUOUS_DATES_FAIL_CLOSED_NON_DESTRUCTIVELY: status=0 sin fechas válidas activa ANOMALY sin mutar status', () => {
+    const flowSub: FlowSubscriptionSnapshot = {
+      status: 0,
+      morose: 0,
+      subscription_start: null,
+      subscription_end: null,
+    };
+
+    const state = deriveMembershipState(flowSub, { status: 'ACTIVE' }, fixedNow);
+    assert.strictEqual(state.status, 'ACTIVE', 'No debe mutar destructivamente el status conocido');
+    assert.strictEqual(state.hasAccess, false, 'Falla cerrado');
+    assert.strictEqual(state.applyStateMutation, false, 'Cero mutación directa de status');
+    assert.strictEqual(state.syncState, 'ANOMALY');
+    assert.strictEqual(state.reason, 'FLOW_INACTIVE_AMBIGUOUS_DATES');
   });
 });

@@ -29,6 +29,9 @@ export async function processFlowCallback(
   const { supabase, token, resourceHint, payload } = input;
   const gateway = getPaymentGateway();
 
+  // 1. Registro del timestamp en que se INICIA la consulta S2S (determinismo anti-carrera)
+  const requestStartedAt = new Date().toISOString();
+
   // 1. Resolver el recurso S2S de forma desacoplada
   const callbackResult = await gateway.resolveCallback(token, resourceHint);
 
@@ -76,7 +79,7 @@ export async function processFlowCallback(
 
   let membershipQuery = supabase
     .from('memberships')
-    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_snapshot_observed_at');
+    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_snapshot_request_started_at, gateway_sync_state');
 
   if (targetSubId) {
     membershipQuery = membershipQuery.eq('gateway_subscription_id', targetSubId);
@@ -195,8 +198,7 @@ export async function processFlowCallback(
 
     // Actualizar ciclo de membresía si el pago fue aprobado mediante embudo atómico exclusivo
     if (pay.status === 'APPROVED') {
-      const snapshotObservedAt = new Date().toISOString();
-      const newPeriodStart = snapshotObservedAt;
+      const newPeriodStart = requestStartedAt;
       const newPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
       if (typeof supabase.rpc === 'function') {
@@ -207,13 +209,14 @@ export async function processFlowCallback(
           p_current_period_start: newPeriodStart,
           p_current_period_end: newPeriodEnd,
           p_trial_ends_at: null,
-          p_gateway_snapshot_observed_at: snapshotObservedAt,
+          p_gateway_snapshot_request_started_at: requestStartedAt,
           p_reason: 'Payment approved by gateway',
           p_actor_profile_id: null,
           p_metadata: {
             source: 'CALLBACK_PAYMENT',
             payment_id: pay.paymentId,
           },
+          p_sync_state: 'HEALTHY',
         });
 
         if (rpcErr) {
@@ -240,8 +243,6 @@ export async function processFlowCallback(
       });
     } else if (pay.status === 'REJECTED') {
       // Regla fail-closed: Si el pago es rechazado, pasar a PAST_DUE vía RPC atómica
-      const snapshotObservedAt = new Date().toISOString();
-
       if (typeof supabase.rpc === 'function') {
         const { error: rpcErr } = await supabase.rpc('apply_membership_transition_atomic', {
           p_membership_id: matchedMembership.id,
@@ -250,13 +251,14 @@ export async function processFlowCallback(
           p_current_period_start: null,
           p_current_period_end: null,
           p_trial_ends_at: null,
-          p_gateway_snapshot_observed_at: snapshotObservedAt,
+          p_gateway_snapshot_request_started_at: requestStartedAt,
           p_reason: 'Payment rejected by gateway',
           p_actor_profile_id: null,
           p_metadata: {
             source: 'CALLBACK_PAYMENT',
             payment_id: pay.paymentId,
           },
+          p_sync_state: 'HEALTHY',
         });
 
         if (rpcErr) {
@@ -287,8 +289,6 @@ export async function processFlowCallback(
     const sub = callbackResult.subscription;
 
     if (matchedMembership) {
-      const snapshotObservedAt = new Date().toISOString();
-
       const flowSubSnapshot: FlowSubscriptionSnapshot = {
         id: sub.id,
         status: (sub as any).rawStatus !== undefined
@@ -303,6 +303,9 @@ export async function processFlowCallback(
                       ? 4
                       : 0)),
         morose: sub.morose ?? (sub as any).raw?.morose ?? 0,
+        subscription_start: (sub as any).subscription_start || null,
+        subscription_end: (sub as any).subscription_end || null,
+        trial_start: (sub as any).trial_start || null,
         trial_end: sub.trialEndsAt || (sub as any).trial_end || null,
         period_start: sub.currentPeriodStart || (sub as any).period_start || null,
         period_end: sub.currentPeriodEnd || (sub as any).period_end || null,
@@ -313,12 +316,32 @@ export async function processFlowCallback(
 
       const derived = deriveMembershipState(flowSubSnapshot, matchedMembership);
 
-      if (!derived.applyStateMutation) {
-        logger.warn('Unrecognized or corrupted subscription callback data, failing closed without state mutation', {
+      if (derived.syncState === 'ANOMALY') {
+        logger.warn('Unrecognized or corrupted subscription callback data, failing closed with persistent anomaly gate', {
           trace_id: localTraceId,
           membership_id: matchedMembership.id,
           reason: derived.reason,
         });
+
+        if (typeof supabase.rpc === 'function') {
+          await supabase.rpc('apply_membership_transition_atomic', {
+            p_membership_id: matchedMembership.id,
+            p_new_status: matchedMembership.status,
+            p_gateway_status: derived.gatewayStatus,
+            p_current_period_start: null,
+            p_current_period_end: null,
+            p_trial_ends_at: null,
+            p_gateway_snapshot_request_started_at: requestStartedAt,
+            p_reason: derived.reason,
+            p_actor_profile_id: null,
+            p_metadata: {
+              source: 'CALLBACK_SUBSCRIPTION',
+              morose: flowSubSnapshot.morose,
+              raw_status: flowSubSnapshot.status,
+            },
+            p_sync_state: 'ANOMALY',
+          });
+        }
       } else if (typeof supabase.rpc === 'function') {
         const { error: rpcErr } = await supabase.rpc('apply_membership_transition_atomic', {
           p_membership_id: matchedMembership.id,
@@ -327,7 +350,7 @@ export async function processFlowCallback(
           p_current_period_start: derived.effectivePeriodStart || null,
           p_current_period_end: derived.effectivePeriodEnd || null,
           p_trial_ends_at: derived.effectiveTrialEnd || null,
-          p_gateway_snapshot_observed_at: snapshotObservedAt,
+          p_gateway_snapshot_request_started_at: requestStartedAt,
           p_reason: derived.reason,
           p_actor_profile_id: null,
           p_metadata: {
@@ -336,6 +359,7 @@ export async function processFlowCallback(
             raw_status: flowSubSnapshot.status,
             access_until: derived.accessUntil || null,
           },
+          p_sync_state: 'HEALTHY',
         });
 
         if (rpcErr) {

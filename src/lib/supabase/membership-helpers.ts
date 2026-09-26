@@ -24,6 +24,10 @@ export interface MembershipRecord {
   price_contracted?: number;
   gateway_subscription_id?: string | null;
   gateway_status?: string | null;
+  gateway_sync_state?: 'HEALTHY' | 'ANOMALY' | string | null;
+  gateway_access_blocked_at?: string | null;
+  gateway_access_block_reason?: string | null;
+  last_gateway_snapshot_request_started_at?: string | null;
   created_at: string;
 }
 
@@ -38,6 +42,8 @@ export interface AccessEvaluation {
  * Valida la vigencia y acceso de una membresía con separación estricta de ramas y política de falla cerrada (fail-closed).
  * 
  * Reglas de Acceso:
+ * 0. GATE PERSISTENTE:
+ *    - Si gateway_sync_state === 'ANOMALY', se bloquea el acceso preventivamente sin destruir el estado comercial.
  * 1. TRIAL:
  *    - Requiere inicio válido (start_date <= now) y trial_ends_at en el futuro.
  *    - NO exige current_period_end.
@@ -46,7 +52,7 @@ export interface AccessEvaluation {
  *    - NO exige trial_ends_at.
  *    - FALLA CERRADO: Si faltan ambas fechas de fin, se deniega acceso.
  * 3. CANCELLED:
- *    - Si la suscripción fue cancelada pero current_period_end >= now, mantiene acceso (status: ACTIVE) hasta término de ciclo.
+ *    - Si la suscripción fue cancelada pero current_period_end >= now, mantiene acceso hasta término de ciclo.
  *    - Si no tiene ciclo pagado o ya venció, se deniega acceso.
  * 4. PAUSED, PAST_DUE, PENDING_PAYMENT, EXPIRED, NO_MEMBERSHIP:
  *    - Denegación estricta de acceso sin excepciones.
@@ -56,6 +62,16 @@ export function validateMembershipDates(
   now: Date = new Date()
 ): AccessEvaluation {
   const statusUpper = (membership.status || '').toUpperCase() as MembershipStatus;
+
+  // 0. Salvaguarda Persistente contra Anomalías de Pasarela (Fail-Closed Gate)
+  if (membership.gateway_sync_state === 'ANOMALY') {
+    return {
+      hasAccess: false,
+      status: statusUpper,
+      reason: membership.gateway_access_block_reason || 'Bloqueo preventivo por anomalía en sincronización de pasarela',
+      membership,
+    };
+  }
 
   // 1. Rama TRIAL
   if (statusUpper === 'TRIAL') {

@@ -164,10 +164,11 @@ class MockFlowAuditDB {
     if (name === 'apply_membership_transition_atomic') {
       const mem = this.memberships.find((m: any) => m.id === params.p_membership_id);
       if (!mem) return Promise.resolve({ data: { success: false, status: 'NOT_FOUND' }, error: null });
+      const reqStartedAt = params.p_gateway_snapshot_request_started_at || params.p_gateway_snapshot_observed_at;
       if (
-        params.p_gateway_snapshot_observed_at &&
-        mem.last_gateway_snapshot_observed_at &&
-        params.p_gateway_snapshot_observed_at < mem.last_gateway_snapshot_observed_at
+        reqStartedAt &&
+        (mem.last_gateway_snapshot_request_started_at || mem.last_gateway_snapshot_observed_at) &&
+        reqStartedAt <= (mem.last_gateway_snapshot_request_started_at || mem.last_gateway_snapshot_observed_at)
       ) {
         return Promise.resolve({
           data: {
@@ -179,8 +180,28 @@ class MockFlowAuditDB {
           error: null,
         });
       }
+      if (params.p_sync_state === 'ANOMALY') {
+        mem.gateway_sync_state = 'ANOMALY';
+        mem.gateway_access_blocked_at = new Date().toISOString();
+        mem.gateway_access_block_reason = params.p_reason;
+        mem.last_gateway_snapshot_request_started_at = reqStartedAt || new Date().toISOString();
+        mem.updated_at = new Date().toISOString();
+        return Promise.resolve({
+          data: {
+            success: true,
+            status: 'ANOMALY_BLOCKED',
+            membership_id: mem.id,
+            current_status: mem.status,
+            gateway_sync_state: 'ANOMALY',
+          },
+          error: null,
+        });
+      }
       const prevStatus = mem.status;
       mem.status = params.p_new_status;
+      mem.gateway_sync_state = 'HEALTHY';
+      mem.gateway_access_blocked_at = null;
+      mem.gateway_access_block_reason = null;
       mem.gateway_status = params.p_gateway_status || mem.gateway_status;
       if (params.p_current_period_start) mem.current_period_start = params.p_current_period_start;
       if (params.p_current_period_end) mem.current_period_end = params.p_current_period_end;
@@ -188,7 +209,8 @@ class MockFlowAuditDB {
       if (params.p_new_status === 'CANCELLED' && !mem.cancelled_at) {
         mem.cancelled_at = new Date().toISOString();
       }
-      mem.last_gateway_snapshot_observed_at = params.p_gateway_snapshot_observed_at || new Date().toISOString();
+      mem.last_gateway_snapshot_request_started_at = reqStartedAt || new Date().toISOString();
+      mem.last_gateway_snapshot_observed_at = mem.last_gateway_snapshot_request_started_at;
       mem.updated_at = new Date().toISOString();
       return Promise.resolve({
         data: {

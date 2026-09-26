@@ -17,8 +17,11 @@ export type CanonicalMembershipStatus =
 
 export interface FlowSubscriptionSnapshot {
   id?: string;
-  status: number; // 0=inactiva, 1=activa, 2=trial, 4=cancelada
+  status: number; // 0=inactiva/no iniciada, 1=activa, 2=trial, 4=cancelada
   morose: number; // 0=al día, 1=vencido, 2=pendiente no vencido
+  subscription_start?: string | null;
+  subscription_end?: string | null;
+  trial_start?: string | null;
   trial_end?: string | null;
   trialEndsAt?: string | null;
   period_start?: string | null;
@@ -27,7 +30,6 @@ export interface FlowSubscriptionSnapshot {
   currentPeriodEnd?: string | null;
   cancel_at_period_end?: number | boolean;
   cancelAtPeriodEnd?: boolean;
-  subscription_end?: string | null;
 }
 
 export interface LocalMembershipSnapshot {
@@ -36,7 +38,8 @@ export interface LocalMembershipSnapshot {
   trial_ends_at?: string | null;
   current_period_end?: string | null;
   current_period_start?: string | null;
-  last_gateway_snapshot_observed_at?: string | null;
+  last_gateway_snapshot_request_started_at?: string | null;
+  gateway_sync_state?: 'HEALTHY' | 'ANOMALY' | string | null;
   trace_id?: string | null;
 }
 
@@ -46,6 +49,7 @@ export interface DerivedMembershipState {
   hasAccess: boolean;
   accessUntil?: string | null;
   applyStateMutation: boolean;
+  syncState: 'HEALTHY' | 'ANOMALY';
   reason: string;
   effectivePeriodStart?: string | null;
   effectivePeriodEnd?: string | null;
@@ -61,7 +65,12 @@ export interface DerivedMembershipState {
  *    Jamás resucita ACTIVE para mantener acceso.
  * 2. Cero atajos desde PAST_DUE: La subsanación evalúa la matriz canónica completa.
  * 3. Falla cerrada no destructiva ante datos corruptos o estados desconocidos:
- *    hasAccess=false, applyStateMutation=false, preservando el estado previo en DB.
+ *    hasAccess=false, applyStateMutation=false, syncState='ANOMALY',
+ *    preservando el estado comercial previo en DB.
+ * 4. Flow status=0 diferenciado:
+ *    - subscription_start futuro -> PENDING_PAYMENT
+ *    - subscription_end pasado -> EXPIRED
+ *    - Fechas ambiguas o faltantes -> Fail-closed ANOMALY sin mutación destructiva.
  */
 export function deriveMembershipState(
   flowSub: FlowSubscriptionSnapshot,
@@ -93,7 +102,7 @@ export function deriveMembershipState(
 
   // 1. CASO FLOW STATUS = 2 (TRIAL / PERÍODO DE PRUEBA)
   if (flowSub.status === 2) {
-    // Si la fecha de fin de trial es inválida o faltante -> Fail-closed no destructivo
+    // Si la fecha de fin de trial es inválida o faltante -> Fail-closed ANOMALY
     if (trialEndMs === null) {
       return {
         status: fallbackLocalStatus,
@@ -101,6 +110,7 @@ export function deriveMembershipState(
         hasAccess: false,
         accessUntil: null,
         applyStateMutation: false,
+        syncState: 'ANOMALY',
         reason: 'UNSUPPORTED_OR_INVALID_GATEWAY_STATE',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -116,6 +126,7 @@ export function deriveMembershipState(
         hasAccess: false,
         accessUntil: null,
         applyStateMutation: true,
+        syncState: 'HEALTHY',
         reason: 'Trial period has expired without paid activation',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -132,6 +143,7 @@ export function deriveMembershipState(
         hasAccess: false,
         accessUntil: null,
         applyStateMutation: true,
+        syncState: 'HEALTHY',
         reason: 'Flow reports overdue invoice during trial (morose=1)',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -147,6 +159,7 @@ export function deriveMembershipState(
         hasAccess: true,
         accessUntil: rawTrialEnd,
         applyStateMutation: true,
+        syncState: 'HEALTHY',
         reason: 'TRIAL_CANCEL_AT_PERIOD_END_ACCESS_RETAINED',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -161,6 +174,7 @@ export function deriveMembershipState(
       hasAccess: true,
       accessUntil: rawTrialEnd,
       applyStateMutation: true,
+      syncState: 'HEALTHY',
       reason: 'Active trial period within contractual trial window',
       effectivePeriodStart: rawPeriodStart,
       effectivePeriodEnd: rawPeriodEnd,
@@ -178,6 +192,7 @@ export function deriveMembershipState(
         hasAccess: false,
         accessUntil: null,
         applyStateMutation: true,
+        syncState: 'HEALTHY',
         reason: 'Flow reports overdue invoice (morose=1)',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -193,6 +208,7 @@ export function deriveMembershipState(
         hasAccess: false,
         accessUntil: null,
         applyStateMutation: false,
+        syncState: 'ANOMALY',
         reason: 'UNSUPPORTED_OR_INVALID_GATEWAY_STATE',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -208,6 +224,7 @@ export function deriveMembershipState(
         hasAccess: false,
         accessUntil: null,
         applyStateMutation: true,
+        syncState: 'HEALTHY',
         reason: 'Paid period has lapsed past current_period_end',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -227,6 +244,7 @@ export function deriveMembershipState(
       hasAccess: true,
       accessUntil: rawPeriodEnd,
       applyStateMutation: true,
+      syncState: 'HEALTHY',
       reason: reasonText,
       effectivePeriodStart: rawPeriodStart,
       effectivePeriodEnd: rawPeriodEnd,
@@ -247,6 +265,7 @@ export function deriveMembershipState(
         hasAccess: true,
         accessUntil: rawPeriodEnd,
         applyStateMutation: true,
+        syncState: 'HEALTHY',
         reason: 'CANCELLED_AT_PERIOD_END_ACCESS_RETAINED',
         effectivePeriodStart: rawPeriodStart,
         effectivePeriodEnd: rawPeriodEnd,
@@ -261,6 +280,7 @@ export function deriveMembershipState(
       hasAccess: false,
       accessUntil: null,
       applyStateMutation: true,
+      syncState: 'HEALTHY',
       reason: 'CANCELLED_IMMEDIATE_OR_PERIOD_LAPSED',
       effectivePeriodStart: rawPeriodStart,
       effectivePeriodEnd: rawPeriodEnd,
@@ -268,28 +288,68 @@ export function deriveMembershipState(
     };
   }
 
-  // 4. CASO FLOW STATUS = 0 (INACTIVA EN FLOW)
+  // 4. CASO FLOW STATUS = 0 (INACTIVA / NO INICIADA)
   if (flowSub.status === 0) {
+    const rawSubStart = flowSub.subscription_start || null;
+    const rawSubEnd = flowSub.subscription_end || null;
+    const subStartMs = parseDateMs(rawSubStart);
+    const subEndMs = parseDateMs(rawSubEnd);
+
+    // 4.1 Inactiva pero con inicio futuro -> PENDING_PAYMENT / hasAccess=false
+    if (subStartMs !== null && nowMs < subStartMs) {
+      return {
+        status: 'PENDING_PAYMENT',
+        gatewayStatus: 'inactive_future_start',
+        hasAccess: false,
+        accessUntil: null,
+        applyStateMutation: true,
+        syncState: 'HEALTHY',
+        reason: 'FLOW_INACTIVE_FUTURE_START',
+        effectivePeriodStart: rawPeriodStart,
+        effectivePeriodEnd: rawPeriodEnd,
+        effectiveTrialEnd: rawTrialEnd,
+      };
+    }
+
+    // 4.2 Inactiva y con fecha de término ya concluida -> EXPIRED / hasAccess=false
+    if (subEndMs !== null && nowMs >= subEndMs) {
+      return {
+        status: 'EXPIRED',
+        gatewayStatus: 'inactive_subscription_ended',
+        hasAccess: false,
+        accessUntil: null,
+        applyStateMutation: true,
+        syncState: 'HEALTHY',
+        reason: 'FLOW_INACTIVE_ENDED_SUBSCRIPTION',
+        effectivePeriodStart: rawPeriodStart,
+        effectivePeriodEnd: rawPeriodEnd,
+        effectiveTrialEnd: rawTrialEnd,
+      };
+    }
+
+    // 4.3 Fechas ambiguas, ausentes o contradictorias -> Fail-closed ANOMALY sin mutación destructiva de status
     return {
-      status: 'EXPIRED',
-      gatewayStatus: 'inactive',
+      status: fallbackLocalStatus,
+      gatewayStatus: 'inactive_ambiguous_dates',
       hasAccess: false,
       accessUntil: null,
-      applyStateMutation: true,
-      reason: 'Flow reports subscription status 0 (inactive)',
+      applyStateMutation: false,
+      syncState: 'ANOMALY',
+      reason: 'FLOW_INACTIVE_AMBIGUOUS_DATES',
       effectivePeriodStart: rawPeriodStart,
       effectivePeriodEnd: rawPeriodEnd,
       effectiveTrialEnd: rawTrialEnd,
     };
   }
 
-  // 5. ESTADO FLOW DESCONOCIDO O NO SOPORTADO (E.G. STATUS = 5, 99) -> FALLA CERRADA NO DESTRUCTIVA
+  // 5. ESTADO FLOW DESCONOCIDO O NO SOPORTADO (E.G. STATUS = 5, 99) -> FALLA CERRADA NO DESTRUCTIVA (ANOMALY)
   return {
     status: fallbackLocalStatus,
     gatewayStatus: `unknown_${flowSub.status}`,
     hasAccess: false,
     accessUntil: null,
     applyStateMutation: false,
+    syncState: 'ANOMALY',
     reason: 'UNSUPPORTED_OR_INVALID_GATEWAY_STATE',
     effectivePeriodStart: rawPeriodStart,
     effectivePeriodEnd: rawPeriodEnd,
