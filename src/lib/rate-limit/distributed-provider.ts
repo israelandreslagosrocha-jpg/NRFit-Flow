@@ -34,6 +34,8 @@ export class DistributedRateLimiter implements RateLimitProvider {
 
   async checkLimit(options: RateLimitOptions): Promise<RateLimitResult> {
     const { limit, windowSeconds } = options;
+    const policyId = options.policyId || options.namespace;
+    const policy = `"${policyId}";q=${limit};w=${windowSeconds}`;
 
     if (!this.isConfigured) {
       // Proveedor distribuido pendiente de configuración de hosting
@@ -43,24 +45,21 @@ export class DistributedRateLimiter implements RateLimitProvider {
         limit,
         remaining: limit,
         resetSeconds: windowSeconds,
-        policy: `"${limit};w=${windowSeconds}"`,
+        policyId,
+        policy,
       };
     }
 
     try {
       // Stub preparado para ejecutar comandos atómicos INCR / EXPIRE en Redis/KV cuando se configure
-      // En una implementación con Redis nativo:
-      // const multi = redis.multi();
-      // multi.incr(key);
-      // multi.expire(key, windowSeconds);
-      // const [count] = await multi.exec();
       return {
         allowed: true,
         status: 'ALLOWED',
         limit,
         remaining: Math.max(0, limit - 1),
         resetSeconds: windowSeconds,
-        policy: `"${limit};w=${windowSeconds}"`,
+        policyId,
+        policy,
       };
     } catch (err: any) {
       logger.error('Distributed rate limiter check failed', { error: err.message });
@@ -70,7 +69,8 @@ export class DistributedRateLimiter implements RateLimitProvider {
         limit,
         remaining: limit,
         resetSeconds: windowSeconds,
-        policy: `"${limit};w=${windowSeconds}"`,
+        policyId,
+        policy,
       };
     }
   }

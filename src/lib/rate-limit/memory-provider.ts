@@ -42,6 +42,9 @@ export class InMemoryRateLimiter implements RateLimitProvider {
 
     let record = nsStore.get(key);
 
+    const policyId = options.policyId || options.namespace;
+    const policy = `"${policyId}";q=${limit};w=${windowSeconds}`;
+
     // Si no existe o la ventana expiró, iniciar nuevo ciclo
     if (!record || nowMs >= record.resetAtMs) {
       record = {
@@ -57,7 +60,8 @@ export class InMemoryRateLimiter implements RateLimitProvider {
         limit,
         remaining: Math.max(0, limit - 1),
         resetSeconds,
-        policy: `"${limit};w=${windowSeconds}"`,
+        policyId,
+        policy,
       };
     }
 
@@ -71,7 +75,8 @@ export class InMemoryRateLimiter implements RateLimitProvider {
         limit,
         remaining: limit - record.count,
         resetSeconds,
-        policy: `"${limit};w=${windowSeconds}"`,
+        policyId,
+        policy,
       };
     }
 
@@ -84,7 +89,8 @@ export class InMemoryRateLimiter implements RateLimitProvider {
       remaining: 0,
       resetSeconds,
       retryAfterSeconds: Math.max(1, resetSeconds),
-      policy: `"${limit};w=${windowSeconds}"`,
+      policyId,
+      policy,
     };
   }
 

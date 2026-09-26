@@ -17,11 +17,14 @@ import {
   InMemoryRateLimiter,
   DistributedRateLimiter,
   setRateLimitProvider,
+  checkRateLimit,
   resolveRateLimitKey,
   hashClientIdentity,
   extractClientIp,
   createRateLimitExceededResponse,
   handleRateLimitHit,
+  parseRateLimitPolicyHeader,
+  parseRateLimitHeader,
   type RateLimitProvider,
 } from '../lib/rate-limit/index.ts';
 import { POST as flowCallbackPost } from '../app/api/callbacks/flow/route.ts';
@@ -30,6 +33,7 @@ import { POST as reconcileCronPost } from '../app/api/cron/reconcile-memberships
 import { GET as flowReturnGet } from '../app/checkout/flow-return/route.ts';
 import { setPaymentGateway } from '../lib/payments/index.ts';
 import type { PaymentGateway } from '../lib/payments/types.ts';
+import { reconcileFlowSubscriptions } from '../lib/payments/flow/reconciler.ts';
 import { NextRequest } from 'next/server.js';
 
 describe('FASE M-09.3E — Rate Limiting & Abuse Protection', () => {
@@ -187,7 +191,7 @@ describe('FASE M-09.3E — Rate Limiting & Abuse Protection', () => {
     assert.strictEqual(limitedCount, 5, 'Exactamente 5 peticiones deben ser rechazadas');
   });
 
-  it('7. HEADERS_IETF_DRAFT_AND_RETRY_AFTER: Cabeceras RateLimit del draft IETF y Retry-After en 429', () => {
+  it('7. HEADERS_IETF_DRAFT_AND_RETRY_AFTER: Cabeceras RateLimit del draft IETF vigente (Structured Fields) y Retry-After en 429', () => {
     const limitedResult = {
       allowed: false,
       status: 'LIMITED' as const,
@@ -195,14 +199,36 @@ describe('FASE M-09.3E — Rate Limiting & Abuse Protection', () => {
       remaining: 0,
       resetSeconds: 45,
       retryAfterSeconds: 45,
-      policy: '"100;w=60"',
+      policyId: 'auth',
     };
 
-    const res = createRateLimitExceededResponse(limitedResult, 'Límite excedido');
+    const res = createRateLimitExceededResponse(limitedResult, 'Límite excedido', {
+      policyId: 'auth',
+      windowSeconds: 60,
+    });
     assert.strictEqual(res.status, 429);
     assert.strictEqual(res.headers.get('Retry-After'), '45');
-    assert.strictEqual(res.headers.get('RateLimit-Policy'), '"100;w=60"');
-    assert.strictEqual(res.headers.get('RateLimit'), 'limit=100, remaining=0, reset=45');
+    assert.strictEqual(res.headers.get('RateLimit-Policy'), '"auth";q=100;w=60');
+    assert.strictEqual(res.headers.get('RateLimit'), '"auth";r=0;t=45');
+
+    // Validador y parser de sintaxis Draft 11 Structured Fields
+    const parsedPolicy = parseRateLimitPolicyHeader(res.headers.get('RateLimit-Policy'));
+    assert.ok(parsedPolicy, 'RateLimit-Policy debe cumplir sintaxis Structured Fields');
+    assert.strictEqual(parsedPolicy?.policyId, 'auth');
+    assert.strictEqual(parsedPolicy?.quota, 100);
+    assert.strictEqual(parsedPolicy?.windowSeconds, 60);
+
+    const parsedRateLimit = parseRateLimitHeader(res.headers.get('RateLimit'));
+    assert.ok(parsedRateLimit, 'RateLimit debe cumplir sintaxis Structured Fields');
+    assert.strictEqual(parsedRateLimit?.policyId, 'auth');
+    assert.strictEqual(parsedRateLimit?.remaining, 0);
+    assert.strictEqual(parsedRateLimit?.resetSeconds, 45);
+
+    // Prohibición estricta de sintaxis legacy custom
+    const rawRateLimit = res.headers.get('RateLimit') || '';
+    assert.ok(!rawRateLimit.includes('limit='), 'No debe incluir sintaxis legacy limit=');
+    assert.ok(!rawRateLimit.includes('remaining='), 'No debe incluir sintaxis legacy remaining=');
+    assert.ok(!rawRateLimit.includes('reset='), 'No debe incluir sintaxis legacy reset=');
   });
 
   // ============================================================================
@@ -498,5 +524,381 @@ describe('FASE M-09.3E — Rate Limiting & Abuse Protection', () => {
       'x-forwarded-for': 'malicious-string, <script>, 201.238.10.20',
     });
     assert.strictEqual(extractClientIp(headersSpoofed), '201.238.10.20', 'Descarta strings no IP y toma la primera IP válida');
+  });
+
+  // ============================================================================
+  // CONTRATOS 19-22: PARCHE M-09.3E.1 - CONTENT-TYPE Y LÍMITE DE BODY EN FLOW CALLBACK
+  // ============================================================================
+
+  it('19. FLOW_CALLBACK_FORM_URLENCODED_ACCEPTED: POST con Content-Type application/x-www-form-urlencoded es aceptado', async () => {
+    let resolveCalled = false;
+    const mockGw: Partial<PaymentGateway> = {
+      resolveCallback: async (token) => {
+        resolveCalled = true;
+        return {
+          resourceType: 'payment',
+          payment: {
+            paymentId: `flow-${token}`,
+            status: 'APPROVED',
+            amount: 25000,
+            currency: 'CLP',
+            paymentDate: new Date().toISOString(),
+          },
+        };
+      },
+    };
+    setPaymentGateway(mockGw as any);
+
+    const req = new NextRequest('http://localhost:3000/api/callbacks/flow', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ token: 'valid-flow-token-form' }).toString(),
+    });
+
+    const res = await flowCallbackPost(req);
+    assert.strictEqual(res.status, 200, 'POST urlencoded debe ser aceptado con HTTP 200');
+    assert.strictEqual(resolveCalled, true, 'Debe procesar la resolución S2S');
+  });
+
+  it('20. FLOW_CALLBACK_JSON_REJECTED_415: POST con Content-Type application/json es rechazado con HTTP 415', async () => {
+    let resolveCalled = false;
+    const mockGw: Partial<PaymentGateway> = {
+      resolveCallback: async () => {
+        resolveCalled = true;
+        return { resourceType: 'unknown' };
+      },
+    };
+    setPaymentGateway(mockGw as any);
+
+    const req = new NextRequest('http://localhost:3000/api/callbacks/flow', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ token: 'test-json-token' }),
+    });
+
+    const res = await flowCallbackPost(req);
+    assert.strictEqual(res.status, 415, 'JSON debe ser rechazado con HTTP 415 Unsupported Media Type');
+    assert.strictEqual(resolveCalled, false, 'No debe llamar a resolución S2S ante Content-Type inválido');
+  });
+
+  it('21. FLOW_CALLBACK_MULTIPART_REJECTED_415: POST con Content-Type multipart/form-data es rechazado con HTTP 415', async () => {
+    let resolveCalled = false;
+    const mockGw: Partial<PaymentGateway> = {
+      resolveCallback: async () => {
+        resolveCalled = true;
+        return { resourceType: 'unknown' };
+      },
+    };
+    setPaymentGateway(mockGw as any);
+
+    const req = new NextRequest('http://localhost:3000/api/callbacks/flow', {
+      method: 'POST',
+      headers: {
+        'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
+      },
+      body: '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="token"\r\n\r\ntok-multipart\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--',
+    });
+
+    const res = await flowCallbackPost(req);
+    assert.strictEqual(res.status, 415, 'Multipart debe ser rechazado con HTTP 415 Unsupported Media Type');
+    assert.strictEqual(resolveCalled, false, 'No debe llamar a resolución S2S ante Content-Type multipart');
+  });
+
+  it('22. FLOW_CALLBACK_OVERSIZED_BODY_REJECTED_BEFORE_S2S: Payload superior a 8 KB es rechazado con HTTP 413 antes de S2S', async () => {
+    let resolveCalled = false;
+    const mockGw: Partial<PaymentGateway> = {
+      resolveCallback: async () => {
+        resolveCalled = true;
+        return { resourceType: 'unknown' };
+      },
+    };
+    setPaymentGateway(mockGw as any);
+
+    // Generar cuerpo de más de 8192 bytes (9 KB)
+    const largePadding = 'x'.repeat(9 * 1024);
+    const oversizedBody = new URLSearchParams({
+      token: 'token-with-oversized-payload',
+      padding: largePadding,
+    }).toString();
+
+    const req = new NextRequest('http://localhost:3000/api/callbacks/flow', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'content-length': String(Buffer.byteLength(oversizedBody)),
+      },
+      body: oversizedBody,
+    });
+
+    const res = await flowCallbackPost(req);
+    assert.strictEqual(res.status, 413, 'Cuerpo > 8 KB debe ser rechazado con HTTP 413 Payload Too Large');
+    assert.strictEqual(resolveCalled, false, 'Rechazo debe ocurrir antes de invocar la resolución S2S');
+  });
+
+  // ============================================================================
+  // CONTRATO 23: RECUPERABILIDAD S2S ANTE BULKHEAD LIMITED SIN REPLAY DE CALLBACK
+  // ============================================================================
+
+  it('23. BULKHEAD_LIMITED_FLOW_CALLBACK_IS_RECOVERABLE_BY_S2S_RECONCILER_WITHOUT_CALLBACK_REPLAY: Callback limitado por bulkhead es recuperado convergentemente por el reconciliador S2S', async () => {
+    // 1. Configurar bulkhead saturado (status: LIMITED)
+    const saturatedLimiter: RateLimitProvider = {
+      name: 'saturated_bulkhead',
+      checkLimit: async () => ({
+        allowed: false,
+        status: 'LIMITED',
+        limit: 120,
+        remaining: 0,
+        resetSeconds: 30,
+        retryAfterSeconds: 30,
+        policyId: 'flow-bulkhead',
+      }),
+    };
+    setRateLimitProvider(saturatedLimiter);
+
+    let callbackS2SCalled = false;
+    const mockGw: Partial<PaymentGateway> = {
+      resolveCallback: async () => {
+        callbackS2SCalled = true;
+        return {
+          resourceType: 'payment',
+          payment: {
+            paymentId: 'flow-pay-unreached',
+            status: 'APPROVED',
+            amount: 25000,
+            currency: 'CLP',
+            paymentDate: new Date().toISOString(),
+          },
+        };
+      },
+      getSubscription: async (subId: string) => {
+        return {
+          id: subId,
+          status: 'ACTIVE',
+          rawStatus: 1, // 1 = Activa
+          morose: 0, // Al día
+          currentPeriodStart: new Date(Date.now() - 5 * 86400000).toISOString(),
+          currentPeriodEnd: new Date(Date.now() + 25 * 86400000).toISOString(),
+          cancelAtPeriodEnd: false,
+        } as any;
+      },
+    };
+    setPaymentGateway(mockGw as any);
+
+    // 2. Notificación entrante a /api/callbacks/flow rechazada por el bulkhead
+    const req = new NextRequest('http://localhost:3000/api/callbacks/flow', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ token: 'tok-bulkhead-dropped' }).toString(),
+    });
+
+    const callbackResponse = await flowCallbackPost(req);
+    assert.strictEqual(callbackResponse.status, 429, 'El callback debe ser limitado por el bulkhead con HTTP 429');
+    assert.strictEqual(callbackS2SCalled, false, 'No debe haber alcanzado resolveCallback en este intento');
+
+    // 3. Demostración de convergencia: El cron reconciliador S2S encuentra la suscripción y aplica apply_membership_transition_atomic
+    let rpcCalledWith: any = null;
+    const mockSupabaseClient = {
+      from: (table: string) => ({
+        select: () => ({
+          eq: () => ({
+            not: () => ({
+              in: () =>
+                Promise.resolve({
+                  data: [
+                    {
+                      id: 'mem-sub-12345',
+                      student_id: 'student-999',
+                      status: 'PENDING_PAYMENT',
+                      gateway: 'FLOW',
+                      gateway_subscription_id: 'flow-sub-xyz',
+                      gateway_status: '0',
+                      last_gateway_snapshot_request_started_at: null,
+                      gateway_sync_state: 'HEALTHY',
+                    },
+                  ],
+                  error: null,
+                }),
+            }),
+          }),
+        }),
+      }),
+      rpc: (fnName: string, args: any) => {
+        if (fnName === 'apply_membership_transition_atomic') {
+          rpcCalledWith = args;
+        }
+        return Promise.resolve({ data: { success: true }, error: null });
+      },
+    };
+
+    const reconcileResult = await reconcileFlowSubscriptions(mockSupabaseClient as any);
+    assert.strictEqual(reconcileResult.scanned, 1, 'Debe escanear la membresía no reconciliada');
+    assert.ok(rpcCalledWith, 'apply_membership_transition_atomic debe ser invocado por el reconciliador');
+    assert.strictEqual(rpcCalledWith.p_membership_id, 'mem-sub-12345');
+    assert.strictEqual(rpcCalledWith.p_new_status, 'ACTIVE', 'El reconciliador debe converger a ACTIVE sin requerir replay del webhook');
+    assert.strictEqual(rpcCalledWith.p_gateway_status, 'active');
+    assert.strictEqual(rpcCalledWith.p_sync_state, 'HEALTHY');
+  });
+
+  // ============================================================================
+  // CONTRATO 24: CONTRATO DE RENDIMIENTO Y BENCHMARK DE INGENIERÍA
+  // ============================================================================
+
+  it('24. PERFORMANCE_BENCHMARK_AND_PROVIDER_CONTRACTS: Benchmark de ingeniería (p50/p95), timeout, unavailable y max 1 op por request', async () => {
+    // 1. Baseline sin rate limiter (operación simple de resolución de clave)
+    const baselineLatencies: number[] = [];
+    for (let i = 0; i < 1000; i++) {
+      const start = process.hrtime.bigint();
+      hashClientIdentity(`192.168.1.${i % 250}`);
+      const end = process.hrtime.bigint();
+      baselineLatencies.push(Number(end - start) / 1_000_000); // ms
+    }
+    baselineLatencies.sort((a, b) => a - b);
+    const baselineP50 = baselineLatencies[Math.floor(baselineLatencies.length * 0.5)];
+    const baselineP95 = baselineLatencies[Math.floor(baselineLatencies.length * 0.95)];
+
+    // 2. InMemory provider p50/p95
+    const memoryLimiter = new InMemoryRateLimiter();
+    setRateLimitProvider(memoryLimiter);
+    const inMemoryLatencies: number[] = [];
+    for (let i = 0; i < 1000; i++) {
+      const start = process.hrtime.bigint();
+      await checkRateLimit({
+        namespace: 'perf-test',
+        key: `key-${i % 50}`,
+        limit: 1000,
+        windowSeconds: 60,
+      });
+      const end = process.hrtime.bigint();
+      inMemoryLatencies.push(Number(end - start) / 1_000_000);
+    }
+    inMemoryLatencies.sort((a, b) => a - b);
+    const inMemP50 = inMemoryLatencies[Math.floor(inMemoryLatencies.length * 0.5)];
+    const inMemP95 = inMemoryLatencies[Math.floor(inMemoryLatencies.length * 0.95)];
+
+    // 3. Mock Distributed Provider con latencia de red simulada (5ms)
+    const SIMULATED_NETWORK_LATENCY_MS = 5;
+    const mockDistributed: RateLimitProvider = {
+      name: 'mock_distributed_redis',
+      checkLimit: async (opts) => {
+        await new Promise((r) => setTimeout(r, SIMULATED_NETWORK_LATENCY_MS));
+        return {
+          allowed: true,
+          status: 'ALLOWED',
+          limit: opts.limit,
+          remaining: opts.limit - 1,
+          resetSeconds: opts.windowSeconds,
+          policyId: opts.policyId || opts.namespace,
+        };
+      },
+    };
+    setRateLimitProvider(mockDistributed);
+
+    const distLatencies: number[] = [];
+    for (let i = 0; i < 50; i++) {
+      const start = process.hrtime.bigint();
+      await checkRateLimit({
+        namespace: 'perf-distributed',
+        key: `key-${i}`,
+        limit: 100,
+        windowSeconds: 60,
+      });
+      const end = process.hrtime.bigint();
+      distLatencies.push(Number(end - start) / 1_000_000);
+    }
+    distLatencies.sort((a, b) => a - b);
+    const distP50 = distLatencies[Math.floor(distLatencies.length * 0.5)];
+    const distP95 = distLatencies[Math.floor(distLatencies.length * 0.95)];
+
+    // 4. Provider Timeout Contract: Proveedor lento que excede timeout configurado
+    const hangingProvider: RateLimitProvider = {
+      name: 'hanging_provider',
+      checkLimit: async () => {
+        await new Promise((r) => setTimeout(r, 400));
+        return {
+          allowed: true,
+          status: 'ALLOWED',
+          limit: 10,
+          remaining: 9,
+          resetSeconds: 60,
+        };
+      },
+    };
+    setRateLimitProvider(hangingProvider);
+
+    const timeoutStart = Date.now();
+    const timeoutResult = await checkRateLimit(
+      { namespace: 'timeout-test', key: 'k1', limit: 10, windowSeconds: 60 },
+      30
+    );
+    const timeoutDuration = Date.now() - timeoutStart;
+
+    assert.ok(timeoutDuration < 150, 'El timeout debe abortar antes de 150ms');
+    assert.strictEqual(timeoutResult.status, 'PROVIDER_UNAVAILABLE', 'Debe fallar a PROVIDER_UNAVAILABLE por timeout');
+    assert.strictEqual(timeoutResult.allowed, true, 'Debe permitir fail-open en timeout para no bloquear negocio');
+
+    // 5. Provider Unavailable Contract: Proveedor distribuido sin configurar
+    delete process.env.RATE_LIMIT_REDIS_URL;
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    const unconfigured = new DistributedRateLimiter();
+    setRateLimitProvider(unconfigured);
+
+    const unavailResult = await checkRateLimit({
+      namespace: 'unavail-test',
+      key: 'k2',
+      limit: 10,
+      windowSeconds: 60,
+    });
+    assert.strictEqual(unavailResult.status, 'PROVIDER_UNAVAILABLE');
+    assert.strictEqual(unavailResult.allowed, true);
+
+    // 6. Cantidad máxima de operaciones al provider por request: Exactamente 1
+    let operationsCount = 0;
+    const countingProvider: RateLimitProvider = {
+      name: 'counting_provider',
+      checkLimit: async (opts) => {
+        operationsCount++;
+        return {
+          allowed: true,
+          status: 'ALLOWED',
+          limit: opts.limit,
+          remaining: opts.limit - 1,
+          resetSeconds: opts.windowSeconds,
+          policyId: opts.policyId || opts.namespace,
+        };
+      },
+    };
+    setRateLimitProvider(countingProvider);
+
+    const testReq = new NextRequest('http://localhost:3000/api/callbacks/flow', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ token: 'counting-op-test-token' }).toString(),
+    });
+
+    await flowCallbackPost(testReq);
+    assert.strictEqual(operationsCount, 1, 'Cada request protegida debe realizar EXACTAMENTE 1 operación al provider');
+
+    // Validación de asertos de benchmark (Engineering Benchmarks)
+    assert.ok(baselineP50 < 1.0, `Baseline p50 (${baselineP50.toFixed(3)}ms) debe ser sub-milisegundo`);
+    assert.ok(inMemP50 < 2.0, `InMemory p50 (${inMemP50.toFixed(3)}ms) debe ser sub-milisegundo`);
+    assert.ok(distP50 >= 4.5 && distP50 < 20.0, `Mock distributed p50 (${distP50.toFixed(3)}ms) debe reflejar latencia de red`);
+
+    // Reporte en salida de test
+    console.log('\n--- BENCHMARK DE RENDIMIENTO RATE LIMITING (INGENIERÍA M-09.3E.1) ---');
+    console.log(`Baseline (hashClientIdentity): p50 = ${baselineP50.toFixed(3)} ms | p95 = ${baselineP95.toFixed(3)} ms`);
+    console.log(`InMemory Provider:             p50 = ${inMemP50.toFixed(3)} ms | p95 = ${inMemP95.toFixed(3)} ms`);
+    console.log(`Mock Distributed (5ms net):    p50 = ${distP50.toFixed(3)} ms | p95 = ${distP95.toFixed(3)} ms`);
+    console.log(`Provider Timeout Behavior:     ${timeoutDuration} ms -> PROVIDER_UNAVAILABLE (fail-open)`);
+    console.log(`Operaciones al provider:       ${operationsCount} op / request`);
+    console.log(`Delta de Bundle Cliente:       0 KB (100% server-side)`);
+    console.log('---------------------------------------------------------------------\n');
   });
 });

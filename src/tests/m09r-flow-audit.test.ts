@@ -754,8 +754,8 @@ describe('FASE M-09R — Suite de Certificación Pasarela Flow Chile y Desacopla
     it('Rechaza peticiones sin parámetro token con HTTP 400', async () => {
       const req = new NextRequest('http://localhost:3000/api/callbacks/flow', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({}).toString(),
       });
 
       const res = await callbackRouteHandler(req);

@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       key: 'reconcile-memberships-worker',
       limit: cronConfig.limit,
       windowSeconds: cronConfig.windowSeconds,
+      policyId: cronConfig.policyId,
     });
 
     if (rateLimitResult.status === 'LIMITED') {
@@ -57,7 +58,11 @@ export async function POST(req: NextRequest) {
         endpoint: '/api/cron/reconcile-memberships',
         limit: cronConfig.limit,
       });
-      return createRateLimitExceededResponse(rateLimitResult, 'Frecuencia de invocación de cron excedida');
+      return createRateLimitExceededResponse(
+        rateLimitResult,
+        'Frecuencia de invocación de cron excedida',
+        { policyId: cronConfig.policyId, windowSeconds: cronConfig.windowSeconds }
+      );
     }
 
     const supabase = createAdminClient();

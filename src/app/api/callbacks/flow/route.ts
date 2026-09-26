@@ -7,67 +7,61 @@ import { RATE_LIMIT_CONFIG } from '../../../../lib/rate-limit/config.ts';
 import { createRateLimitExceededResponse } from '../../../../lib/rate-limit/headers.ts';
 import { handleRateLimitHit } from '../../../../lib/rate-limit/audit-protection.ts';
 
-const MAX_BODY_SIZE_BYTES = 64 * 1024; // 64 KB máximo para callbacks
+const MAX_CALLBACK_BODY_BYTES = parseInt(process.env.FLOW_CALLBACK_MAX_BODY_BYTES || '8192', 10); // 8 KB según contrato Flow
 
 /**
- * FASE M-09.3E: ENDPOINT DE CALLBACK FLOW CHILE CON POLÍTICA FINANCIERA ESPECIAL
+ * FASE M-09.3E.1: ENDPOINT DE CALLBACK FLOW CHILE CON POLÍTICA FINANCIERA ESPECIAL
  * 
- * Reglas de seguridad y diseño:
- * 1. PROHIBIDO rate limiting genérico per-IP: Flow envía reintentos legítimos que no deben descartarse.
- * 2. Bulkhead global para evitar agotamiento de recursos S2S del servidor.
- * 3. Fallo del provider distribuido (PROVIDER_UNAVAILABLE): El callback financiero NUNCA se descarta
+ * Reglas contractuales Flow Chile:
+ * 1. Content-Type: EXCLUSIVAMENTE application/x-www-form-urlencoded (según especificación oficial Flow).
+ *    JSON y multipart/form-data son rechazados con HTTP 415 para reducir superficie de parsing innecesaria.
+ * 2. Tamaño máximo de payload: 8 KB (configurable vía FLOW_CALLBACK_MAX_BODY_BYTES).
+ * 3. PROHIBIDO rate limiting genérico per-IP: Flow envía reintentos legítimos que no deben descartarse por IP.
+ * 4. Bulkhead global para evitar agotamiento de recursos S2S del servidor ante ráfagas.
+ * 5. Caída del provider distribuido (PROVIDER_UNAVAILABLE): El callback financiero NUNCA se descarta
  *    por caída de Redis/KV; se continúa con la resolución S2S e idempotencia.
- * 4. Higiene previa: Método, Content-Type, tamaño máximo y saneamiento básico de token.
+ * 6. BULKHEAD_LIMITED: Si el bulkhead limita un callback puntual, la consistencia financiera se recupera
+ *    garantizadamente mediante el cron reconciliador S2S sin depender de repetición del callback.
  */
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verificación de tamaño máximo de cuerpo (Anti-DoS / Payload Bomb)
+    // 1. Verificación estricta de Content-Type: Flow documenta exclusivamente application/x-www-form-urlencoded
+    const contentType = req.headers.get('content-type') || '';
+    if (!contentType.toLowerCase().includes('application/x-www-form-urlencoded')) {
+      logger.warn('Flow callback rejected: unsupported Content-Type', {
+        content_type: contentType,
+        expected: 'application/x-www-form-urlencoded',
+      });
+      return NextResponse.json(
+        { error: 'Unsupported Media Type: Se requiere exclusivamente application/x-www-form-urlencoded' },
+        { status: 415 }
+      );
+    }
+
+    // 2. Verificación de tamaño máximo de cuerpo (Anti-DoS / Payload Bomb)
     const contentLength = req.headers.get('content-length');
-    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE_BYTES) {
+    if (contentLength && parseInt(contentLength, 10) > MAX_CALLBACK_BODY_BYTES) {
       logger.warn('Flow callback payload exceeds maximum size limit', {
         content_length: contentLength,
-        max_allowed: MAX_BODY_SIZE_BYTES,
+        max_allowed: MAX_CALLBACK_BODY_BYTES,
       });
       return NextResponse.json({ error: 'Cuerpo de petición excede el tamaño máximo permitido' }, { status: 413 });
     }
 
-    // 2. Validación de Content-Type esperado
-    const contentType = req.headers.get('content-type') || '';
-    const isUrlEncoded = contentType.includes('application/x-www-form-urlencoded');
-    const isFormData = contentType.includes('multipart/form-data');
-    const isJson = contentType.includes('application/json');
-
-    if (!isUrlEncoded && !isFormData && !isJson) {
-      // Si no es ninguno de los formatos oficiales ni hay query string
-      const url = new URL(req.url);
-      if (!url.searchParams.has('token')) {
-        return NextResponse.json(
-          { error: 'Content-Type no soportado. Se espera application/x-www-form-urlencoded o application/json' },
-          { status: 415 }
-        );
-      }
+    const rawBody = await req.text();
+    if (Buffer.byteLength(rawBody, 'utf8') > MAX_CALLBACK_BODY_BYTES) {
+      logger.warn('Flow callback raw body exceeds maximum size limit', {
+        byte_length: Buffer.byteLength(rawBody, 'utf8'),
+        max_allowed: MAX_CALLBACK_BODY_BYTES,
+      });
+      return NextResponse.json({ error: 'Cuerpo de petición excede el tamaño máximo permitido' }, { status: 413 });
     }
 
-    // 3. Extracción de token y datos de formulario
-    let token: string | null = null;
-    let resourceHint: string | undefined = undefined;
-    let bodyData: any = {};
-
-    if (isUrlEncoded || isFormData) {
-      const formData = await req.formData();
-      token = (formData.get('token') as string) || null;
-      resourceHint = (formData.get('resource') as string) || (formData.get('type') as string) || undefined;
-      bodyData = Object.fromEntries(formData.entries());
-    } else if (isJson) {
-      const json = await req.json();
-      token = json.token || null;
-      resourceHint = json.resource || json.type || undefined;
-      bodyData = json;
-    } else {
-      const url = new URL(req.url);
-      token = url.searchParams.get('token');
-      resourceHint = url.searchParams.get('resource') || url.searchParams.get('type') || undefined;
-    }
+    // 3. Extracción de token y datos según contrato x-www-form-urlencoded
+    const formData = new URLSearchParams(rawBody);
+    let token = formData.get('token');
+    const resourceHint = formData.get('resource') || formData.get('type') || undefined;
+    const bodyData = Object.fromEntries(formData.entries());
 
     // 4. Validación de presencia y formato básico de token (sin asumir longitud fija)
     if (!token || typeof token !== 'string' || token.trim().length === 0 || token.length > 512) {
@@ -84,6 +78,7 @@ export async function POST(req: NextRequest) {
       key: 'bulkhead_global',
       limit: bulkheadConfig.limit,
       windowSeconds: bulkheadConfig.windowSeconds,
+      policyId: bulkheadConfig.policyId,
     });
 
     if (rateLimitResult.status === 'LIMITED') {
@@ -94,7 +89,8 @@ export async function POST(req: NextRequest) {
       });
       return createRateLimitExceededResponse(
         rateLimitResult,
-        'Capacidad temporal de procesamiento de callbacks excedida. Reintente en breve.'
+        'Capacidad temporal de procesamiento de callbacks excedida. Reintente en breve.',
+        { policyId: bulkheadConfig.policyId, windowSeconds: bulkheadConfig.windowSeconds }
       );
     }
 
@@ -127,32 +123,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const token = url.searchParams.get('token');
-
-  if (!token) {
-    return NextResponse.json({ status: 'FLOW_CALLBACK_ENDPOINT_READY' }, { status: 200 });
-  }
-
-  // Si envían token por GET, aplicar el mismo bulkhead global
-  const bulkheadConfig = RATE_LIMIT_CONFIG.flowCallbackBulkhead;
-  const rateLimitResult = await checkRateLimit({
-    namespace: 'flow-callback',
-    key: 'bulkhead_global',
-    limit: bulkheadConfig.limit,
-    windowSeconds: bulkheadConfig.windowSeconds,
-  });
-
-  if (rateLimitResult.status === 'LIMITED') {
-    return createRateLimitExceededResponse(rateLimitResult);
-  }
-
-  const supabase = createAdminClient();
-  const result = await processFlowCallback({
-    supabase,
-    token,
-    payload: { query: Object.fromEntries(url.searchParams.entries()) },
-  });
-
-  return NextResponse.json(result, { status: 200 });
+  // Los callbacks oficiales de Flow Chile son exclusivamente peticiones POST con body application/x-www-form-urlencoded.
+  // GET opera como sondeo o healthcheck del endpoint sin realizar mutaciones financieras.
+  return NextResponse.json({ status: 'FLOW_CALLBACK_ENDPOINT_READY' }, { status: 200 });
 }

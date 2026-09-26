@@ -35,11 +35,16 @@ async function handleFlowReturn(req: NextRequest) {
     key: clientKey,
     limit: returnConfig.limit,
     windowSeconds: returnConfig.windowSeconds,
+    policyId: returnConfig.policyId,
   });
 
   if (rateLimitResult.status === 'LIMITED') {
     logger.warn('Checkout flow-return rate limit exceeded', { key_hash: clientKey });
-    return createRateLimitExceededResponse(rateLimitResult, 'Demasiadas solicitudes. Por favor aguarda un momento.');
+    return createRateLimitExceededResponse(
+      rateLimitResult,
+      'Demasiadas solicitudes. Por favor aguarda un momento.',
+      { policyId: returnConfig.policyId, windowSeconds: returnConfig.windowSeconds }
+    );
   }
 
   const url = new URL(req.url);

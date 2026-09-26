@@ -13,6 +13,7 @@ export const RATE_LIMIT_CONFIG: Record<string, EndpointRateLimitConfig> = {
   flowCallbackBulkhead: {
     limit: parseInt(process.env.RATE_LIMIT_FLOW_CALLBACK_MAX || '120', 10),
     windowSeconds: parseInt(process.env.RATE_LIMIT_FLOW_CALLBACK_WINDOW || '60', 10),
+    policyId: 'flow-bulkhead',
     fallbackOnProviderFailure: 'ALLOW', // CRÍTICO: Si el provider cae, el callback financiero NO se descarta
   },
 
@@ -21,6 +22,7 @@ export const RATE_LIMIT_CONFIG: Record<string, EndpointRateLimitConfig> = {
   cronEndpoints: {
     limit: parseInt(process.env.RATE_LIMIT_CRON_MAX || '30', 10),
     windowSeconds: parseInt(process.env.RATE_LIMIT_CRON_WINDOW || '60', 10),
+    policyId: 'cron-worker',
     fallbackOnProviderFailure: 'ALLOW',
   },
 
@@ -28,6 +30,7 @@ export const RATE_LIMIT_CONFIG: Record<string, EndpointRateLimitConfig> = {
   checkoutReturn: {
     limit: parseInt(process.env.RATE_LIMIT_CHECKOUT_RETURN_MAX || '20', 10),
     windowSeconds: parseInt(process.env.RATE_LIMIT_CHECKOUT_RETURN_WINDOW || '60', 10),
+    policyId: 'checkout-return',
     fallbackOnProviderFailure: 'ALLOW',
   },
 
@@ -35,16 +38,19 @@ export const RATE_LIMIT_CONFIG: Record<string, EndpointRateLimitConfig> = {
   authLogin: {
     limit: parseInt(process.env.RATE_LIMIT_AUTH_LOGIN_MAX || '5', 10),
     windowSeconds: parseInt(process.env.RATE_LIMIT_AUTH_LOGIN_WINDOW || '60', 10),
+    policyId: 'auth-login',
     fallbackOnProviderFailure: 'ALLOW',
   },
   authRegister: {
     limit: parseInt(process.env.RATE_LIMIT_AUTH_REGISTER_MAX || '3', 10),
     windowSeconds: parseInt(process.env.RATE_LIMIT_AUTH_REGISTER_WINDOW || '60', 10),
+    policyId: 'auth-register',
     fallbackOnProviderFailure: 'ALLOW',
   },
   authPasswordRecovery: {
     limit: parseInt(process.env.RATE_LIMIT_AUTH_RECOVERY_MAX || '3', 10),
     windowSeconds: parseInt(process.env.RATE_LIMIT_AUTH_RECOVERY_WINDOW || '300', 10),
+    policyId: 'auth-recovery',
     fallbackOnProviderFailure: 'ALLOW',
   },
 };

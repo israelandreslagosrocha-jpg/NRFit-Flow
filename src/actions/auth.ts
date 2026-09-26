@@ -55,6 +55,7 @@ export async function checkAuthRateLimitAction(
       key,
       limit: config.limit,
       windowSeconds: config.windowSeconds,
+      policyId: config.policyId,
     });
 
     if (result.status === 'LIMITED') {
