@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server.js';
 import { createClient } from '../../../lib/supabase/server.ts';
 import { createAdminClient } from '../../../lib/supabase/admin.ts';
 import { getPaymentGateway } from '../../../lib/payments/index.ts';
+import { checkRateLimit, resolveRateLimitKey } from '../../../lib/rate-limit/index.ts';
+import { RATE_LIMIT_CONFIG } from '../../../lib/rate-limit/config.ts';
+import { createRateLimitExceededResponse } from '../../../lib/rate-limit/headers.ts';
+import { logger } from '../../../lib/logger.ts';
 
 export async function GET(req: NextRequest) {
   return handleFlowReturn(req);
@@ -11,7 +15,33 @@ export async function POST(req: NextRequest) {
   return handleFlowReturn(req);
 }
 
+/**
+ * FASE M-09.3E: RETORNO DE NAVEGADOR FLOW CHILE (ANTI-ABUSO Y NO-AUTORITATIVO)
+ * 
+ * Regla Fundamental:
+ * El retorno del navegador jamás es la autoridad financiera final.
+ * La autoridad financiera reside exclusivamente en el callback S2S con token,
+ * la verificación de pasarela y la sincronización del reconciliador.
+ * 
+ * Rate Limiting:
+ * Suave y exclusivamente anti-abuso para prevenir ataques de denegación de servicio.
+ */
 async function handleFlowReturn(req: NextRequest) {
+  // 1. Rate limiting suave anti-abuso
+  const clientKey = resolveRateLimitKey(req.headers);
+  const returnConfig = RATE_LIMIT_CONFIG.checkoutReturn;
+  const rateLimitResult = await checkRateLimit({
+    namespace: 'checkout-return',
+    key: clientKey,
+    limit: returnConfig.limit,
+    windowSeconds: returnConfig.windowSeconds,
+  });
+
+  if (rateLimitResult.status === 'LIMITED') {
+    logger.warn('Checkout flow-return rate limit exceeded', { key_hash: clientKey });
+    return createRateLimitExceededResponse(rateLimitResult, 'Demasiadas solicitudes. Por favor aguarda un momento.');
+  }
+
   const url = new URL(req.url);
   let token = url.searchParams.get('token');
 
@@ -39,14 +69,14 @@ async function handleFlowReturn(req: NextRequest) {
   const adminClient = createAdminClient();
 
   try {
-    // 1. Verificar registro de tarjeta S2S en Flow
+    // 2. Verificar registro de tarjeta S2S en Flow (No confía en el navegador)
     const regStatus = await gateway.getPaymentMethodStatus(token);
 
     if (regStatus.status !== 1) {
       return NextResponse.redirect(new URL('/checkout?error=card_declined', req.url));
     }
 
-    // 2. Buscar la membresía en PENDING_PAYMENT de la alumna
+    // 3. Buscar la membresía en PENDING_PAYMENT de la alumna
     const { getStudentProfileByUserId } = await import('../../../lib/supabase/profile-helpers.ts');
     const { student } = await getStudentProfileByUserId(adminClient, user.id);
 
@@ -64,11 +94,11 @@ async function handleFlowReturn(req: NextRequest) {
       .single();
 
     if (!membership) {
-      // Si ya fue procesada previamente, ir a success directamente
+      // Si ya fue procesada previamente por el callback oficial, ir a success directamente
       return NextResponse.redirect(new URL('/checkout/success', req.url));
     }
 
-    // 3. Crear la suscripción oficial en Flow con 7 días de Trial
+    // 4. Crear la suscripción oficial en Flow con 7 días de Trial
     const flowPlanId = process.env.FLOW_PLAN_ID || 'naty-mensual-25k-v1';
     const sub = await gateway.createSubscription({
       planId: flowPlanId,
@@ -78,7 +108,7 @@ async function handleFlowReturn(req: NextRequest) {
 
     const trialEndsAt = sub.trialEndsAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    // 4. Activar estado TRIAL en base de datos
+    // 5. Activar estado TRIAL en base de datos
     await adminClient
       .from('memberships')
       .update({
@@ -90,7 +120,7 @@ async function handleFlowReturn(req: NextRequest) {
       })
       .eq('id', membership.id);
 
-    // 5. Encolar email de confirmación en outbox
+    // 6. Encolar email de confirmación en outbox
     await adminClient.from('email_outbox').insert({
       dedupe_key: `flow-trial-card:${membership.id}`,
       recipient_email: user.email,
@@ -104,10 +134,10 @@ async function handleFlowReturn(req: NextRequest) {
       },
     });
 
-    // 6. Redirigir a success limpiamente SIN exponer UUIDs internos
+    // 7. Redirigir a success limpiamente SIN exponer UUIDs internos
     return NextResponse.redirect(new URL('/checkout/success', req.url));
   } catch (err: any) {
-    console.error('Error en flow-return handler:', err);
+    logger.error('Error en flow-return handler:', {}, err);
     return NextResponse.redirect(new URL('/checkout?error=processing_error', req.url));
   }
 }
