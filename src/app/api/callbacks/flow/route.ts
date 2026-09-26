@@ -23,11 +23,87 @@ const MAX_CALLBACK_BODY_BYTES = parseInt(process.env.FLOW_CALLBACK_MAX_BODY_BYTE
  * 6. BULKHEAD_LIMITED: Si el bulkhead limita un callback puntual, la consistencia financiera se recupera
  *    garantizadamente mediante el cron reconciliador S2S sin depender de repetición del callback.
  */
+type BoundedBodyResult =
+  | { success: true; body: string }
+  | { success: false; status: 413; error: string };
+
+/**
+ * Lectura streaming acotada con cancelación temprana a nivel de aplicación (Web Streams API).
+ * Si el payload excede maxBytes en transferencias chunked o sin Content-Length confiable,
+ * invoca reader.cancel('PAYLOAD_TOO_LARGE') de inmediato y rechaza con HTTP 413,
+ * evitando la bufferización en memoria del resto del cuerpo.
+ */
+async function readBoundedRequestBody(
+  req: NextRequest,
+  maxBytes: number
+): Promise<BoundedBodyResult> {
+  // Pre-filtro si Content-Length está presente y excede el límite
+  const contentLength = req.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > maxBytes) {
+    return {
+      success: false,
+      status: 413,
+      error: 'Cuerpo de petición excede el tamaño máximo permitido',
+    };
+  }
+
+  // Si existe stream en req.body, consumir de forma acotada con reader
+  if (req.body && typeof req.body.getReader === 'function') {
+    const reader = req.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          totalBytes += value.byteLength;
+          if (totalBytes > maxBytes) {
+            await reader.cancel('PAYLOAD_TOO_LARGE');
+            return {
+              success: false,
+              status: 413,
+              error: 'Cuerpo de petición excede el tamaño máximo permitido',
+            };
+          }
+          chunks.push(value);
+        }
+      }
+    } catch (err: any) {
+      if (totalBytes > maxBytes) {
+        return {
+          success: false,
+          status: 413,
+          error: 'Cuerpo de petición excede el tamaño máximo permitido',
+        };
+      }
+      throw err;
+    }
+
+    const buffer = Buffer.concat(chunks);
+    return { success: true, body: buffer.toString('utf8') };
+  }
+
+  // Fallback si no hay stream o ya fue procesado
+  const rawBody = await req.text().catch(() => '');
+  if (Buffer.byteLength(rawBody, 'utf8') > maxBytes) {
+    return {
+      success: false,
+      status: 413,
+      error: 'Cuerpo de petición excede el tamaño máximo permitido',
+    };
+  }
+
+  return { success: true, body: rawBody };
+}
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Verificación estricta de Content-Type: Flow documenta exclusivamente application/x-www-form-urlencoded
     const contentType = req.headers.get('content-type') || '';
-    if (!contentType.toLowerCase().includes('application/x-www-form-urlencoded')) {
+    const mediaType = contentType.split(';')[0].trim().toLowerCase();
+    if (mediaType !== 'application/x-www-form-urlencoded') {
       logger.warn('Flow callback rejected: unsupported Content-Type', {
         content_type: contentType,
         expected: 'application/x-www-form-urlencoded',
@@ -38,24 +114,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Verificación de tamaño máximo de cuerpo (Anti-DoS / Payload Bomb)
-    const contentLength = req.headers.get('content-length');
-    if (contentLength && parseInt(contentLength, 10) > MAX_CALLBACK_BODY_BYTES) {
+    // 2. Lectura streaming acotada con cancelación temprana de stream (Anti-DoS / Payload Bomb)
+    const bodyResult = await readBoundedRequestBody(req, MAX_CALLBACK_BODY_BYTES);
+    if (bodyResult.success === false) {
       logger.warn('Flow callback payload exceeds maximum size limit', {
-        content_length: contentLength,
         max_allowed: MAX_CALLBACK_BODY_BYTES,
       });
-      return NextResponse.json({ error: 'Cuerpo de petición excede el tamaño máximo permitido' }, { status: 413 });
+      return NextResponse.json({ error: bodyResult.error }, { status: bodyResult.status });
     }
 
-    const rawBody = await req.text();
-    if (Buffer.byteLength(rawBody, 'utf8') > MAX_CALLBACK_BODY_BYTES) {
-      logger.warn('Flow callback raw body exceeds maximum size limit', {
-        byte_length: Buffer.byteLength(rawBody, 'utf8'),
-        max_allowed: MAX_CALLBACK_BODY_BYTES,
-      });
-      return NextResponse.json({ error: 'Cuerpo de petición excede el tamaño máximo permitido' }, { status: 413 });
-    }
+    const rawBody = bodyResult.body;
 
     // 3. Extracción de token y datos según contrato x-www-form-urlencoded
     const formData = new URLSearchParams(rawBody);
@@ -122,7 +190,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   // Los callbacks oficiales de Flow Chile son exclusivamente peticiones POST con body application/x-www-form-urlencoded.
   // GET opera como sondeo o healthcheck del endpoint sin realizar mutaciones financieras.
   return NextResponse.json({ status: 'FLOW_CALLBACK_ENDPOINT_READY' }, { status: 200 });

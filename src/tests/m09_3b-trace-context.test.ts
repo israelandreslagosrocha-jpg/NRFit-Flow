@@ -132,6 +132,13 @@ function createMockSupabase() {
       };
     },
     rpc(name: string, params: any) {
+      if (name === 'reserve_gateway_snapshot_sequence') {
+        const mem = store.memberships.find(m => m.id === params.p_membership_id);
+        if (!mem) return Promise.resolve({ data: null, error: { message: 'Membership not found' } });
+        mem.gateway_snapshot_sequence_counter = (mem.gateway_snapshot_sequence_counter || 0) + 1;
+        return Promise.resolve({ data: mem.gateway_snapshot_sequence_counter, error: null });
+      }
+
       if (name === 'apply_membership_transition_atomic') {
         const mem = store.memberships.find(m => m.id === params.p_membership_id);
         if (!mem) return Promise.resolve({ data: { success: false, status: 'NOT_FOUND' }, error: null });

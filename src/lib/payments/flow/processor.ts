@@ -26,7 +26,7 @@ export interface ProcessFlowCallbackOutput {
 export async function processFlowCallback(
   input: ProcessFlowCallbackInput
 ): Promise<ProcessFlowCallbackOutput> {
-  const { supabase, token, resourceHint, payload } = input;
+  const { supabase, token, resourceHint, payload: _payload } = input;
   const gateway = getPaymentGateway();
 
   // 1. Registro del timestamp en que se INICIA la consulta S2S (determinismo anti-carrera)
@@ -79,7 +79,7 @@ export async function processFlowCallback(
 
   let membershipQuery = supabase
     .from('memberships')
-    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_snapshot_request_started_at, gateway_sync_state');
+    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_snapshot_request_started_at, gateway_sync_state, gateway_snapshot_sequence_counter, last_applied_snapshot_sequence');
 
   if (targetSubId) {
     membershipQuery = membershipQuery.eq('gateway_subscription_id', targetSubId);
@@ -94,6 +94,30 @@ export async function processFlowCallback(
 
   // Si existe membresía local vinculada, recuperar su trace_id; si no, generar nuevo trace_id backend
   const localTraceId = matchedMembership?.trace_id || generateTraceId();
+
+  // Reserva atómica de secuencia monotónica por membresía antes de aplicar transiciones (Anti Clock-Skew)
+  let snapshotSequence: number | null = null;
+  if (matchedMembership && typeof supabase.rpc === 'function') {
+    const { data: seqData, error: seqErr } = await supabase.rpc('reserve_gateway_snapshot_sequence', {
+      p_membership_id: matchedMembership.id,
+    });
+    if (!seqErr && seqData !== null && seqData !== undefined) {
+      snapshotSequence = Number(seqData);
+    } else {
+      logger.error('Failed to reserve snapshot sequence for callback (Fail-Closed)', {
+        trace_id: localTraceId,
+        membership_id: matchedMembership.id,
+        error: seqErr?.message,
+      });
+      return {
+        success: false,
+        statusResult: 'ERROR',
+        gatewayEventId,
+        traceId: localTraceId,
+        error: 'Failed to reserve snapshot sequence',
+      };
+    }
+  }
 
   // 4. Idempotencia Inbound en public.payment_events (Postgres Unique Constraint 23505)
   const { error: eventInsertError } = await supabase
@@ -217,6 +241,7 @@ export async function processFlowCallback(
             payment_id: pay.paymentId,
           },
           p_sync_state: 'HEALTHY',
+          p_snapshot_sequence: snapshotSequence,
         });
 
         if (rpcErr) {
@@ -259,6 +284,7 @@ export async function processFlowCallback(
             payment_id: pay.paymentId,
           },
           p_sync_state: 'HEALTHY',
+          p_snapshot_sequence: snapshotSequence,
         });
 
         if (rpcErr) {
@@ -340,6 +366,7 @@ export async function processFlowCallback(
               raw_status: flowSubSnapshot.status,
             },
             p_sync_state: 'ANOMALY',
+            p_snapshot_sequence: snapshotSequence,
           });
         }
       } else if (typeof supabase.rpc === 'function') {
@@ -360,6 +387,7 @@ export async function processFlowCallback(
             access_until: derived.accessUntil || null,
           },
           p_sync_state: 'HEALTHY',
+          p_snapshot_sequence: snapshotSequence,
         });
 
         if (rpcErr) {

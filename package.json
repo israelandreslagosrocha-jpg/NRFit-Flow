@@ -18,6 +18,8 @@
     "test:trace": "node --test src/tests/m09_3b-trace-context.test.ts",
     "test:reconciler": "node --test src/tests/m09_3d-reconciler.test.ts",
     "test:ratelimit": "node --test src/tests/m09_3e-rate-limiting.test.ts",
+    "test:infra": "node --test src/tests/m09_3f-infrastructure-certification.test.ts",
+    "inventory:pg": "node --experimental-strip-types scripts/runtime-pg-inventory.ts",
     "audit:security": "node --experimental-strip-types scripts/security-inventory-audit.ts"
   },
   "dependencies": {

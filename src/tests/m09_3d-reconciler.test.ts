@@ -136,6 +136,15 @@ class MockDatabase {
       });
     }
 
+    if (name === 'reserve_gateway_snapshot_sequence') {
+      const mem = this.memberships.find(m => m.id === params.p_membership_id);
+      if (!mem) {
+        return Promise.resolve({ data: null, error: { message: 'Membership not found' } });
+      }
+      mem.gateway_snapshot_sequence_counter = (mem.gateway_snapshot_sequence_counter || 0) + 1;
+      return Promise.resolve({ data: mem.gateway_snapshot_sequence_counter, error: null });
+    }
+
     if (name === 'apply_membership_transition_atomic') {
       const mem = this.memberships.find(m => m.id === params.p_membership_id);
       if (!mem) {
@@ -148,24 +157,47 @@ class MockDatabase {
       const reqStartedAt = params.p_gateway_snapshot_request_started_at || params.p_gateway_snapshot_observed_at;
       const memStartedAt = mem.last_gateway_snapshot_request_started_at || mem.last_gateway_snapshot_observed_at;
 
-      // Guarda contra snapshots obsoletos
-      if (
-        reqStartedAt &&
-        memStartedAt &&
-        reqStartedAt <= memStartedAt
-      ) {
-        return Promise.resolve({
-          data: {
-            success: true,
-            status: 'STALE_SNAPSHOT_SKIPPED',
-            membership_id: mem.id,
-            previous_status: mem.status,
-            current_status: mem.status,
-            last_gateway_snapshot_request_started_at: memStartedAt,
-            attempted_snapshot_request_started_at: reqStartedAt,
-          },
-          error: null,
-        });
+      // Guarda contra snapshots obsoletos: secuencia monotónica si está presente, de lo contrario timestamp
+      if (params.p_snapshot_sequence !== undefined && params.p_snapshot_sequence !== null) {
+        if (
+          mem.last_applied_snapshot_sequence &&
+          params.p_snapshot_sequence <= mem.last_applied_snapshot_sequence
+        ) {
+          return Promise.resolve({
+            data: {
+              success: true,
+              status: 'STALE_SNAPSHOT_SKIPPED',
+              membership_id: mem.id,
+              previous_status: mem.status,
+              current_status: mem.status,
+              last_applied_snapshot_sequence: mem.last_applied_snapshot_sequence,
+              attempted_snapshot_sequence: params.p_snapshot_sequence,
+              last_gateway_snapshot_request_started_at: memStartedAt,
+              attempted_snapshot_request_started_at: reqStartedAt,
+            },
+            error: null,
+          });
+        }
+        mem.last_applied_snapshot_sequence = params.p_snapshot_sequence;
+      } else {
+        if (
+          reqStartedAt &&
+          memStartedAt &&
+          reqStartedAt <= memStartedAt
+        ) {
+          return Promise.resolve({
+            data: {
+              success: true,
+              status: 'STALE_SNAPSHOT_SKIPPED',
+              membership_id: mem.id,
+              previous_status: mem.status,
+              current_status: mem.status,
+              last_gateway_snapshot_request_started_at: memStartedAt,
+              attempted_snapshot_request_started_at: reqStartedAt,
+            },
+            error: null,
+          });
+        }
       }
 
       // Caso ANOMALY: Gate de falla cerrada persistente sin mutación destructiva
@@ -598,8 +630,9 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
 
     // 14.1 Ejecutar reconciliador
     await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
-    assert.strictEqual(db.rpcCallLog.length, 1);
-    assert.strictEqual(db.rpcCallLog[0].name, 'apply_membership_transition_atomic');
+    const reconcileTransitions = db.rpcCallLog.filter(c => c.name === 'apply_membership_transition_atomic');
+    assert.strictEqual(reconcileTransitions.length, 1);
+    assert.strictEqual(reconcileTransitions[0].params.p_snapshot_sequence, 1);
 
     // 14.2 Ejecutar callback de suscripción
     await processFlowCallback({
@@ -607,8 +640,9 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
       token: 'tok-funnel',
       resourceHint: 'subscription',
     });
-    assert.strictEqual(db.rpcCallLog.length, 2);
-    assert.strictEqual(db.rpcCallLog[1].name, 'apply_membership_transition_atomic');
+    const callbackTransitions = db.rpcCallLog.filter(c => c.name === 'apply_membership_transition_atomic');
+    assert.strictEqual(callbackTransitions.length, 2);
+    assert.strictEqual(callbackTransitions[1].params.p_snapshot_sequence, 2);
   });
 
   it('15. RPC_FAILURE_DOES_NOT_FALLBACK_TO_DIRECT_MEMBERSHIP_MUTATION: Caída de la RPC deja membresía intacta sin fallback mutante', async () => {
@@ -636,7 +670,10 @@ describe('FASE M-09.3D — Reconciliador S2S Flow Multivariable y Máquina de Es
 
     const res = await reconcileFlowSubscriptions(db as any, { referenceNow: fixedNow });
     assert.strictEqual(res.errors, 1);
-    assert.strictEqual(res.details[0].action, 'APPLY_FAILED');
+    assert.ok(
+      res.details[0].action === 'APPLY_FAILED' || res.details[0].action === 'ERROR_RESERVING_SEQUENCE',
+      'Debe reportar fallo de RPC sin mutación'
+    );
 
     // REGLA CRÍTICA: Base de datos intacta (cero bypass manual)
     const mem = db.memberships.find(m => m.id === memId);

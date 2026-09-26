@@ -42,7 +42,7 @@ export async function reconcileFlowSubscriptions(
 
   const { data: memberships, error } = await supabase
     .from('memberships')
-    .select('id, student_id, status, gateway_subscription_id, gateway_status, trial_ends_at, current_period_start, current_period_end, last_gateway_snapshot_request_started_at, gateway_sync_state, trace_id')
+    .select('id, student_id, status, gateway_subscription_id, gateway_status, trial_ends_at, current_period_start, current_period_end, last_gateway_snapshot_request_started_at, gateway_sync_state, trace_id, gateway_snapshot_sequence_counter, last_applied_snapshot_sequence')
     .eq('gateway', 'FLOW')
     .not('gateway_subscription_id', 'is', null)
     .in('status', ['PENDING_PAYMENT', 'TRIAL', 'ACTIVE', 'PAST_DUE', 'CANCELLED']);
@@ -56,13 +56,35 @@ export async function reconcileFlowSubscriptions(
 
   for (const mem of memberships) {
     try {
-      // 1. Registro del timestamp en que se INICIA la consulta S2S (determinismo anti-carrera)
+      // 1. Registro del timestamp en que se INICIA la consulta S2S (telemetría / observabilidad)
       const requestStartedAt = new Date().toISOString();
 
-      // 2. Consulta S2S a Flow
+      // 2. Reserva atómica de secuencia monotónica por membresía antes de consultar Flow S2S (Anti Clock-Skew)
+      let snapshotSequence: number | null = null;
+      if (!dryRun && typeof supabase.rpc === 'function') {
+        const { data: seqData, error: seqErr } = await supabase.rpc('reserve_gateway_snapshot_sequence', {
+          p_membership_id: mem.id,
+        });
+        if (seqErr || seqData === null || seqData === undefined) {
+          logger.error('Failed to reserve snapshot sequence for reconciliation (Fail-Closed)', {
+            membership_id: mem.id,
+            error: seqErr?.message,
+          });
+          result.errors++;
+          result.details.push({
+            membershipId: mem.id,
+            action: 'ERROR_RESERVING_SEQUENCE',
+            reason: seqErr?.message || 'Sequence reservation failed',
+          });
+          continue;
+        }
+        snapshotSequence = Number(seqData);
+      }
+
+      // 3. Consulta S2S a Flow
       const sub = await gateway.getSubscription(mem.gateway_subscription_id!);
 
-      // 3. Normalizar snapshot de Flow
+      // 4. Normalizar snapshot de Flow
       const flowSubSnapshot: FlowSubscriptionSnapshot = {
         id: sub.id,
         status: (sub as any).rawStatus !== undefined
@@ -88,10 +110,10 @@ export async function reconcileFlowSubscriptions(
           ((sub as any).cancel_at_period_end === 1 || (sub as any).cancel_at_period_end === true),
       };
 
-      // 4. Derivar estado determinista multivariable
+      // 5. Derivar estado determinista multivariable
       const derived = deriveMembershipState(flowSubSnapshot, mem, referenceNow);
 
-      // 5. Caso ANOMALY: Bloqueo de gate persistente en DB sin mutar destructivamente el status comercial
+      // 6. Caso ANOMALY: Bloqueo de gate persistente en DB sin mutar destructivamente el status comercial
       if (derived.syncState === 'ANOMALY') {
         if (!dryRun && typeof supabase.rpc === 'function') {
           await supabase.rpc('apply_membership_transition_atomic', {
@@ -110,6 +132,7 @@ export async function reconcileFlowSubscriptions(
               raw_status: flowSubSnapshot.status,
             },
             p_sync_state: 'ANOMALY',
+            p_snapshot_sequence: snapshotSequence,
           });
         }
         result.details.push({
@@ -173,19 +196,20 @@ export async function reconcileFlowSubscriptions(
           access_until: derived.accessUntil || null,
         },
         p_sync_state: 'HEALTHY',
+        p_snapshot_sequence: snapshotSequence,
       });
 
-      if (rpcErr || !rpcRes) {
+      if (rpcErr || !rpcRes || rpcRes.status === 'MISSING_SNAPSHOT_SEQUENCE') {
         // Fallback seguro = Cero mutación (Fail-closed)
         result.errors++;
         result.details.push({
           membershipId: mem.id,
           action: 'APPLY_FAILED',
-          reason: rpcErr?.message || 'Atomic transition RPC returned null',
+          reason: rpcErr?.message || rpcRes?.error || 'Atomic transition RPC returned null or missing snapshot sequence',
         });
         logger.error('Failed to apply atomic membership transition (Fail-Closed, zero mutation)', {
           membership_id: mem.id,
-          error: rpcErr?.message,
+          error: rpcErr?.message || rpcRes?.error,
         });
         continue;
       }
