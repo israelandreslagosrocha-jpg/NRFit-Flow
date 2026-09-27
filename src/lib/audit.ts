@@ -159,7 +159,11 @@ export function getServiceSupabaseClient(): SupabaseClient {
   if (serviceClientInstance) return serviceClientInstance;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://wqsmimxjnfanrenlhdgx.supabase.co';
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!serviceKey) {
+    throw new Error('SERVER_CONFIGURATION_ERROR: SUPABASE_SERVICE_ROLE_KEY is required for security audit writes.');
+  }
 
   serviceClientInstance = createClient(supabaseUrl, serviceKey, {
     auth: {

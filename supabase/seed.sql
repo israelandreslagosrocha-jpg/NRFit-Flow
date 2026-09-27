@@ -15,7 +15,7 @@ ON CONFLICT (slug) DO NOTHING;
 
 -- 2. PLANES COMERCIALES ASOCIADOS
 INSERT INTO public.plans (id, program_id, name, billing_type, price, currency, duration_days, max_weekly_reservations, session_count) VALUES
-  ('b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'Membresía Mensual Team Naty (Precio Fundador)', 'RECURRING', 25000, 'CLP', 30, 3, NULL),
+  ('b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'Membresía Mensual Team Naty (Preventa Lanzamiento)', 'RECURRING', 21000, 'CLP', 30, 5, NULL),
   ('b0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000002', 'Presencial 1x por Semana', 'FIXED_TERM', 45000, 'CLP', 30, 1, NULL),
   ('b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002', 'Presencial 2x por Semana (Trimestral)', 'FIXED_TERM', 120000, 'CLP', 90, 2, NULL),
   ('b0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000002', 'Presencial 3x por Semana (Trimestral)', 'FIXED_TERM', 150000, 'CLP', 90, 3, NULL),

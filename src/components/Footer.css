@@ -1,24 +1,28 @@
 .footer-react {
-  background: #09090b;
-  border-top: 1px solid var(--border);
-  color: var(--text-secondary);
-}
-
-body.theme-light .footer-react {
-  background: #f8fafc;
+  background: var(--brand-black);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 247, 243, 0.72);
 }
 
 /* CTA Banner */
 .footer-cta-banner {
   padding: 80px 0;
-  border-bottom: 1px solid var(--border);
-  background: radial-gradient(circle at center, rgba(233, 30, 99, 0.05) 0%, transparent 70%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: radial-gradient(circle at center, rgba(255, 79, 184, 0.2) 0%, transparent 68%);
 }
 
 .footer-cta-title {
   font-size: 2.5rem;
   margin-top: 16px;
   margin-bottom: 16px;
+}
+
+.footer-cta-banner .footer-cta-title {
+  color: var(--brand-warm-white);
+}
+
+.footer-cta-banner .footer-cta-subtitle {
+  color: rgba(255, 247, 243, 0.76);
 }
 
 .footer-cta-subtitle {
@@ -51,9 +55,11 @@ body.theme-light .footer-react {
 }
 
 .footer-logo-img {
-  height: 36px;
-  width: auto;
-  border-radius: var(--radius-sm);
+  height: 74px;
+  width: 132px;
+  object-fit: contain;
+  background: #FFFFFF;
+  border-radius: 10px;
 }
 
 .footer-brand-title {
@@ -61,12 +67,23 @@ body.theme-light .footer-react {
   font-weight: 800;
   font-size: 1.25rem;
   letter-spacing: 0.05em;
-  color: var(--text);
+  color: var(--brand-warm-white);
 }
 
 .footer-brand-desc {
   font-size: 0.95rem;
   line-height: 1.6;
+}
+
+.footer-brand-desc,
+.footer-brand-note {
+  color: rgba(255, 247, 243, 0.7);
+}
+
+.footer-brand-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 .footer-socials {
@@ -104,7 +121,7 @@ body.theme-light .footer-socials a {
   font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text);
+  color: var(--brand-warm-white);
   margin-bottom: 24px;
 }
 
@@ -117,7 +134,7 @@ body.theme-light .footer-socials a {
 
 .footer-links-list-react a {
   font-size: 0.95rem;
-  color: var(--text-secondary);
+  color: rgba(255, 247, 243, 0.72);
 }
 
 .footer-links-list-react a:hover {
@@ -147,9 +164,9 @@ body.theme-light .footer-socials a {
 /* Bottom Bar */
 .footer-bottom-react {
   padding: 30px 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: rgba(255, 247, 243, 0.55);
 }
 
 .footer-bottom-flex {

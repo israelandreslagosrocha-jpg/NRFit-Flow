@@ -29,7 +29,7 @@ export default function WorkoutCard({ workout, onPlay, isHero = false }) {
             className={`fav-btn ${isFavorite ? 'active' : ''}`}
             title="Guardar en favoritos"
           >
-            <Heart size={16} fill={isFavorite ? '#E91E63' : 'none'} color={isFavorite ? '#E91E63' : '#ffffff'} />
+            <Heart size={16} fill={isFavorite ? '#FF4FB8' : 'none'} color={isFavorite ? '#FF4FB8' : '#ffffff'} />
           </button>
         </div>
 

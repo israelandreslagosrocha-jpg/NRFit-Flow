@@ -101,11 +101,11 @@ export default function CheckoutPage() {
           </div>
           <div className="summary-row">
             <span className="summary-label">Después del trial</span>
-            <span className="summary-value">$25.000 CLP / mes</span>
+            <span className="summary-value">$21.000 CLP / mes</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Renovación</span>
-            <span className="summary-value">Mensual tras los 7 días de prueba</span>
+            <span className="summary-value">La modalidad de pago se confirma en la siguiente etapa segura</span>
           </div>
         </div>
 
@@ -124,7 +124,7 @@ export default function CheckoutPage() {
             onChange={(e) => setAcceptedTerms(e.target.checked)}
           />
           <span>
-            He leído y acepto los <Link href="/terminos" className="terms-link">Términos y Condiciones</Link> y la <Link href="/privacidad" className="terms-link">Política de Privacidad</Link>, y autorizo el cobro mensual de $25.000 CLP al finalizar los 7 días de prueba si no cancelo previamente.
+            He leído y acepto los <Link href="/terminos" className="terms-link">Términos y Condiciones</Link> y la <Link href="/privacidad" className="terms-link">Política de Privacidad</Link>. Antes de finalizar, confirmaré la modalidad de pago y las condiciones aplicables a mi membresía.
           </span>
         </label>
 
@@ -140,7 +140,7 @@ export default function CheckoutPage() {
             </>
           ) : (
             <>
-              <span>EMPEZAR MI PRUEBA DE 7 DÍAS GRATIS</span>
+              <span>CONTINUAR CON MI INSCRIPCIÓN</span>
               <ArrowRight size={18} />
             </>
           )}
@@ -148,7 +148,7 @@ export default function CheckoutPage() {
 
         <div className="mp-security-badge">
           <ShieldCheck size={16} />
-          <span>Procesado de forma segura por Flow Chile y Webpay. Cero datos de tarjeta almacenados en nuestros servidores.</span>
+          <span>La pasarela de pago y sus condiciones se muestran antes de confirmar. Naty Entrenadora no almacena datos de tarjeta.</span>
         </div>
       </div>
     </div>

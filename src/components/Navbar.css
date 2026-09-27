@@ -9,20 +9,16 @@
   z-index: 1000;
   transition: var(--transition-smooth);
   border-bottom: 1px solid transparent;
-  background: transparent;
+  background: rgba(255, 247, 243, 0.82);
 }
 
 .navbar-react.scrolled {
   height: 70px;
-  background: rgba(9, 9, 11, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 247, 243, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-body.theme-light .navbar-react.scrolled {
-  background: rgba(255, 255, 255, 0.75);
 }
 
 .nav-flex {
@@ -30,6 +26,7 @@ body.theme-light .navbar-react.scrolled {
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  gap: 1.25rem;
 }
 
 /* Brand Logo */
@@ -37,17 +34,19 @@ body.theme-light .navbar-react.scrolled {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 0 0 auto;
 }
 
 .logo-img {
-  height: 44px;
-  width: auto;
-  border-radius: var(--radius-sm);
+  height: 56px;
+  width: 100px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
   transition: var(--transition-smooth);
 }
 
 .navbar-react.scrolled .logo-img {
-  height: 38px;
+  height: 48px;
 }
 
 .brand-text {
@@ -60,7 +59,7 @@ body.theme-light .navbar-react.scrolled {
   font-weight: 800;
   font-size: 1.15rem;
   letter-spacing: 0.05em;
-  color: var(--text);
+  color: var(--brand-black);
   line-height: 1.2;
 }
 
@@ -75,28 +74,29 @@ body.theme-light .navbar-react.scrolled {
 .desktop-nav {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 18px;
+  min-width: 0;
 }
 
 .nav-links-list {
   display: flex;
   align-items: center;
   list-style: none;
-  gap: 32px;
+  gap: 18px;
 }
 
 .nav-link {
   font-family: 'Outfit', sans-serif;
   font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
+  font-size: 0.78rem;
+  letter-spacing: 0.035em;
+  color: #554B50;
   position: relative;
   padding: 8px 0;
 }
 
 .nav-link:hover {
-  color: var(--text);
+  color: var(--brand-black);
 }
 
 .nav-link.active {
@@ -117,7 +117,12 @@ body.theme-light .navbar-react.scrolled {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
+}
+
+.nav-actions .btn-sm {
+  padding-inline: 0.8rem;
+  font-size: 0.8rem;
 }
 
 .theme-toggle {
@@ -154,7 +159,7 @@ body.theme-light .theme-toggle:hover {
 .burger-menu {
   background: transparent;
   border: none;
-  color: var(--text);
+  color: var(--brand-black);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -169,7 +174,7 @@ body.theme-light .theme-toggle:hover {
   left: 0;
   width: 100%;
   height: calc(100vh - 80px);
-  background: var(--background);
+  background: var(--brand-warm-white);
   z-index: 999;
   padding: 40px 24px;
   display: flex;
@@ -204,7 +209,7 @@ body.theme-light .theme-toggle:hover {
   font-weight: 700;
   font-size: 1.5rem;
   letter-spacing: -0.01em;
-  color: var(--text);
+  color: var(--brand-black);
   display: block;
   padding: 8px 0;
 }
@@ -218,11 +223,30 @@ body.theme-light .theme-toggle:hover {
 }
 
 /* Responsiveness */
-@media (max-width: 992px) {
+@media (max-width: 1100px) {
   .desktop-nav {
     display: none;
   }
   .mobile-actions {
     display: flex;
+  }
+}
+
+@media (max-width: 639px) {
+  .navbar-react,
+  .navbar-react.scrolled {
+    height: 68px;
+  }
+
+  .logo-img,
+  .navbar-react.scrolled .logo-img {
+    height: 48px;
+    width: 86px;
+  }
+
+  .mobile-drawer,
+  .navbar-react.scrolled + .mobile-drawer {
+    top: 68px;
+    height: calc(100vh - 68px);
   }
 }

@@ -36,7 +36,7 @@ export default function ProgressRing({ percentage = 75, size = 120, strokeWidth 
         />
         <defs>
           <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#E91E63" />
+            <stop offset="0%" stopColor="#FF4FB8" />
             <stop offset="100%" stopColor="#FF80AB" />
           </linearGradient>
         </defs>

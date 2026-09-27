@@ -2,16 +2,16 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Mail } from 'lucide-react';
+import { ArrowRight, Mail } from 'lucide-react';
 import './Footer.css';
 
 export default function Footer() {
   return (
-    <footer className="footer-react" style={{ background: '#070709', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
+    <footer className="footer-react">
       {/* Top CTA Banner */}
       <div className="footer-cta-banner">
         <div className="container text-center">
-          <span className="badge" style={{ background: 'rgba(255, 45, 120, 0.1)', color: 'var(--nt-pink, #FF2D78)', border: '1px solid rgba(255, 45, 120, 0.3)' }}>
+          <span className="badge" style={{ background: 'rgba(255, 79, 184, 0.12)', color: 'var(--nt-pink, #FF4FB8)', border: '1px solid rgba(255, 79, 184, 0.34)' }}>
             TEAM NATY ENTRENADORA
           </span>
           <h2 className="footer-cta-title">Entrena para la vida que tienes.</h2>
@@ -19,7 +19,7 @@ export default function Footer() {
             Un sistema de entrenamiento continuo pensado para mujeres que buscan constancia, fuerza y bienestar real.
           </p>
           <div className="footer-cta-actions">
-            <Link href="/#oferta" className="btn btn-primary btn-lg" style={{ background: 'var(--nt-pink, #FF2D78)', borderColor: 'var(--nt-pink, #FF2D78)' }}>
+            <Link href="/auth/register?trial=true" className="btn btn-primary btn-lg" data-conversion-event="enrollment_start" data-conversion-placement="footer" style={{ background: 'var(--nt-pink, #FF4FB8)', borderColor: 'var(--nt-pink, #FF4FB8)' }}>
               QUIERO PROBAR 7 DÍAS <ArrowRight size={18} />
             </Link>
           </div>
@@ -33,23 +33,15 @@ export default function Footer() {
           <div className="footer-brand-col">
             <Link href="/" className="footer-logo">
               <img 
-                src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png" 
+                src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp"
                 alt="Logo Naty Entrenadora" 
                 className="footer-logo-img"
               />
-              <span className="footer-brand-title">NATY ENTRENADORA</span>
             </Link>
             <p className="footer-brand-desc">
               Plataforma digital de entrenamiento online continuo para mujeres. Guiado por Natalia Riquelme, Preparadora Física con más de 15 años de experiencia.
             </p>
-            <div className="footer-socials">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noreferrer" aria-label="YouTube">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>
-              </a>
-            </div>
+            <p className="footer-brand-note">Las redes oficiales se agregarán aquí cuando estén verificadas.</p>
           </div>
 
           {/* Nav Col 1: Platform */}
@@ -60,7 +52,7 @@ export default function Footer() {
               <li><Link href="/#natalia">Natalia</Link></li>
               <li><Link href="/#plataforma">Plataforma</Link></li>
               <li><Link href="/#comunidad">Comunidad</Link></li>
-              <li><Link href="/#oferta">Precio Fundador</Link></li>
+              <li><Link href="/#oferta">Preventa</Link></li>
               <li><Link href="/#faq">Preguntas Frecuentes</Link></li>
             </ul>
           </div>
@@ -82,7 +74,7 @@ export default function Footer() {
             <ul className="footer-links-list-react contact-list">
               <li>
                 <a href="mailto:team@natyentrenadora.com" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Mail size={16} style={{ color: 'var(--nt-pink, #FF2D78)' }} /> team@natyentrenadora.com
+                  <Mail size={16} style={{ color: 'var(--nt-pink, #FF4FB8)' }} /> team@natyentrenadora.com
                 </a>
               </li>
               <li style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--nt-text-muted, #9CA3AF)' }}>

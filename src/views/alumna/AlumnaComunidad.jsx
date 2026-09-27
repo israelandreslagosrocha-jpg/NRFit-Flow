@@ -86,7 +86,7 @@ export default function AlumnaComunidad() {
             <span>INVITA Y GANA</span>
           </div>
           <h3>Comparte la experiencia con una amiga</h3>
-          <p>Regala 7 días gratis. Por cada amiga que se suscriba al precio fundador ($25.000 CLP), recibes $10.000 CLP de descuento en tu siguiente renovación.</p>
+          <p>Regala 7 días gratis. Por cada amiga que se suscriba al precio de preventa ($21.000 CLP), recibes $10.000 CLP de descuento en tu siguiente renovación.</p>
         </div>
 
         <div className="invite-code-box">

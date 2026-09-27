@@ -1,21 +1,21 @@
 'use client';
 
 import React from 'react';
-import { Video, Radio, Sparkles, Clock, Dumbbell, Calendar, CheckCircle2 } from 'lucide-react';
+import { Video, Radio, Clock, Dumbbell, CheckCircle2 } from 'lucide-react';
 
 export default function HowItWorksSection() {
   const schedule = [
     {
-      badge: "INICIO DE SEMANA",
-      day: "Lunes",
-      title: "Entrenamiento Grabado VOD",
-      time: "Disponible desde la mañana",
+      badge: "A TU RITMO",
+      day: "Tu semana",
+      title: "3 Entrenamientos grabados",
+      time: "Disponibles desde tu portal",
       icon: <Video size={24} style={{ color: 'var(--nt-pink)' }} />,
-      desc: "1 a 2 entrenamientos grabados publicados antes de iniciar la semana. Puedes hacerlos en el horario que mejor te acomode desde la comodidad de tu hogar."
+      desc: "Tres entrenamientos grabados para realizar desde casa, cuando tu rutina te lo permita y desde el nivel en que estés hoy."
     },
     {
       badge: "EN VIVO CON NATALIA",
-      day: "Martes",
+      day: "Lunes",
       title: "Entrenamiento LIVE con Natalia",
       time: "20:00 – 20:30 hrs (Chile)",
       icon: <Radio size={24} style={{ color: 'var(--nt-pink)' }} />,
@@ -23,7 +23,7 @@ export default function HowItWorksSection() {
     },
     {
       badge: "EN VIVO CON NATALIA",
-      day: "Jueves",
+      day: "Miércoles",
       title: "Entrenamiento LIVE con Natalia",
       time: "20:00 – 20:30 hrs (Chile)",
       icon: <Radio size={24} style={{ color: 'var(--nt-pink)' }} />,
@@ -32,14 +32,14 @@ export default function HowItWorksSection() {
   ];
 
   return (
-    <section id="como-funciona" className="landing-section" style={{ background: '#09090C' }}>
+    <section id="como-funciona" className="landing-section" style={{ background: '#FFF7F3' }}>
       <div className="landing-container">
         
         {/* Header */}
         <div className="nt-section-header">
           <span className="nt-badge">ESTRUCTURA CLARA</span>
           <h2 className="nt-title">
-            3 Entrenamientos por semana. <br />
+            5 Entrenamientos por semana. <br />
             <span className="nt-highlight">Claridad absoluta antes de empezar.</span>
           </h2>
           <p className="nt-subtitle">
@@ -48,7 +48,7 @@ export default function HowItWorksSection() {
           </p>
         </div>
 
-        {/* 3 Days Grid */}
+        {/* 3 modalities: 3 recordings plus 2 live sessions */}
         <div className="schedule-grid">
           {schedule.map((item, idx) => (
             <div key={idx} className="nt-card schedule-card">
@@ -82,17 +82,17 @@ export default function HowItWorksSection() {
               <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--nt-pink)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Claridad antes de presionar play
               </span>
-              <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#FFFFFF', margin: '0.15rem 0 0 0' }}>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--nt-text-primary)', margin: '0.15rem 0 0 0' }}>
                 Fuerza Funcional & Core • 35 Minutos
               </h4>
             </div>
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-            <span style={{ padding: '0.35rem 0.85rem', background: 'rgba(255,255,255,0.06)', borderRadius: 'var(--nt-radius-full)', fontSize: '0.8rem', color: 'var(--nt-text-secondary)' }}>
+            <span style={{ padding: '0.35rem 0.85rem', background: '#FFF7F3', borderRadius: 'var(--nt-radius-full)', fontSize: '0.8rem', color: 'var(--nt-text-secondary)' }}>
               Nivel: Inicial / Intermedio
             </span>
-            <span style={{ padding: '0.35rem 0.85rem', background: 'rgba(255,255,255,0.06)', borderRadius: 'var(--nt-radius-full)', fontSize: '0.8rem', color: 'var(--nt-text-secondary)' }}>
+            <span style={{ padding: '0.35rem 0.85rem', background: '#FFF7F3', borderRadius: 'var(--nt-radius-full)', fontSize: '0.8rem', color: 'var(--nt-text-secondary)' }}>
               Implementos: Peso corporal o mancuernas ligeras
             </span>
           </div>

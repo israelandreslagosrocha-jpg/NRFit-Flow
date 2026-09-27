@@ -28,19 +28,19 @@ export default function NataliaAuthoritySection() {
   ];
 
   return (
-    <section id="natalia" className="landing-section" style={{ background: '#0D0D10' }}>
+    <section id="natalia" className="landing-section" style={{ background: '#FFF7F3' }}>
       <div className="landing-container">
         
         <div className="natalia-grid">
           
           {/* Left Column: Official Profile Image of Natalia */}
           <div className="natalia-photo-box">
-            <div className="natalia-photo-frame" style={{ background: 'radial-gradient(circle at center, rgba(255, 45, 120, 0.15) 0%, #111116 80%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+            <div className="natalia-photo-frame" style={{ background: 'radial-gradient(circle at center, rgba(255, 79, 184, 0.22) 0%, #FBE7EE 80%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
               <img 
                 src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/Copia_de_NR_logo_image_efdt04.png" 
                 alt="Natalia Riquelme - Fundadora & Entrenadora Principal" 
                 loading="lazy"
-                style={{ width: '80%', height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.7))' }}
+                        style={{ width: '80%', height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 15px 30px rgba(11,11,11,0.18))' }}
               />
             </div>
             <div className="natalia-exp-badge">
@@ -81,7 +81,7 @@ export default function NataliaAuthoritySection() {
                     {cred.icon}
                   </div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#FFFFFF', margin: '0 0 0.2rem 0' }}>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--nt-text-primary)', margin: '0 0 0.2rem 0' }}>
                       {cred.title}
                     </h4>
                     <p style={{ fontSize: '0.82rem', color: 'var(--nt-text-muted)', margin: 0, lineHeight: 1.45 }}>

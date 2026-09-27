@@ -68,7 +68,7 @@ export default function CookiesPage() {
               <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
                 <h3 className="font-semibold text-white text-base">C. Cookies de Terceros</h3>
                 <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-                  Durante el proceso de pago seguro, Mercado Pago puede utilizar cookies técnicas propias para la prevención de fraudes y validación de seguridad de la transacción según sus respectivas políticas de privacidad.
+                  Durante un proceso de pago, la pasarela identificada en el checkout puede utilizar cookies técnicas propias para la prevención de fraudes y validación de seguridad de la transacción según sus respectivas políticas de privacidad.
                 </p>
               </div>
             </div>

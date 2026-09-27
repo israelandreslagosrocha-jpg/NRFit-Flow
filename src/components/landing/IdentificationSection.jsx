@@ -38,7 +38,7 @@ export default function IdentificationSection() {
   ];
 
   return (
-    <section className="landing-section" style={{ background: '#0B0B0E' }}>
+    <section className="landing-section" style={{ background: '#FFF7F3' }}>
       <div className="landing-container">
         
         {/* Header */}

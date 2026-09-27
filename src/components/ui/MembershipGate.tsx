@@ -31,7 +31,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
     title = 'Tu período de prueba o suscripción ha finalizado';
     description =
       'Esperamos que hayas disfrutado tus entrenamientos. Activa tu plan mensual para mantener tu constancia.';
-    ctaText = 'Reactivar membresía ($25.000 CLP/mes)';
+    ctaText = 'Reactivar membresía ($21.000 CLP/mes)';
   }
 
   return (
@@ -55,7 +55,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
         <div className="bg-neutral-950/80 rounded-2xl p-5 border border-neutral-800/80 space-y-3">
           <div className="flex items-center justify-between text-xs text-neutral-400 border-b border-neutral-800 pb-2">
             <span>Membresía Naty Entrenadora</span>
-            <span className="font-semibold text-rose-400">$25.000 CLP / mes</span>
+            <span className="font-semibold text-rose-400">$21.000 CLP / mes</span>
           </div>
           <ul className="space-y-2 text-xs text-neutral-300">
             <li className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-rose-400 shrink-0" />
-              <span>Clases en vivo y videoteca completa</span>
+              <span>2 clases en vivo y 3 entrenamientos grabados por semana</span>
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-rose-400 shrink-0" />

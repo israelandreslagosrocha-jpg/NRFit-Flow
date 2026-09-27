@@ -1,18 +1,15 @@
-'use client';
-
-import React from 'react';
-import { Users, Heart, MessageCircle, Sparkles } from 'lucide-react';
+import { CalendarDays, HeartHandshake, ShieldCheck, Sparkles } from 'lucide-react';
 
 export default function CommunitySection() {
-  const stats = [
-    { val: "100%", lbl: "Mujeres Reales" },
-    { val: "+15", lbl: "Años Guiando" },
-    { val: "3x", lbl: "Más Constancia" },
-    { val: "0", lbl: "Juicios o Poses" }
+  const commitments = [
+    { icon: <Sparkles size={20} />, eyebrow: 'A TU RITMO', title: 'Tu semana también cuenta.', desc: 'Entrena cuando puedas y retoma sin sentir que partes desde cero.' },
+    { icon: <CalendarDays size={20} />, eyebrow: 'ESTRUCTURA CLARA', title: 'Cinco momentos para ti.', desc: 'Dos clases en vivo y tres rutinas grabadas, todas entre 10 y 40 minutos.' },
+    { icon: <ShieldCheck size={20} />, eyebrow: 'GUÍA PROFESIONAL', title: 'Acompañada por Natalia.', desc: 'Una preparación cercana para entrenar con seguridad y criterio.' },
+    { icon: <HeartHandshake size={20} />, eyebrow: 'SIN JUICIOS', title: 'Volver a intentarlo es avanzar.', desc: 'Aquí celebramos la constancia real, incluso en las semanas difíciles.' },
   ];
 
   return (
-    <section id="comunidad" className="landing-section" style={{ background: '#09090C' }}>
+    <section id="comunidad" className="landing-section" style={{ background: '#FBE7EE' }}>
       <div className="landing-container">
         
         <div className="community-box">
@@ -30,18 +27,20 @@ export default function CommunitySection() {
             ganas de sentirse mejor, lo cambia todo.
           </p>
 
-          {/* Key Stat Badges */}
+          {/* Community commitments, not unverified performance metrics */}
           <div className="community-grid-stats">
-            {stats.map((item, idx) => (
-              <div key={idx} className="community-stat-item">
-                <div className="community-stat-val">{item.val}</div>
-                <div className="community-stat-lbl">{item.lbl}</div>
-              </div>
+            {commitments.map((item, idx) => (
+              <article key={idx} className="community-stat-item">
+                <div className="community-stat-icon" aria-hidden="true">{item.icon}</div>
+                <p className="community-stat-val">{item.eyebrow}</p>
+                <h3 className="community-stat-lbl">{item.title}</h3>
+                <p className="community-stat-desc">{item.desc}</p>
+              </article>
             ))}
           </div>
 
           <p style={{ marginTop: '2rem', fontSize: '0.92rem', color: 'var(--nt-text-secondary)', fontStyle: 'italic' }}>
-            “Aquí no competimos por quién tiene el cuerpo más delgado. Celebramos que hoy encontraste 35 minutos para ti.”
+            “Aquí no competimos por quién tiene el cuerpo más delgado. Celebramos que hoy encontraste un momento para ti.”
           </p>
 
         </div>

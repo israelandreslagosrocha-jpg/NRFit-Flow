@@ -5,22 +5,20 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  background: radial-gradient(circle at top right, rgba(255, 45, 120, 0.08), transparent 40%),
-              radial-gradient(circle at bottom left, rgba(255, 107, 0, 0.05), transparent 40%),
-              #08080c;
+  background: radial-gradient(circle at top right, rgba(255, 79, 184, 0.24), transparent 38%),
+              radial-gradient(circle at bottom left, rgba(233, 180, 192, 0.46), transparent 42%),
+              #FFF7F3;
 }
 
 .auth-card {
   width: 100%;
   max-width: 480px;
-  background: rgba(18, 18, 24, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #FFFFFF;
+  border: 1px solid rgba(11, 11, 11, 0.12);
   border-radius: 20px;
   padding: 2.5rem 2rem;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
-              0 0 0 1px rgba(255, 45, 120, 0.1);
+  box-shadow: 0 24px 55px -32px rgba(11, 11, 11, 0.42),
+              0 0 0 1px rgba(255, 79, 184, 0.13);
 }
 
 .auth-brand {
@@ -32,8 +30,10 @@
 }
 
 .auth-logo-img {
-  height: 48px;
-  width: auto;
+  height: 74px;
+  width: 132px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
   margin-bottom: 1rem;
 }
 
@@ -41,14 +41,14 @@
   font-family: var(--font-heading, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #0B0B0B;
   margin: 0 0 0.5rem 0;
   letter-spacing: -0.02em;
 }
 
 .auth-subtitle {
   font-size: 0.9rem;
-  color: #a0a0b0;
+  color: #554B50;
   margin: 0;
   line-height: 1.4;
 }
@@ -57,9 +57,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 45, 120, 0.15);
-  border: 1px solid rgba(255, 45, 120, 0.3);
-  color: #ff2d78;
+  background: rgba(255, 79, 184, 0.12);
+  border: 1px solid rgba(255, 79, 184, 0.36);
+  color: #C52E88;
   padding: 0.4rem 0.8rem;
   border-radius: 100px;
   font-size: 0.8rem;
@@ -83,17 +83,17 @@
 .auth-label {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #d0d0dc;
+  color: #312A2D;
 }
 
 .auth-input,
 .auth-select {
   width: 100%;
   padding: 0.85rem 1rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #FFF7F3;
+  border: 1px solid rgba(11, 11, 11, 0.14);
   border-radius: 12px;
-  color: #ffffff;
+  color: #0B0B0B;
   font-size: 0.95rem;
   transition: all 0.2s ease;
   outline: none;
@@ -102,18 +102,18 @@
 
 .auth-input:focus,
 .auth-select:focus {
-  border-color: #ff2d78;
-  box-shadow: 0 0 0 3px rgba(255, 45, 120, 0.2);
-  background: rgba(255, 255, 255, 0.07);
+  border-color: #FF4FB8;
+  box-shadow: 0 0 0 3px rgba(255, 79, 184, 0.18);
+  background: #FFFFFF;
 }
 
 .auth-input::placeholder {
-  color: #606070;
+  color: #8C7D83;
 }
 
 .auth-select option {
-  background: #121218;
-  color: #ffffff;
+  background: #FFFFFF;
+  color: #0B0B0B;
 }
 
 .auth-error-banner {
@@ -139,15 +139,15 @@
 .auth-submit-btn {
   width: 100%;
   padding: 0.95rem;
-  background: linear-gradient(135deg, #ff2d78 0%, #ff6b00 100%);
+  background: #FF4FB8;
   border: none;
   border-radius: 12px;
-  color: #ffffff;
+  color: #0B0B0B;
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 20px rgba(255, 45, 120, 0.35);
+  box-shadow: 0 10px 22px rgba(255, 79, 184, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -157,7 +157,7 @@
 
 .auth-submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(255, 45, 120, 0.5);
+  box-shadow: 0 14px 28px rgba(255, 79, 184, 0.38);
 }
 
 .auth-submit-btn:disabled {
@@ -169,7 +169,7 @@
 .auth-footer-links {
   margin-top: 1.75rem;
   padding-top: 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(11, 11, 11, 0.09);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -178,7 +178,7 @@
 }
 
 .auth-link {
-  color: #ff2d78;
+  color: #C52E88;
   text-decoration: none;
   font-size: 0.85rem;
   font-weight: 500;
@@ -186,17 +186,17 @@
 }
 
 .auth-link:hover {
-  color: #ff6b9d;
+  color: #0B0B0B;
   text-decoration: underline;
 }
 
 .auth-link-secondary {
-  color: #8a8a9a;
+  color: #6D6065;
   text-decoration: none;
   font-size: 0.85rem;
   transition: color 0.2s;
 }
 
 .auth-link-secondary:hover {
-  color: #ffffff;
+  color: #0B0B0B;
 }

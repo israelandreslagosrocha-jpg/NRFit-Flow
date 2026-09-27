@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import './Navbar.css';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,7 +26,7 @@ export default function Navbar() {
     { path: '/#natalia', label: 'NATALIA' },
     { path: '/#plataforma', label: 'PLATAFORMA' },
     { path: '/#comunidad', label: 'COMUNIDAD' },
-    { path: '/#oferta', label: 'PRECIO FUNDADOR' },
+    { path: '/#oferta', label: 'PREVENTA' },
     { path: '/#faq', label: 'PREGUNTAS' },
   ];
 
@@ -38,14 +36,10 @@ export default function Navbar() {
         {/* Brand Logo */}
         <Link href="/" className="brand-logo" onClick={() => setIsOpen(false)}>
           <img 
-            src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png" 
+            src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp"
             alt="Naty Entrenadora Logo" 
             className="logo-img"
           />
-          <div className="brand-text">
-            <span className="brand-title">NATY ENTRENADORA</span>
-            <span className="brand-subtitle">TEAM NATY ONLINE</span>
-          </div>
         </Link>
 
         {/* Desktop Links */}
@@ -64,7 +58,7 @@ export default function Navbar() {
             <Link href="/para-ti" className="btn btn-secondary btn-sm">
               MI DASHBOARD
             </Link>
-            <Link href="/#oferta" className="btn btn-primary btn-sm" style={{ background: 'var(--nt-pink, #FF2D78)', borderColor: 'var(--nt-pink, #FF2D78)' }}>
+            <Link href="/auth/register?trial=true" className="btn btn-primary btn-sm" data-conversion-event="enrollment_start" data-conversion-placement="navbar" style={{ background: 'var(--nt-pink, #FF4FB8)', borderColor: 'var(--nt-pink, #FF4FB8)' }}>
               PROBAR 7 DÍAS
             </Link>
           </div>
@@ -72,14 +66,14 @@ export default function Navbar() {
 
         {/* Mobile Actions */}
         <div className="mobile-actions">
-          <button className="burger-menu" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle Menu">
+          <button className="burger-menu" onClick={() => setIsOpen(!isOpen)} aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={isOpen} aria-controls="mobile-navigation">
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
       {/* Mobile Drawer */}
-      <div className={`mobile-drawer ${isOpen ? 'open' : ''}`}>
+      <div id="mobile-navigation" className={`mobile-drawer ${isOpen ? 'open' : ''}`}>
         <ul className="mobile-links-list">
           {navItems.map((item) => (
             <li key={item.label}>
@@ -94,9 +88,11 @@ export default function Navbar() {
           ))}
           <li style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <Link
-              href="/#oferta"
+              href="/auth/register?trial=true"
               className="btn btn-primary btn-full text-center"
-              style={{ background: 'var(--nt-pink, #FF2D78)' }}
+              data-conversion-event="enrollment_start"
+              data-conversion-placement="mobile_navigation"
+              style={{ background: 'var(--nt-pink, #FF4FB8)' }}
               onClick={() => setIsOpen(false)}
             >
               PROBAR 7 DÍAS GRATIS

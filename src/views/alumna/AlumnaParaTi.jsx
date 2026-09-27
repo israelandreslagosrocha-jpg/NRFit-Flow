@@ -79,7 +79,7 @@ export default function AlumnaParaTi() {
             <span>CLASE EN VIVO CON NATY</span>
           </div>
           <h3 className="live-title">Sesión Especial GAP & Preguntas en Vivo</h3>
-          <p className="live-time">Jueves, 18:30 hrs • Transmisión exclusiva Zoom</p>
+          <p className="live-time">Miércoles, 20:00 hrs • Transmisión exclusiva Zoom</p>
         </div>
         <button className="btn btn-primary btn-sm">
           <span>Unirme al Live</span>

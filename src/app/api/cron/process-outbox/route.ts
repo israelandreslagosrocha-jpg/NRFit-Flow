@@ -20,7 +20,7 @@ function isAuthorizedCron(authHeader: string | null, cronSecret?: string): boole
   return crypto.timingSafeEqual(authBuf, expBuf);
 }
 
-export async function POST(req: NextRequest) {
+async function handleCron(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
@@ -134,4 +134,14 @@ export async function POST(req: NextRequest) {
     logger.error('Unexpected error in process-outbox cron', {}, error);
     return NextResponse.json({ error: 'Error interno en process-outbox', details: error.message }, { status: 500 });
   }
+}
+
+// Vercel Cron invoca las rutas mediante GET y envía CRON_SECRET en
+// Authorization. POST se conserva para ejecuciones manuales autenticadas.
+export async function GET(req: NextRequest) {
+  return handleCron(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handleCron(req);
 }

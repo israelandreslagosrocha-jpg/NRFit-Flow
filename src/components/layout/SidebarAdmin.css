@@ -8,8 +8,8 @@
   height: calc(100vh - 120px);
   position: sticky;
   top: 96px;
-  background: rgba(18, 14, 25, 0.75);
-  border: 1px solid rgba(147, 51, 234, 0.2);
+  background: #FFFFFF;
+  border: 1px solid rgba(11, 11, 11, 0.12);
 }
 
 .admin-sidebar-header {
@@ -22,7 +22,7 @@
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: #c084fc;
+  color: #C52E88;
   display: block;
 }
 
@@ -30,19 +30,19 @@
   font-family: 'Outfit', sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #0B0B0B;
 }
 
 .sidebar-item.admin-item.active-admin {
-  color: #ffffff;
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.85) 0%, rgba(126, 34, 206, 0.95) 100%);
-  box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4);
+  color: #0B0B0B;
+  background: #FF4FB8;
+  box-shadow: 0 8px 18px rgba(255, 79, 184, 0.28);
   font-weight: 600;
 }
 
 .admin-footer {
-  background: rgba(147, 51, 234, 0.08);
-  border-color: rgba(147, 51, 234, 0.2);
+  background: #FFF0F7;
+  border-color: rgba(255, 79, 184, 0.28);
 }
 
 .admin-status-indicator {

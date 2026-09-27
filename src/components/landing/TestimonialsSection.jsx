@@ -5,7 +5,7 @@ import { ShieldCheck, Heart, Sparkles, Target } from 'lucide-react';
 
 export default function TestimonialsSection() {
   return (
-    <section className="landing-section" style={{ background: '#09090C' }}>
+    <section className="landing-section" style={{ background: '#FFF7F3' }}>
       <div className="landing-container">
         
         {/* Header */}
@@ -21,7 +21,7 @@ export default function TestimonialsSection() {
         </div>
 
         {/* Authentic Community Statement Card */}
-        <div style={{ maxWidth: '840px', margin: '0 auto', background: '#111116', border: '1px solid var(--nt-border)', borderRadius: 'var(--nt-radius-lg)', padding: '2.5rem 2rem', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ maxWidth: '840px', margin: '0 auto', background: '#FFFFFF', border: '1px solid var(--nt-border)', borderRadius: 'var(--nt-radius-lg)', padding: '2.5rem 2rem', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 45px -34px rgba(11,11,11,0.42)' }}>
           
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, transparent, var(--nt-pink), transparent)' }} />
 
@@ -29,7 +29,7 @@ export default function TestimonialsSection() {
             <span className="nt-badge nt-badge-pulse" style={{ marginBottom: '1rem' }}>
               PRIMERA GENERACIÓN ONLINE
             </span>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.25rem, 3vw, 1.65rem)', fontWeight: 800, color: '#FFFFFF', margin: '0.75rem 0 0.5rem 0' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.25rem, 3vw, 1.65rem)', fontWeight: 800, color: 'var(--nt-text-primary)', margin: '0.75rem 0 0.5rem 0' }}>
               Estamos recopilando las primeras historias de esta nueva etapa
             </h3>
             <p style={{ color: 'var(--nt-text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '640px', margin: '0 auto' }}>
@@ -40,7 +40,7 @@ export default function TestimonialsSection() {
           {/* 3 Authentic Value Pillars */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginTop: '1.5rem' }}>
             
-            <div style={{ padding: '1.25rem', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--nt-border-subtle)', borderRadius: 'var(--nt-radius-md)' }}>
+            <div style={{ padding: '1.25rem', background: '#FFF7F3', border: '1px solid var(--nt-border-subtle)', borderRadius: 'var(--nt-radius-md)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--nt-pink)', fontWeight: 700, fontSize: '0.85rem' }}>
                 <Target size={16} /> FUERZA COTIDIANA
               </div>
@@ -49,7 +49,7 @@ export default function TestimonialsSection() {
               </p>
             </div>
 
-            <div style={{ padding: '1.25rem', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--nt-border-subtle)', borderRadius: 'var(--nt-radius-md)' }}>
+            <div style={{ padding: '1.25rem', background: '#FFF7F3', border: '1px solid var(--nt-border-subtle)', borderRadius: 'var(--nt-radius-md)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--nt-pink)', fontWeight: 700, fontSize: '0.85rem' }}>
                 <Heart size={16} /> CERO CULPA
               </div>
@@ -58,7 +58,7 @@ export default function TestimonialsSection() {
               </p>
             </div>
 
-            <div style={{ padding: '1.25rem', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--nt-border-subtle)', borderRadius: 'var(--nt-radius-md)' }}>
+            <div style={{ padding: '1.25rem', background: '#FFF7F3', border: '1px solid var(--nt-border-subtle)', borderRadius: 'var(--nt-radius-md)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--nt-pink)', fontWeight: 700, fontSize: '0.85rem' }}>
                 <ShieldCheck size={16} /> CRITERIO PROFESIONAL
               </div>

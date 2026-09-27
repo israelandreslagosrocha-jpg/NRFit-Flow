@@ -1,46 +1,45 @@
 'use client';
 
 import React from 'react';
-import { TrendingUp, Sparkles, Activity, Flame } from 'lucide-react';
+import { Sparkles, Activity, Flame } from 'lucide-react';
 
 export default function ProgressionSection() {
   const steps = [
     {
-      step: "FASE 1",
-      duration: "20 – 30 MIN",
-      title: "Empieza",
+      step: "DESDE TU NIVEL",
+      duration: "Técnica primero",
+      title: "Empieza con confianza",
       icon: <Sparkles size={20} style={{ color: 'var(--nt-pink)' }} />,
-      desc: "Creas el hábito. Aprendes la técnica correcta de cada movimiento, despiertas tu musculatura y ganas confianza sin terminar agotada para el resto del día."
+      desc: "Cada movimiento se explica con opciones para que puedas comenzar desde donde estás hoy, sin compararte ni exigirte de más."
     },
     {
-      step: "FASE 2",
-      duration: "30 – 45 MIN",
-      title: "Avanza",
+      step: "A TU RITMO",
+      duration: "Opciones reales",
+      title: "Adapta cada sesión",
       icon: <Activity size={20} style={{ color: 'var(--nt-pink)' }} />,
-      desc: "Ganas fuerza y resistencia cardiovascular. Tu cuerpo ya se adaptó a la rutina y notas cómo subes escaleras con más agilidad y cargas pesos sin molestias."
+      desc: "Elige una versión que se ajuste a tu energía, experiencia y día. El objetivo es entrenar de forma segura y volver a hacerlo mañana."
     },
     {
-      step: "FASE 3",
-      duration: "45 – 60 MIN",
-      title: "Crece",
+      step: "CON CONSTANCIA",
+      duration: "Progreso sostenible",
+      title: "Hazlo parte de tu vida",
       icon: <Flame size={20} style={{ color: 'var(--nt-pink)' }} />,
-      desc: "Consolidación y sobrecarga progresiva dirigida. Mayor tonificación, postura firme, masa muscular protegida y un nivel de energía constante durante toda tu semana."
+      desc: "La fuerza, la movilidad y la seguridad se construyen semana a semana. Tu avance no depende de entrenar más tiempo, sino de poder sostenerlo."
     }
   ];
 
   return (
-    <section className="landing-section" style={{ background: '#0B0B0E' }}>
+    <section className="landing-section" style={{ background: '#FFF7F3' }}>
       <div className="landing-container">
         
         {/* Header */}
         <div className="nt-section-header">
-          <span className="nt-badge">PROGRESIÓN REAL</span>
+          <span className="nt-badge">ENTRENAMIENTO A TU RITMO</span>
           <h2 className="nt-title">
-            Tu entrenamiento <span className="nt-highlight">evoluciona contigo.</span>
+            Tu entrenamiento <span className="nt-highlight">se adapta a tu vida.</span>
           </h2>
           <p className="nt-subtitle">
-            Empieza con lo que puedes sostener. Progresa cuando estés preparada. 
-            Sin metas forzadas ni la presión de tener que entrenar una hora completa para que valga.
+            Todas las rutinas duran entre 10 y 40 minutos. Progresas con técnica, adaptaciones y constancia; no sumando minutos porque sí.
           </p>
         </div>
 
@@ -60,9 +59,9 @@ export default function ProgressionSection() {
         </div>
 
         {/* Micro Clarification */}
-        <div style={{ maxWidth: '780px', margin: '2.5rem auto 0 auto', padding: '1.25rem 1.5rem', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--nt-border-subtle)', borderRadius: 'var(--nt-radius-md)', textAlign: 'center' }}>
+        <div style={{ maxWidth: '780px', margin: '2.5rem auto 0 auto', padding: '1.25rem 1.5rem', background: '#FBE7EE', border: '1px solid var(--nt-border-subtle)', borderRadius: 'var(--nt-radius-md)', textAlign: 'center' }}>
           <p style={{ margin: 0, color: 'var(--nt-text-secondary)', fontSize: '0.9rem', lineHeight: 1.6 }}>
-            💡 <strong style={{ color: '#FFFFFF' }}>Progresión no significa entrenar más tiempo:</strong> Una mujer puede permanecer perfectamente en sesiones de 30 a 40 minutos y estar ganando fuerza, salud y energía real semana a semana. Tu constancia es tu mayor victoria.
+            💡 <strong style={{ color: 'var(--nt-text-primary)' }}>Todas las rutinas se mantienen entre 10 y 40 minutos:</strong> tu progreso viene de la técnica, las adaptaciones y la constancia que construyes semana a semana.
           </p>
         </div>
 

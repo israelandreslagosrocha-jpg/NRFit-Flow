@@ -63,7 +63,7 @@ export default function PrivacidadPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">3. Tratamiento de Información Financiera y Pagos</h2>
             <p>
-              Naty Entrenadora no recopila, almacena ni procesa números de tarjetas de crédito o débito, códigos de seguridad (CVV) ni credenciales bancarias. Todo el flujo transaccional se delega directamente a <strong>Mercado Pago Chile</strong> bajo sus estándares de seguridad y certificación PCI-DSS.
+              Naty Entrenadora no recopila, almacena ni procesa números de tarjetas de crédito o débito, códigos de seguridad (CVV) ni credenciales bancarias. El flujo transaccional se delegará a la pasarela de pago que se identifique antes de confirmar la operación.
             </p>
             <p>
               Únicamente almacenamos los identificadores técnicos de transacción y suscripción provistos por la pasarela con fines de control de membresía y facturación contable.

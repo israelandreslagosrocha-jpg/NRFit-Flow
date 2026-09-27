@@ -24,7 +24,15 @@ export async function createCheckoutSubscriptionAction() {
     };
   }
 
-  const adminClient = createAdminClient();
+  let adminClient;
+  try {
+    adminClient = createAdminClient();
+  } catch {
+    return {
+      success: false,
+      error: 'El checkout todavía no está configurado en el servidor. Intenta nuevamente más tarde.',
+    };
+  }
 
   // 1. Resolver jerarquía de identidad: auth.users.id -> profiles.user_id -> students.profile_id
   const { ensureStudentProfile } = await import('../lib/supabase/profile-helpers');
@@ -40,7 +48,7 @@ export async function createCheckoutSubscriptionAction() {
   const studentId = resolution.student.id;
   const studentName = resolution.profile?.full_name || 'Alumna';
 
-  // 2. Obtener plan mensual ($25.000 CLP)
+  // 2. Obtener plan mensual de preventa ($21.000 CLP)
   const { data: plan } = await adminClient
     .from('plans')
     .select('id, price')
@@ -50,7 +58,7 @@ export async function createCheckoutSubscriptionAction() {
     .single();
 
   const planId = plan?.id || '00000000-0000-0000-0000-000000000001';
-  const price = plan?.price || 25000;
+  const price = plan?.price || 21000;
 
   // 3. Crear registro de membresía en PENDING_PAYMENT con trace_id (Anclaje Inequívoco, $0 hoy)
   const startDate = new Date().toISOString().split('T')[0];
@@ -69,6 +77,7 @@ export async function createCheckoutSubscriptionAction() {
       renewal_mode: 'AUTO_CHARGE',
       gateway: 'FLOW',
       trace_id: traceId,
+      billing_email: user.email,
     })
     .select('id')
     .single();
@@ -127,7 +136,7 @@ export async function createCheckoutSubscriptionAction() {
 
     // 4.3 Modo SUBSCRIPTION_PAYMENT_LINK (Suscripción sin tarjeta forzada)
     // Se crea la suscripción con 7 días de trial. Al vencer, Flow emite factura con paymentLink
-    const flowPlanId = process.env.FLOW_PLAN_ID || 'naty-mensual-25k-v1';
+    const flowPlanId = process.env.FLOW_PLAN_ID || 'naty-mensual-preventa-21k-v1';
     const sub = await gateway.createSubscription({
       planId: flowPlanId,
       customerId: customer.id,
@@ -189,7 +198,12 @@ export async function cancelSubscriptionAction() {
     return { success: false, error: 'No autorizado' };
   }
 
-  const adminClient = createAdminClient();
+  let adminClient;
+  try {
+    adminClient = createAdminClient();
+  } catch {
+    return { success: false, error: 'La gestión de suscripciones no está configurada en el servidor.' };
+  }
 
   // Buscar ficha de alumna
   const { getStudentProfileByUserId } = await import('../lib/supabase/profile-helpers');
@@ -245,7 +259,7 @@ export async function cancelSubscriptionAction() {
   const templateId = isTrial ? 'trial_cancellation' : 'active_cancellation';
   await adminClient.from('email_outbox').insert({
     dedupe_key: `cancel-user:${membership.id}:${Date.now()}`,
-    recipient_email: user.email || 'alumna@natyentrenadora.com',
+    recipient_email: user.email,
     subject: isTrial ? 'Confirmación de cancelación de renovación de prueba' : 'Confirmación de cancelación de suscripción',
     template_id: templateId,
     payload: {

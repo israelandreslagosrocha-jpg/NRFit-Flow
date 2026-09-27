@@ -5,7 +5,7 @@ import { Gift, HeartHandshake, Sparkles } from 'lucide-react';
 
 export default function ReferralSection() {
   return (
-    <section className="landing-section" style={{ background: '#0B0B0F' }}>
+    <section className="landing-section" style={{ background: '#FFF7F3' }}>
       <div className="landing-container">
         
         <div className="referral-card">
@@ -24,11 +24,11 @@ export default function ReferralSection() {
 
           <p className="nt-subtitle" style={{ maxWidth: 620, margin: '1rem auto 1.75rem auto' }}>
             Al convertirte en alumna activa del Team Naty, recibes un cupón exclusivo para invitar a quien tú quieras. 
-            Tu invitada accederá también al precio fundador de <strong style={{ color: '#FFFFFF' }}>$25.000 CLP</strong> (en lugar de $29.000) 
+            Tu invitada accederá también al precio de preventa de <strong style={{ color: 'var(--nt-text-primary)' }}>$21.000 CLP</strong> (en lugar de $25.000)
             y ambas suman puntos de constancia para recompensas en la plataforma.
           </p>
 
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1.25rem', background: 'rgba(255, 45, 120, 0.08)', border: '1px solid var(--nt-border-pink)', borderRadius: 'var(--nt-radius-full)', fontSize: '0.85rem', color: '#FFFFFF' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1.25rem', background: '#FBE7EE', border: '1px solid var(--nt-border-pink)', borderRadius: 'var(--nt-radius-full)', fontSize: '0.85rem', color: 'var(--nt-text-primary)' }}>
             <HeartHandshake size={18} style={{ color: 'var(--nt-pink)' }} />
             <span>Entrenar con una amiga multiplica tu adherencia y compromiso semanal</span>
           </div>

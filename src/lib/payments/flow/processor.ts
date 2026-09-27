@@ -18,6 +18,10 @@ export interface ProcessFlowCallbackOutput {
   error?: string;
 }
 
+function isValidNotificationEmail(value: unknown): value is string {
+  return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 /**
  * Procesador de callbacks y webhooks de Flow Chile (Fase M-09R / M-09.3B)
  * Incorpora recuperación determinista de trace_id sin depender de metadata de pasarela.
@@ -79,7 +83,7 @@ export async function processFlowCallback(
 
   let membershipQuery = supabase
     .from('memberships')
-    .select('id, student_id, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_snapshot_request_started_at, gateway_sync_state, gateway_snapshot_sequence_counter, last_applied_snapshot_sequence');
+    .select('id, student_id, billing_email, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_snapshot_request_started_at, gateway_sync_state, gateway_snapshot_sequence_counter, last_applied_snapshot_sequence');
 
   if (targetSubId) {
     membershipQuery = membershipQuery.eq('gateway_subscription_id', targetSubId);
@@ -253,19 +257,29 @@ export async function processFlowCallback(
         }
       }
 
-      // Encolar email de confirmación de renovación en outbox con trace_id vinculado
-      await supabase.from('email_outbox').insert({
-        dedupe_key: `flow-pay-success:${pay.paymentId}`,
-        recipient_email: 'alumna@natyentrenadora.com',
-        subject: 'Pago exitoso de tu membresía Team Naty',
-        template_id: 'payment_success',
-        payload: {
-          amount: pay.amount,
-          currency: pay.currency,
-          periodEnd: newPeriodEnd,
+      // Encolar correo solo para la dirección capturada en checkout. Nunca se
+      // usa una dirección de ejemplo como destinatario de un evento financiero.
+      if (isValidNotificationEmail(matchedMembership.billing_email)) {
+        await supabase.from('email_outbox').insert({
+          dedupe_key: `flow-pay-success:${pay.paymentId}`,
+          recipient_email: matchedMembership.billing_email,
+          subject: 'Pago exitoso de tu membresía Team Naty',
+          template_id: 'payment_success',
+          payload: {
+            amount: pay.amount,
+            currency: pay.currency,
+            periodEnd: newPeriodEnd,
+            trace_id: localTraceId,
+          },
+        });
+      } else {
+        logger.warn('Flow payment notification skipped: missing checkout billing email', {
           trace_id: localTraceId,
-        },
-      });
+          gateway: 'FLOW',
+          membership_id: matchedMembership.id,
+          result: 'SKIPPED',
+        });
+      }
     } else if (pay.status === 'REJECTED') {
       // Regla fail-closed: Si el pago es rechazado, pasar a PAST_DUE vía RPC atómica
       if (typeof supabase.rpc === 'function') {
@@ -296,17 +310,26 @@ export async function processFlowCallback(
         }
       }
 
-      await supabase.from('email_outbox').insert({
-        dedupe_key: `flow-pay-failed:${pay.paymentId}`,
-        recipient_email: 'alumna@natyentrenadora.com',
-        subject: 'Problema con el pago de tu membresía Team Naty',
-        template_id: 'payment_failed',
-        payload: {
-          amount: pay.amount,
-          currency: pay.currency,
+      if (isValidNotificationEmail(matchedMembership.billing_email)) {
+        await supabase.from('email_outbox').insert({
+          dedupe_key: `flow-pay-failed:${pay.paymentId}`,
+          recipient_email: matchedMembership.billing_email,
+          subject: 'Problema con el pago de tu membresía Team Naty',
+          template_id: 'payment_failed',
+          payload: {
+            amount: pay.amount,
+            currency: pay.currency,
+            trace_id: localTraceId,
+          },
+        });
+      } else {
+        logger.warn('Flow payment notification skipped: missing checkout billing email', {
           trace_id: localTraceId,
-        },
-      });
+          gateway: 'FLOW',
+          membership_id: matchedMembership.id,
+          result: 'SKIPPED',
+        });
+      }
     }
   }
 

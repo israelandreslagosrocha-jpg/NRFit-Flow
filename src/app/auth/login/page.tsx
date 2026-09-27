@@ -38,6 +38,21 @@ export default function LoginPage() {
       }
 
       if (data?.session) {
+        // La dueña y el equipo autorizado no deben pasar por checkout: su
+        // destino natural es el panel privado. El rol se lee bajo la sesión
+        // autenticada; nunca se confía en un valor enviado por el navegador.
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', data.session.user.id)
+          .maybeSingle();
+
+        if (profile && ['OWNER', 'ADMIN'].includes(profile.role)) {
+          router.push('/admin');
+          router.refresh();
+          return;
+        }
+
         // Evaluar membresía de la usuaria para decidir destino
         const { data: memberships } = await supabase
           .from('memberships')
@@ -85,7 +100,7 @@ export default function LoginPage() {
       <div className="auth-brand">
         <Link href="/">
           <img
-            src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png"
+            src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp"
             alt="Naty Entrenadora"
             className="auth-logo-img"
           />

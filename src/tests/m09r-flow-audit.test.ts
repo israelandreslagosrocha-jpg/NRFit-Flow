@@ -606,6 +606,7 @@ describe('FASE M-09R — Suite de Certificación Pasarela Flow Chile y Desacopla
         id: 'mem-uuid-2',
         gateway_subscription_id: 'sub_test_2',
         status: 'TRIAL',
+        billing_email: 'alumna-prueba@natyentrenadora.com',
       });
 
       const mockClient = {
@@ -677,7 +678,7 @@ describe('FASE M-09R — Suite de Certificación Pasarela Flow Chile y Desacopla
   // 9. CONFIGURACIÓN DE DOMINIO Y CORREO (.COM)
   // ============================================================================
   describe('9. Dominio Canónico y Correo Oficial .com', () => {
-    it('El correo oficial configurado en el mailer es team@natyentrenadora.com', async () => {
+    it('El correo oficial configurado en el mailer usa el dominio .com', async () => {
       const emailRes = await sendEmail({
         to: 'test@example.com',
         templateId: 'trial_welcome',
@@ -687,9 +688,9 @@ describe('FASE M-09R — Suite de Certificación Pasarela Flow Chile y Desacopla
       assert.strictEqual(emailRes.success, true);
     });
 
-    it('No existen referencias activas a natyentrenadora.cl en la configuración', () => {
+    it('La URL pública predeterminada usa natyentrenadora.com', () => {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://natyentrenadora.com';
-      assert.strictEqual(appUrl.includes('natyentrenadora.cl'), false);
+      assert.strictEqual(appUrl, 'https://natyentrenadora.com');
     });
   });
 
@@ -860,4 +861,3 @@ describe('FASE M-09R — Suite de Certificación Pasarela Flow Chile y Desacopla
     });
   });
 });
-

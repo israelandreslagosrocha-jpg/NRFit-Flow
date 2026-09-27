@@ -5,6 +5,7 @@ import { AuthProvider } from '../context/AuthContext';
 import { UserDataProvider } from '../context/UserDataContext';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://natyentrenadora.com'),
   title: 'Naty Entrenadora | Entrena para la vida que tienes',
   description: 'Entrenamiento online continuo para mujeres que quieren recuperar fuerza, energía, movilidad y constancia.',
 };

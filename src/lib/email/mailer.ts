@@ -1,5 +1,10 @@
 import tls from 'tls';
-import { renderEmailTemplate, type EmailTemplateId } from './types.ts';
+import {
+  getOfficialEmailDomain,
+  getOfficialSenderEmail,
+  renderEmailTemplate,
+  type EmailTemplateId,
+} from './types.ts';
 
 export interface SendEmailParams {
   to: string;
@@ -27,7 +32,7 @@ export function setMockSmtpFailure(fail: boolean) {
 
 /**
  * Envío de correos mediante Hostinger SMTP (smtp.hostinger.com)
- * Casilla oficial: team@natyentrenadora.com
+ * Casilla oficial configurable mediante EMAIL_FROM.
  * Soporta TLS 1.2+ con validación estricta de certificados x509 (rejectUnauthorized: true).
  */
 export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
@@ -43,10 +48,11 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   const { subject, html } = renderEmailTemplate(params.templateId, params.payload);
   const host = process.env.SMTP_HOST || 'smtp.hostinger.com';
   const port = parseInt(process.env.SMTP_PORT || '465', 10);
-  const user = process.env.SMTP_USER || 'team@natyentrenadora.com';
+  const sender = process.env.EMAIL_FROM || getOfficialSenderEmail();
+  const user = process.env.SMTP_USER || sender;
   const pass = process.env.SMTP_PASS;
 
-  const msgId = params.messageId || `<msg-${Date.now()}.${Math.random().toString(36).slice(2)}@natyentrenadora.com>`;
+  const msgId = params.messageId || `<msg-${Date.now()}.${Math.random().toString(36).slice(2)}@${getOfficialEmailDomain()}>`;
 
   // Si no hay credenciales configuradas (modo local/test), simular despacho exitoso
   if (!pass) {
@@ -81,7 +87,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
 
             if (step === 0 && lastLine.startsWith('220')) {
               step++;
-              send(`EHLO natyentrenadora.com`);
+              send(`EHLO ${getOfficialEmailDomain()}`);
             } else if (step === 1 && lastLine.startsWith('250')) {
               step++;
               send('AUTH LOGIN');
@@ -93,7 +99,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
               send(Buffer.from(pass).toString('base64'));
             } else if (step === 4 && lastLine.startsWith('235')) {
               step++;
-              send(`MAIL FROM:<${user}>`);
+              send(`MAIL FROM:<${sender}>`);
             } else if (step === 5 && lastLine.startsWith('250')) {
               step++;
               send(`RCPT TO:<${params.to}>`);
@@ -103,7 +109,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
             } else if (step === 7 && lastLine.startsWith('354')) {
               step++;
               const emailData = [
-                `From: "Team Naty Entrenadora" <${user}>`,
+                `From: "Team Naty Entrenadora" <${sender}>`,
                 `To: <${params.to}>`,
                 `Subject: ${subject}`,
                 `Message-ID: ${msgId}`,
@@ -174,4 +180,3 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
     }
   });
 }
-

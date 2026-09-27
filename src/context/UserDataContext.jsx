@@ -125,11 +125,11 @@ export function UserDataProvider({ children }) {
 
   // Admin Students List
   const [studentsList, setStudentsList] = useState([
-    { id: 's_01', name: 'Carolina Martínez', email: 'carolina@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-08-25', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' },
-    { id: 's_02', name: 'Valentina Silva', email: 'valentina@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-08-28', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100' },
-    { id: 's_03', name: 'Camila Rojas', email: 'camila@ejemplo.com', plan: 'Team Naty Online', status: 'Pago Pendiente', renewalDate: '2026-08-10', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100' },
-    { id: 's_04', name: 'Mariana Gómez', email: 'mariana@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-09-01', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100' },
-    { id: 's_05', name: 'Lucía Fernández', email: 'lucia@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-08-30', totalPaid: '$25.000 CLP', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100' }
+    { id: 's_01', name: 'Carolina Martínez', email: 'carolina@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-08-25', totalPaid: '$21.000 CLP', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' },
+    { id: 's_02', name: 'Valentina Silva', email: 'valentina@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-08-28', totalPaid: '$21.000 CLP', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100' },
+    { id: 's_03', name: 'Camila Rojas', email: 'camila@ejemplo.com', plan: 'Team Naty Online', status: 'Pago Pendiente', renewalDate: '2026-08-10', totalPaid: '$21.000 CLP', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100' },
+    { id: 's_04', name: 'Mariana Gómez', email: 'mariana@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-09-01', totalPaid: '$21.000 CLP', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100' },
+    { id: 's_05', name: 'Lucía Fernández', email: 'lucia@ejemplo.com', plan: 'Team Naty Online', status: 'Activa', renewalDate: '2026-08-30', totalPaid: '$21.000 CLP', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100' }
   ]);
 
   const toggleFavorite = (workoutId) => {

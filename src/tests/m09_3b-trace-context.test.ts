@@ -319,6 +319,7 @@ describe('FASE M-09.3B — TraceContext y Propagación de trace_id', () => {
       gateway_subscription_id: 'sub-flow-888',
       gateway_customer_id: 'cus-flow-888',
       trace_id: originalTraceId,
+      billing_email: 'alumna-trace-1@natyentrenadora.com',
     });
 
     // Flow S2S responde pago exitoso SIN trace_id ni metadata arbitraria
@@ -376,6 +377,7 @@ describe('FASE M-09.3B — TraceContext y Propagación de trace_id', () => {
       gateway_subscription_id: 'sub-flow-999',
       gateway_customer_id: 'cus-flow-999',
       trace_id: genuineTraceId,
+      billing_email: 'alumna-trace-2@natyentrenadora.com',
     });
 
     const mockGateway = createMockGateway({
@@ -495,6 +497,7 @@ describe('FASE M-09.3B — TraceContext y Propagación de trace_id', () => {
       gateway: 'FLOW',
       gateway_subscription_id: 'sub-flow-idem',
       trace_id: originalTraceId,
+      billing_email: 'alumna-trace-3@natyentrenadora.com',
     });
 
     const mockGateway = createMockGateway({

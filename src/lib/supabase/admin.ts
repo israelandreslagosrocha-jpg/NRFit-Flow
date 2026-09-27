@@ -7,8 +7,14 @@ import { createClient } from '@supabase/supabase-js';
  */
 export function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://wqsmimxjnfanrenlhdgx.supabase.co';
-  // En producción se usa SUPABASE_SERVICE_ROLE_KEY; si no está definida en dev/test, fallback a anon key
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  // Nunca degradar operaciones privilegiadas a la anon key: una operación de
+  // pagos, contenido o administración debe fallar explícitamente si el entorno
+  // no fue configurado con una credencial de servidor.
+  if (!supabaseServiceKey) {
+    throw new Error('SERVER_CONFIGURATION_ERROR: SUPABASE_SERVICE_ROLE_KEY is required for privileged operations.');
+  }
 
   return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {

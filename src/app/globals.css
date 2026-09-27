@@ -1,29 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
-
 /* --- DESIGN SYSTEM TOKENS --- */
 :root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading: var(--font-sans);
   /* Colors */
-  --primary: #E91E63;
-  --primary-rgb: 233, 30, 99;
-  --primary-hover: #D81B60;
+  /* Naty Entrenadora — official identity */
+  --brand-black: #0B0B0B;
+  --brand-pink: #FF4FB8;
+  --brand-warm-white: #FFF7F3;
+  --brand-soft-rose: #E9B4C0;
+  --primary: var(--brand-pink);
+  --primary-rgb: 255, 79, 184;
+  --primary-hover: #E63EA3;
   
   /* Dark Theme Tokens (Default) */
-  --bg-dark: #09090b;
-  --bg-dark-card: rgba(20, 20, 25, 0.6);
-  --border-dark: rgba(255, 255, 255, 0.08);
-  --text-dark-primary: #f4f4f5;
-  --text-dark-secondary: #a1a1aa;
-  --text-dark-muted: #71717a;
+  --bg-dark: var(--brand-warm-white);
+  --bg-dark-card: #FFFFFF;
+  --border-dark: rgba(11, 11, 11, 0.12);
+  --text-dark-primary: var(--brand-black);
+  --text-dark-secondary: #554B50;
+  --text-dark-muted: #7D7075;
   
   /* Light Theme Tokens */
-  --bg-light: #ffffff;
-  --bg-light-card: rgba(248, 250, 252, 0.8);
-  --border-light: rgba(0, 0, 0, 0.06);
-  --text-light-primary: #0f172a;
-  --text-light-secondary: #475569;
-  --text-light-muted: #94a3b8;
+  --bg-light: var(--brand-warm-white);
+  --bg-light-card: #FFFFFF;
+  --border-light: rgba(11, 11, 11, 0.12);
+  --text-light-primary: var(--brand-black);
+  --text-light-secondary: #554B50;
+  --text-light-muted: #7D7075;
 
-  /* Current Active Variables (Dark Mode default) */
+  /* Warm editorial mode is the default across the product. */
   --background: var(--bg-dark);
   --card-bg: var(--bg-dark-card);
   --border: var(--border-dark);
@@ -43,7 +48,7 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 30px rgba(233, 30, 99, 0.15);
+  --shadow-glow: 0 12px 28px rgba(255, 79, 184, 0.23);
 }
 
 /* Light theme overrides (can be toggled via class) */
@@ -68,19 +73,20 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
+  overflow-x: clip;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
   background-color: var(--background);
   color: var(--text);
-  overflow-x: hidden;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  overflow-x: clip;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -97,6 +103,25 @@ a {
   color: inherit;
   text-decoration: none;
   transition: var(--transition-fast);
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(255, 163, 196, 0.95);
+  outline-offset: 3px;
 }
 
 /* Custom Scrollbar */
@@ -153,11 +178,12 @@ a {
   cursor: pointer;
   border: 1px solid transparent;
   gap: 8px;
+  min-height: 44px;
 }
 
 .btn-primary {
   background: var(--primary);
-  color: #ffffff;
+  color: #0B0B0B;
   box-shadow: var(--shadow-glow);
 }
 
@@ -168,13 +194,13 @@ a {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+  background: #FFFFFF;
   border: 1px solid var(--border);
   color: var(--text);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: #FFF0F8;
   transform: translateY(-2px);
 }
 
@@ -188,11 +214,9 @@ a {
   font-size: 1.1rem;
 }
 
-/* Cards & Glassmorphism */
+/* Cards use opaque surfaces for legibility. Blur is reserved for the sticky navigation. */
 .glass-card {
   background: var(--card-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 32px;
@@ -200,7 +224,7 @@ a {
 }
 
 .glass-card:hover {
-  border-color: rgba(233, 30, 99, 0.25);
+  border-color: rgba(255, 79, 184, 0.5);
   transform: translateY(-4px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
@@ -215,8 +239,8 @@ a {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: rgba(233, 30, 99, 0.1);
-  border: 1px solid rgba(233, 30, 99, 0.2);
+  background: rgba(255, 79, 184, 0.11);
+  border: 1px solid rgba(255, 79, 184, 0.3);
   color: var(--primary);
 }
 
@@ -228,7 +252,7 @@ a {
 .form-control {
   width: 100%;
   padding: 14px 20px;
-  background: rgba(255, 255, 255, 0.03);
+  background: #FFFFFF;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text);
@@ -240,8 +264,8 @@ a {
 .form-control:focus {
   outline: none;
   border-color: var(--primary);
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 15px rgba(233, 30, 99, 0.1);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(255, 79, 184, 0.15);
 }
 
 /* Animations */
@@ -294,4 +318,17 @@ a {
   }
   h1 { font-size: 2.5rem; }
   h2 { font-size: 1.8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
       <div className="auth-brand">
         <Link href="/">
           <img
-            src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png"
+            src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp"
             alt="Naty Entrenadora"
             className="auth-logo-img"
           />

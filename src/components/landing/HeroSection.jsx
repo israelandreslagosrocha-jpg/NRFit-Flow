@@ -1,10 +1,30 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Sparkles, Play, Radio, Flame, Users } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Sparkles, Radio, Flame, Users } from 'lucide-react';
 
 export default function HeroSection() {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const syncVideoMotion = () => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      if (mediaQuery.matches) {
+        video.pause();
+      } else {
+        video.play().catch(() => undefined);
+      }
+    };
+
+    syncVideoMotion();
+    mediaQuery.addEventListener('change', syncVideoMotion);
+    return () => mediaQuery.removeEventListener('change', syncVideoMotion);
+  }, []);
+
   return (
     <section className="hero-wrapper">
       <div className="landing-container">
@@ -37,18 +57,18 @@ export default function HeroSection() {
             {/* Price Tag & Founder Offer */}
             <div className="hero-price-tag">
               <div>
-                <span className="hero-price-val">$25.000</span>
+                <span className="hero-price-val">$21.000</span>
                 <span style={{ fontSize: '0.85rem', color: 'var(--nt-text-secondary)' }}> CLP / mes</span>
               </div>
-              <span className="hero-price-old">$29.000</span>
-              <span className="hero-price-badge">PRECIO FUNDADOR</span>
+              <span className="hero-price-old">$25.000</span>
+              <span className="hero-price-badge">PREVENTA</span>
             </div>
 
             {/* CTAs */}
             <div className="hero-actions">
-              <a href="#oferta" className="nt-btn nt-btn-primary">
+              <Link href="/auth/register?trial=true" className="nt-btn nt-btn-primary" data-conversion-event="enrollment_start" data-conversion-placement="hero">
                 QUIERO SER PARTE DEL TEAM <ArrowRight size={18} />
-              </a>
+              </Link>
               <a href="#como-funciona" className="nt-btn nt-btn-secondary">
                 CONOCE CÓMO FUNCIONA
               </a>
@@ -57,7 +77,7 @@ export default function HeroSection() {
             {/* Trust Micro-Indicators */}
             <div className="hero-guarantee-note">
               <ShieldCheck size={16} style={{ color: 'var(--nt-pink)' }} />
-              <span>Sin compromisos de permanencia. Cancela cuando quieras en 1 clic.</span>
+              <span>Sin contrato de permanencia. Verás las condiciones de tu membresía antes de confirmar.</span>
             </div>
 
           </div>
@@ -82,11 +102,13 @@ export default function HeroSection() {
               {/* Video Player Frame with Native Ambient Overlay */}
               <div className="hero-video-frame">
                 <video 
+                  ref={videoRef}
                   src="https://res.cloudinary.com/dhgifjpkh/video/upload/v1774498942/gap_1_m9t9xn.mp4" 
                   autoPlay 
                   muted 
                   loop 
                   playsInline 
+                  preload="metadata"
                   className="hero-video-element"
                 />
                 <div className="hero-video-overlay-gradient"></div>
@@ -100,7 +122,7 @@ export default function HeroSection() {
                 {/* Floating Streak Badge Top Right */}
                 <div className="hero-float-streak-badge">
                   <Flame size={14} style={{ color: 'var(--nt-pink)' }} />
-                  <span>3 Semanas Activa</span>
+                  <span>Ritmo a tu medida</span>
                 </div>
 
                 {/* Bottom Overlay Info */}
@@ -128,7 +150,7 @@ export default function HeroSection() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E' }}></span>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#22C55E' }}>SALA ABIERTA</span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#22C55E' }}>ACCESO DESDE TU PORTAL</span>
                 </div>
               </div>
 

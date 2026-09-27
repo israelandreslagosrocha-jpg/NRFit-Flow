@@ -59,25 +59,25 @@ export default function TerminosPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold text-white">3. Membresía, Período de Prueba y Cobros Recurrentes</h2>
+            <h2 className="text-xl font-bold text-white">3. Membresía, Período de Prueba y Pagos</h2>
             <p>
-              <strong>Prueba Gratuita de 7 Días:</strong> Toda nueva alumna tiene derecho a un período de prueba de 7 días continuos sin costo (\$0 CLP hoy). Al registrarse, se autoriza la suscripción recurrente a través de la pasarela autorizada (Mercado Pago Subscriptions Chile).
+              <strong>Oferta y período de prueba:</strong> Si una inscripción incluye una prueba gratuita de 7 días, su duración, precio posterior y requisitos se mostrarán de forma visible antes de la confirmación. La disponibilidad de una prueba depende de la oferta vigente informada en el checkout.
             </p>
             <p>
-              <strong>Membresía Mensual Oficial:</strong> Concluidos los 7 días de prueba sin que medie cancelación previa, la membresía se renovará automáticamente de forma mensual con un valor oficial de <strong>\$25.000 CLP</strong> (veinticinco mil pesos chilenos) por cada período mensual de 30 días.
+              <strong>Membresía mensual:</strong> El monto aplicable, la frecuencia, el medio de pago y la modalidad de renovación se informarán antes de que la alumna confirme su inscripción. Ninguna condición de renovación se aplicará de manera distinta a la mostrada en ese momento.
             </p>
             <p>
-              <strong>Idempotencia y Facturación:</strong> Todos los cobros se procesan de forma electrónica y segura mediante la pasarela de pagos oficial (Flow Chile / Webpay). No se almacenan datos sensibles de tarjetas ni números de cuenta en los servidores de Naty Entrenadora.
+              <strong>Facturación:</strong> Los cobros, cuando estén habilitados, se procesarán mediante la pasarela de pago indicada en el checkout. Naty Entrenadora no almacena datos sensibles de tarjetas ni números de cuenta en sus servidores.
             </p>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">4. Cancelación y No Compromiso</h2>
             <p>
-              La alumna puede cancelar su suscripción en cualquier momento y de forma autónoma desde su perfil en la plataforma o mediante comunicación escrita a <strong>team@natyentrenadora.com</strong>.
+              La alumna podrá solicitar la cancelación por el canal indicado en el checkout y mediante comunicación escrita a <strong>team@natyentrenadora.com</strong>. Las instrucciones específicas estarán disponibles antes de la confirmación de pago.
             </p>
             <p>
-              La cancelación detiene futuros cobros automáticos de manera inmediata. Si la cancelación se produce durante los 7 días de prueba, el cobro será de \$0 CLP. Si se produce durante un período activo ya facturado, el acceso se mantendrá hasta el término del ciclo en curso sin reembolsos proporcionales, salvo las garantías legales imperativas aplicables.
+              Los efectos de una cancelación —incluida la vigencia de acceso y eventuales cobros futuros— se informarán de acuerdo con la modalidad de pago habilitada y sin afectar las garantías legales imperativas aplicables.
             </p>
           </section>
 

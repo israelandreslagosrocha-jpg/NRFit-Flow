@@ -24,13 +24,13 @@ export default function PostParto() {
     { title: 'Reeducación del Transverso Abdominal', desc: 'Activación profunda del core profundo para recuperar el tono muscular de la faja abdominal sin aumentar la presión.', icon: <Activity className="pillar-icon-pink" /> },
     { title: 'Fortalecimiento de Suelo Pélvico', desc: 'Ejercicios específicos para tonificar la musculatura perineal, previniendo incontinencias y disfunciones.', icon: <Heart className="pillar-icon-pink" /> },
     { title: 'Control de la Diástasis Abdominal', desc: 'Rutinas orientadas al cierre fisiológico de la separación de los rectos abdominales post-embarazo.', icon: <ShieldCheck className="pillar-icon-pink" /> },
-    { title: 'Progresión Segura Sin Impacto', desc: 'Cero saltos ni crunchs abdominales en las primeras fases. Ejercicios controlados de bajo impacto.', icon: <UserCheck className="pillar-icon-pink" /> }
+    { title: 'Progresión Segura Sin Impacto', desc: 'Cero saltos ni crunchs abdominales en las primeras etapas. Ejercicios controlados de bajo impacto.', icon: <UserCheck className="pillar-icon-pink" /> }
   ];
 
   const faqs = [
     { q: '¿Cuándo puedo comenzar a entrenar después de dar a luz?', a: 'Por seguridad, debes contar con la autorización de tu ginecólogo o matrona. Por lo general, se sugiere esperar 6 semanas si fue parto vaginal, y entre 8 a 10 semanas si fue cesárea.' },
-    { q: '¿El programa sirve si tuve cesárea?', a: 'Absolutamente. El programa cuenta con una fase especial de movilización de la cicatriz de la cesárea y ejercicios específicos para reconectar la faja abdominal que fue seccionada.' },
-    { q: '¿Cómo son los entrenamientos?', a: 'Son clases grabadas en video de 20 a 30 minutos de duración. Están explicadas paso a paso por Naty para asegurar la postura y técnica correctas.' },
+    { q: '¿El programa sirve si tuve cesárea?', a: 'Absolutamente. El programa cuenta con una etapa especial de movilización de la cicatriz de la cesárea y ejercicios específicos para reconectar la faja abdominal que fue seccionada.' },
+    { q: '¿Cómo son los entrenamientos?', a: 'Son clases grabadas en video de entre 10 y 40 minutos de duración. Están explicadas paso a paso por Naty para asegurar la postura y técnica correctas.' },
     { q: '¿Las rutinas afectan la lactancia?', a: 'En absoluto. Son entrenamientos progresivos de intensidad moderada que no interfieren en la producción ni calidad de la leche materna.' }
   ];
 
@@ -102,7 +102,7 @@ export default function PostParto() {
                 <div className="success-icon">✓</div>
                 <h3>¡Evaluación Completada!</h3>
                 <p style={{ margin: '15px 0', fontSize: '0.95rem' }}>
-                  Hola <strong>{formData.name}</strong>, el sistema ha clasificado tu caso de <strong>{formData.weeks} semanas post-parto ({formData.type === 'cesarea' ? 'Cesárea' : 'Parto Normal'})</strong> como apto para la <strong>Fase 1 de Reactivación Core</strong>.
+                  Hola <strong>{formData.name}</strong>, revisa con tu profesional de salud tus <strong>{formData.weeks} semanas post-parto ({formData.type === 'cesarea' ? 'Cesárea' : 'Parto Normal'})</strong> antes de comenzar el <strong>plan inicial de Reactivación Core</strong>.
                 </p>
                 <div className="recommendation-strip">
                   <strong>Plan Recomendado:</strong> Post Parto Seguro ($22.000/mes)
@@ -123,7 +123,7 @@ export default function PostParto() {
             <span className="badge">REHABILITACIÓN Y FUERZA</span>
             <h2 className="section-title">Pilares de tu Recuperación</h2>
             <p className="section-subtitle">
-              Cada fase está estructurada para rehabilitar la musculatura del core antes de entrenar con cargas.
+              Cada etapa está estructurada para rehabilitar la musculatura del core antes de entrenar con cargas.
             </p>
           </div>
 
@@ -150,7 +150,7 @@ export default function PostParto() {
             <h3>Membresía Mensual Post Parto</h3>
             <div className="price-number-pink">$22.000 <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ mes</span></div>
             <ul className="bullet-list-center" style={{ listStyle: 'none', margin: '20px 0', padding: 0 }}>
-              <li>✓ Videoteca de clases grabadas (20-30 min)</li>
+              <li>✓ Videoteca de clases grabadas (10–40 min)</li>
               <li>✓ Asesoría clínica de diástasis inicial</li>
               <li>✓ Guía de alimentación post parto en PDF</li>
               <li>✓ Canal exclusivo con matronas</li>

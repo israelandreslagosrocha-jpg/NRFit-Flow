@@ -104,7 +104,7 @@ async function handleFlowReturn(req: NextRequest) {
     }
 
     // 4. Crear la suscripción oficial en Flow con 7 días de Trial
-    const flowPlanId = process.env.FLOW_PLAN_ID || 'naty-mensual-25k-v1';
+    const flowPlanId = process.env.FLOW_PLAN_ID || 'naty-mensual-preventa-21k-v1';
     const sub = await gateway.createSubscription({
       planId: flowPlanId,
       customerId: regStatus.customerId,
@@ -134,7 +134,7 @@ async function handleFlowReturn(req: NextRequest) {
       payload: {
         studentName: user.user_metadata?.full_name || 'Alumna',
         trialEndsAt,
-        amount: membership.price_contracted || 25000,
+        amount: membership.price_contracted || 21000,
         cardLast4: regStatus.last4CardDigits,
       },
     });

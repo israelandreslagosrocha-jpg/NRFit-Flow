@@ -35,26 +35,11 @@ export default async function StudentDashboardLayout({
 
   const { profile, student } = resolution;
 
-  // Si el perfil no es de rol estudiante (ej: ADMIN, OWNER, COACH), permitir acceso administrativo
+  // El portal administrativo tiene su propia ruta y autorización. No se debe
+  // renderizar una vista de alumna con datos ficticios para una cuenta staff.
   const isStaff = profile && ['ADMIN', 'OWNER', 'COACH'].includes(profile.role);
   if (isStaff) {
-    const staffUser = {
-      id: profile.id,
-      full_name: profile.full_name,
-      email: user.email,
-      role: profile.role,
-    };
-
-    return (
-      <div className="alumna-dashboard-layout container">
-        <HeaderDashboard serverUser={staffUser} />
-        <div className="dashboard-content-wrapper">
-          <SidebarAlumna />
-          <main className="dashboard-main-view">{children}</main>
-        </div>
-        <BottomNavAlumna />
-      </div>
-    );
+    redirect('/admin');
   }
 
   // 3. Validación estricta de membresía server-side

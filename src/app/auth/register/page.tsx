@@ -79,7 +79,7 @@ function RegisterForm() {
       <div className="auth-brand">
         <Link href="/">
           <img
-            src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/NR_logo_zluqwc.png"
+            src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp"
             alt="Naty Entrenadora"
             className="auth-logo-img"
           />
@@ -160,7 +160,7 @@ function RegisterForm() {
 
           {/* Onboarding de preferencias de entrenamiento (Cero datos médicos) */}
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem', marginTop: '0.5rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#ff2d78', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#C52E88', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Personalización de tu inicio
             </span>
           </div>
@@ -203,7 +203,7 @@ function RegisterForm() {
             >
               <option value="energia">Recuperar energía y sentirme ágil en mi día</option>
               <option value="fuerza">Ganar fuerza, postura y firmeza muscular</option>
-              <option value="habito">Crear el hábito sostenible de entrenar 35 min sin culpas</option>
+              <option value="habito">Crear el hábito sostenible de entrenar sin culpas</option>
             </select>
           </div>
 

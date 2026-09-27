@@ -13,7 +13,7 @@ export default function ParadigmShiftSection() {
   ];
 
   const afterPoints = [
-    "Sesiones de 20 a 45 minutos que caben en cualquier hueco de tu rutina.",
+    "Sesiones de 10 a 40 minutos que caben en cualquier hueco de tu rutina.",
     "Empezar desde donde estás hoy, con el equipamiento que tengas a mano.",
     "Un sistema continuo sin fechas de vencimiento: si fallas un día, la semana sigue.",
     "Clases estructuradas con foco en fuerza, postura, movilidad y energía duradera.",
@@ -21,7 +21,7 @@ export default function ParadigmShiftSection() {
   ];
 
   return (
-    <section className="landing-section" style={{ background: '#08080A' }}>
+    <section className="landing-section" style={{ background: '#FBE7EE' }}>
       <div className="landing-container">
         
         {/* Header */}
@@ -64,7 +64,7 @@ export default function ParadigmShiftSection() {
               {afterPoints.map((point, idx) => (
                 <li key={idx} className="paradigm-item">
                   <CheckCircle2 size={18} color="var(--nt-pink)" className="paradigm-item-icon" />
-                  <span style={{ color: '#FFFFFF' }}>{point}</span>
+                  <span>{point}</span>
                 </li>
               ))}
             </ul>

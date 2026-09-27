@@ -16,14 +16,14 @@ export default function FaqSection() {
     },
     {
       q: "¿Cuánto dura una clase?",
-      a: "Las clases duran entre 20 y 60 minutos, dependiendo de la planificación semanal y tu nivel actual. Siempre verás la duración exacta y el nivel antes de presionar play para que puedas organizar tu tiempo con certeza."
+      a: "Las clases duran entre 10 y 40 minutos, dependiendo de la planificación semanal y tu nivel actual. Siempre verás la duración exacta y el nivel antes de presionar play para que puedas organizar tu tiempo con certeza."
     },
     {
       q: "¿Qué implementos necesito para comenzar?",
       a: "Puedes comenzar 100% con tu peso corporal y una botella de agua. Conforme vayas ganando fuerza, Natalia te sugerirá implementos sencillos y económicos como bandas elásticas o mancuernas ligeras para seguir progresando."
     },
     {
-      q: "¿Qué ocurre si no puedo asistir al LIVE de los martes o jueves a las 20:00?",
+      q: "¿Qué ocurre si no puedo asistir al LIVE de los lunes o miércoles a las 20:00?",
       a: "No pasa nada. Todas las clases en vivo quedan grabadas y subidas a tu videoteca personal en la plataforma dentro de las 24 horas siguientes. Puedes hacerla al día siguiente en el horario que mejor se adapte a tu rutina."
     },
     {
@@ -40,28 +40,28 @@ export default function FaqSection() {
     },
     {
       q: "¿Qué ocurre durante y después de los 7 días de prueba?",
-      a: "Durante los 7 días tienes acceso completo a la plataforma, clases en vivo, grabadas y comunidad. Al terminar el período de prueba, si decides quedarte, se activa tu membresía con tu precio fundador de $25.000 CLP. Si cancelas antes de que terminen los 7 días, tu costo es $0."
+      a: "Durante los 7 días tienes acceso completo a la plataforma, clases en vivo, grabadas y comunidad. Al terminar el período de prueba, si decides quedarte, se aplica la oferta de preventa de $21.000 CLP/mes que se te muestre antes de confirmar. Si cancelas antes de que terminen los 7 días, tu costo es $0."
     },
     {
       q: "¿Cuánto cuesta la membresía y qué incluye?",
-      a: "El precio regular es de $29.000 CLP/mes, pero durante esta etapa de Primera Generación accedes al precio fundador de $25.000 CLP/mes. Incluye 3 entrenamientos semanales, videoteca completa, portal personal de alumna, comunidad Team Naty y soporte directo con Natalia."
+      a: "El precio regular es de $25.000 CLP/mes, pero durante la preventa accedes a $21.000 CLP/mes. Incluye 5 entrenamientos semanales: 2 clases en vivo por Zoom, 3 entrenamientos grabados, videoteca, portal personal de alumna, comunidad Team Naty y soporte directo con Natalia."
     },
     {
-      q: "¿Qué ocurre con mi precio fundador de $25.000 CLP si continúo?",
-      a: "Lo mantienes de por vida mientras conserves tu membresía activa mes a mes. Nunca te subiremos el precio aunque el plan suba para nuevas alumnas."
+      q: "¿Cuál es el precio de preventa de lanzamiento?",
+      a: "Durante la preventa, la membresía cuesta $21.000 CLP/mes en lugar de $25.000 CLP/mes. Las condiciones aplicables se muestran de forma explícita antes de confirmar tu inscripción."
     },
     {
       q: "¿Cómo funciona el sistema de recompensas y constancia?",
-      a: "Premiamos tu adherencia, no tu peso en la báscula. Al sumar entrenamientos completados y mantener tus rachas semanales, desbloqueas insignias, cupones especiales y reconocimientos en el Team Naty."
+      a: "El portal reúne tu agenda, contenido publicado y avisos para que puedas sostener el hábito. Las nuevas funciones de reconocimiento se anunciarán dentro de la plataforma cuando estén disponibles."
     },
     {
       q: "¿Puedo cancelar mi membresía cuando quiera?",
-      a: "Sí. Cero contratos forzados ni llamadas incómodas. Puedes pausar o cancelar tu suscripción con un solo clic directamente desde tu perfil en la plataforma en cualquier momento."
+      a: "No hay contrato de permanencia. Las instrucciones y el canal de cancelación aplicables se informarán antes de confirmar el pago y quedarán disponibles en tu portal y en el correo oficial de soporte."
     }
   ];
 
   return (
-    <section id="faq" className="landing-section" style={{ background: '#08080B' }}>
+    <section id="faq" className="landing-section" style={{ background: '#FFF7F3' }}>
       <div className="landing-container">
         
         {/* Header */}
@@ -83,12 +83,14 @@ export default function FaqSection() {
                 className="faq-trigger" 
                 onClick={() => toggle(idx)}
                 aria-expanded={openIdx === idx}
+                aria-controls={`faq-panel-${idx}`}
+                id={`faq-trigger-${idx}`}
               >
                 <span>{faq.q}</span>
                 <span className="faq-icon-arrow">+</span>
               </button>
               {openIdx === idx && (
-                <div className="faq-content">
+                <div className="faq-content" id={`faq-panel-${idx}`} role="region" aria-labelledby={`faq-trigger-${idx}`}>
                   {faq.a}
                 </div>
               )}

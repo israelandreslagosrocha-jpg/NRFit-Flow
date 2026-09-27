@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { AlertTriangle, RefreshCw, CheckCircle2, ArrowRight } from 'lucide-react';
+import { AlertTriangle, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Política de Cancelación y Reembolsos | Naty Entrenadora',
@@ -33,7 +32,7 @@ export default function CancelacionPage() {
             Política de Cancelación y Reembolsos
           </h1>
           <p className="text-sm text-neutral-400">
-            Naty Entrenadora · Precio oficial: $25.000 CLP/mes con 7 días de prueba iniciales ($0 hoy).
+            Naty Entrenadora · Las condiciones, el precio y la modalidad de pago vigentes se mostrarán antes de confirmar la inscripción.
           </p>
         </div>
 
@@ -45,7 +44,7 @@ export default function CancelacionPage() {
               <span>Sin Ataduras</span>
             </div>
             <p className="text-xs text-neutral-400">
-              Puedes cancelar en cualquier momento de manera 100% autónoma desde tu portal de alumna.
+              El canal de cancelación aplicable estará informado antes de confirmar el pago y en el correo oficial de soporte.
             </p>
           </div>
 
@@ -55,7 +54,7 @@ export default function CancelacionPage() {
               <span>Prueba Segura</span>
             </div>
             <p className="text-xs text-neutral-400">
-              Si cancelas dentro de los primeros 7 días de prueba gratuita, el cobro total es de $0 CLP.
+              Si una oferta incluye prueba gratuita, sus condiciones se informarán de manera visible antes de la confirmación.
             </p>
           </div>
 
@@ -65,7 +64,7 @@ export default function CancelacionPage() {
               <span>Soporte Directo</span>
             </div>
             <p className="text-xs text-neutral-400">
-              Si tienes dudas o prefieres ayuda, te atendemos directamente en team@natyentrenadora.com.
+              Si tienes dudas o prefieres ayuda, escríbenos directamente a team@natyentrenadora.com.
             </p>
           </div>
         </div>
@@ -73,50 +72,50 @@ export default function CancelacionPage() {
         {/* Detalle Normativo */}
         <div className="space-y-8 text-sm text-neutral-300 leading-relaxed">
           <section className="space-y-3">
-            <h2 className="text-xl font-bold text-white">1. Cancelación durante la Prueba Gratuita (7 Días)</h2>
+            <h2 className="text-xl font-bold text-white">1. Cancelación durante una Prueba Gratuita</h2>
             <p>
-              Durante el período de prueba de 7 días, la alumna disfruta de acceso completo a todos los beneficios de la plataforma sin costo. Si decides que el programa no se adapta a tus necesidades actuales, puedes cancelar tu suscripción antes del término del séptimo día.
+              Cuando una inscripción incluya una prueba gratuita, su duración, el acceso disponible y el procedimiento para cancelar estarán visibles antes de confirmar el pago. Si decides que el programa no se adapta a tus necesidades actuales, podrás usar el canal indicado en esas condiciones.
             </p>
             <p className="text-emerald-400 font-medium">
-              Efecto: Se cancela la renovación en Flow de forma automática, sin ningún cargo a tu tarjeta (\$0 CLP facturados en total). Mantendrás tu acceso durante los días restantes de prueba.
+              Efecto: La confirmación de cancelación indicará de forma clara el acceso restante y cualquier efecto sobre cobros futuros.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold text-white">2. Cancelación de la Membresía Mensual (\$25.000 CLP)</h2>
+            <h2 className="text-xl font-bold text-white">2. Cancelación de una Membresía Mensual</h2>
             <p>
-              Una vez iniciado el período pagado, la suscripción se renueva mes a mes. Puedes cancelar la renovación en cualquier instante antes de la siguiente fecha de cobro.
+              La modalidad de renovación, si corresponde, se informará antes de confirmar la inscripción. Podrás solicitar la cancelación conforme a ese procedimiento y a la legislación aplicable.
             </p>
             <p>
               Al cancelar una suscripción activa:
             </p>
             <ul className="list-disc pl-5 space-y-1 text-neutral-300">
-              <li>Se suspenden de forma definitiva e inmediata los cargos en los ciclos siguientes.</li>
-              <li>Mantienes el acceso completo a los entrenamientos y al portal hasta el último día del ciclo mensual ya pagado.</li>
-              <li>No se aplican cargos por penalización o cargos de desvinculación.</li>
+              <li>Recibirás una confirmación del estado de la solicitud.</li>
+              <li>Se informará la fecha de término de acceso que corresponda a tu modalidad de pago.</li>
+              <li>Se aplicarán las garantías legales imperativas correspondientes.</li>
             </ul>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">3. Política de Reembolsos y Retracto</h2>
             <p>
-              Dado que se otorga un período de prueba completo de 7 días sin costo (\$0 hoy) para evaluar el servicio antes de cualquier cargo, una vez ejecutado el cobro mensual regular de \$25.000 CLP no se efectúan reembolsos proporcionales por fracciones de mes no utilizadas, conforme a los términos aceptados y a la naturaleza de entrega inmediata de contenidos digitales.
+              Las condiciones de reembolso, si corresponden, se informarán antes de confirmar una operación y se aplicarán sin perjuicio de los derechos irrenunciables de las consumidoras conforme a la legislación chilena.
             </p>
             <p>
-              En caso de eventuales cobros duplicados por incidencia técnica, el equipo de soporte gestionará el reintegro íntegro a través de la pasarela de pagos (Flow) en un plazo máximo de 5 días hábiles tras recibir la notificación en <strong>team@natyentrenadora.com</strong>.
+              Ante cualquier incidencia de cobro, el equipo de soporte revisará el caso tras recibir la notificación en <strong>team@natyentrenadora.com</strong>.
             </p>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">4. Procedimiento para Cancelar</h2>
             <ol className="list-decimal pl-5 space-y-2 text-neutral-300">
-              <li>Inicia sesión con tu cuenta en <Link href="/auth/login" className="text-rose-400 underline">natyentrenadora.com</Link>.</li>
-              <li>Dirígete a tu menú de perfil o membresía y haz clic en <strong>“Cancelar suscripción”</strong>.</li>
-              <li>Confirma la cancelación en la ventana de verificación.</li>
-              <li>Recibirás un correo electrónico de confirmación con el comprobante de cancelación.</li>
+              <li>Revisa las instrucciones de cancelación mostradas en el checkout o en tu portal de alumna.</li>
+              <li>Si el autoservicio está habilitado para tu modalidad, confirma la solicitud desde tu cuenta.</li>
+              <li>Como alternativa, escribe a <strong>team@natyentrenadora.com</strong> desde el correo asociado a tu inscripción.</li>
+              <li>Recibirás una confirmación por el canal correspondiente.</li>
             </ol>
             <p className="pt-2 text-neutral-400 text-xs">
-              Alternativamente, puedes solicitar la cancelación enviando un correo a <strong>team@natyentrenadora.com</strong> con al menos 24 horas hábiles de anticipación a tu fecha de renovación.
+              Esta política es un borrador pre-lanzamiento y debe contar con validación legal antes de su vigencia definitiva.
             </p>
           </section>
         </div>

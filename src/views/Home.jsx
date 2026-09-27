@@ -3,6 +3,7 @@
 import React from 'react';
 import '../components/landing/Landing.css';
 import HeroSection from '../components/landing/HeroSection';
+import PreLaunchCampaignSection from '../components/landing/PreLaunchCampaignSection';
 import IdentificationSection from '../components/landing/IdentificationSection';
 import ParadigmShiftSection from '../components/landing/ParadigmShiftSection';
 import NataliaAuthoritySection from '../components/landing/NataliaAuthoritySection';
@@ -21,34 +22,37 @@ export default function Home() {
       {/* 1. Hero Principal */}
       <HeroSection />
 
-      {/* 2. Identificación y Empatía */}
+      {/* 2. Campaña de preventa: 5 entrenamientos semanales */}
+      <PreLaunchCampaignSection />
+
+      {/* 3. Identificación y Empatía */}
       <IdentificationSection />
 
-      {/* 3. Cambio de Paradigma (Antes vs Después) */}
+      {/* 4. Cambio de Paradigma (Antes vs Después) */}
       <ParadigmShiftSection />
 
-      {/* 4. Natalia Riquelme (Autoridad y Frase Personal) */}
+      {/* 5. Natalia Riquelme (Autoridad y Frase Personal) */}
       <NataliaAuthoritySection />
 
-      {/* 5. Cómo Funciona (Lunes VOD + Martes/Jueves LIVE 20:00) */}
+      {/* 6. Cómo Funciona (3 grabados + 2 sesiones LIVE) */}
       <HowItWorksSection />
 
-      {/* 6. Progresión (20-30 / 30-45 / 45-60 min) */}
+      {/* 7. Entrenamiento adaptable (todas las rutinas: 10–40 min) */}
       <ProgressionSection />
 
-      {/* 7. Vista Previa del Dashboard de Alumna */}
+      {/* 8. Vista Previa del Dashboard de Alumna */}
       <DashboardPreviewSection />
 
-      {/* 8. Comunidad Team Naty */}
+      {/* 9. Comunidad Team Naty */}
       <CommunitySection />
 
-      {/* 9. Testimonios Reales */}
+      {/* 10. Testimonios Reales */}
       <TestimonialsSection />
 
-      {/* 10. Oferta Oficial ($25.000 CLP Precio Fundador + 7 Días Gratis) */}
+      {/* 11. Oferta oficial de preventa ($21.000 CLP + 7 días gratis) */}
       <OfferPricingSection />
 
-      {/* 11. Preguntas Frecuentes (12 FAQs) */}
+      {/* 12. Preguntas Frecuentes (12 FAQs) */}
       <FaqSection />
 
       {/* 13. CTA Final */}

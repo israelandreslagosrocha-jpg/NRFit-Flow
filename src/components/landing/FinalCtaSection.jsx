@@ -24,7 +24,7 @@ export default function FinalCtaSection() {
             Prueba 7 días gratis y descubre cómo se siente entrenar con un sistema que realmente se adapta a tu vida.
           </p>
 
-          <Link href="/auth/register?trial=true" className="nt-btn nt-btn-primary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.05rem', marginTop: '0.75rem' }}>
+          <Link href="/auth/register?trial=true" className="nt-btn nt-btn-primary" data-conversion-event="enrollment_start" data-conversion-placement="final_cta" style={{ padding: '1.25rem 2.5rem', fontSize: '1.05rem', marginTop: '0.75rem' }}>
             QUIERO SER PARTE DEL TEAM <ArrowRight size={20} />
           </Link>
 
@@ -33,9 +33,9 @@ export default function FinalCtaSection() {
               <ShieldCheck size={16} style={{ color: 'var(--nt-pink)' }} /> 7 días de prueba sin riesgo
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Sparkles size={16} style={{ color: 'var(--nt-pink)' }} /> $25.000 CLP/mes Precio Fundador
+              <Sparkles size={16} style={{ color: 'var(--nt-pink)' }} /> $21.000 CLP/mes Preventa de Lanzamiento
             </span>
-            <span>✓ Cancela cuando quieras</span>
+            <span>✓ Condiciones claras antes de confirmar</span>
           </div>
 
         </div>
