@@ -4,8 +4,10 @@
 -- ==============================================================================
 
 -- 1. Ampliación de enum_membership_status con TRIAL y PAST_DUE
-ALTER TYPE public.enum_membership_status ADD VALUE IF NOT EXISTS 'TRIAL';
-ALTER TYPE public.enum_membership_status ADD VALUE IF NOT EXISTS 'PAST_DUE';
+-- El editor SQL de Supabase rechaza esta subforma cuando el tipo viene
+-- calificado; public está en el search_path del proyecto.
+ALTER TYPE enum_membership_status ADD VALUE IF NOT EXISTS 'TRIAL';
+ALTER TYPE enum_membership_status ADD VALUE IF NOT EXISTS 'PAST_DUE';
 
 -- 2. Evolución de public.memberships para gestión de suscripción y ciclo de vida
 ALTER TABLE public.memberships

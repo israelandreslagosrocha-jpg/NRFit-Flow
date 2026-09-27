@@ -2,9 +2,10 @@
 -- PASO 2: FUNCIONES, TRIGGERS, RPCS Y POLÍTICAS ROW LEVEL SECURITY
 -- ====================================================================
 
--- Asegurar valores de rol si el enum ya existía previamente
-ALTER TYPE public.enum_user_role ADD VALUE IF NOT EXISTS 'OWNER';
-ALTER TYPE public.enum_user_role ADD VALUE IF NOT EXISTS 'GUARDIAN';
+-- OWNER y GUARDIAN ya forman parte de enum_user_role en 01_tables_and_types.sql.
+-- No se repiten ALTER TYPE aquí: el editor SQL de Supabase ejecuta el lote de
+-- migración dentro de su propio contexto transaccional y esta alteración
+-- redundante no es portable en ese flujo.
 
 -- 1. HELPER FUNCTIONS BLINDADAS (SECURITY DEFINER + FAIL CLOSED)
 
