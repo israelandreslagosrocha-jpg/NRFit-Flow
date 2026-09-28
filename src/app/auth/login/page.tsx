@@ -2,13 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/client';
 import { ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { GoogleMark } from '../../../components/auth/GoogleMark';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,57 +43,15 @@ export default function LoginPage() {
       }
 
       if (data?.session) {
-        // La dueña y el equipo autorizado no deben pasar por checkout: su
-        // destino natural es el panel privado. El rol se lee bajo la sesión
-        // autenticada; nunca se confía en un valor enviado por el navegador.
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('user_id', data.session.user.id)
-          .maybeSingle();
-
-        if (profile && ['OWNER', 'ADMIN'].includes(profile.role)) {
-          router.push('/admin');
-          router.refresh();
-          return;
-        }
-
-        // Evaluar membresía de la usuaria para decidir destino
-        const { data: memberships } = await supabase
-          .from('memberships')
-          .select('status, start_date, trial_ends_at, current_period_end, end_date')
-          .order('created_at', { ascending: false });
-
-        const now = new Date();
-        const hasValidAccess = memberships?.some((m) => {
-          const status = (m.status || '').toUpperCase();
-          if (status === 'TRIAL') {
-            return (
-              m.start_date != null &&
-              new Date(m.start_date) <= now &&
-              m.trial_ends_at != null &&
-              new Date(m.trial_ends_at) >= now
-            );
-          }
-          if (status === 'ACTIVE') {
-            const periodEnd = m.current_period_end ?? m.end_date;
-            return (
-              m.start_date != null &&
-              new Date(m.start_date) <= now &&
-              periodEnd != null &&
-              new Date(periodEnd) >= now
-            );
-          }
-          return false;
-        });
-
-        if (hasValidAccess) {
-          router.push('/para-ti');
-        } else {
-          router.push('/checkout');
-        }
-        router.refresh();
+        // La decisión de destino se toma en el servidor tras la creación de
+        // la sesión. Así el rol OWNER/ADMIN no depende de una consulta desde
+        // el navegador y nunca se confunde con una alumna sin membresía.
+        window.location.assign('/auth/post-login');
+        return;
       }
+
+      setErrorMsg('No fue posible establecer tu sesión. Inténtalo nuevamente.');
+      setLoading(false);
     } catch {
       setErrorMsg('Ocurrió un error inesperado al intentar iniciar sesión.');
       setLoading(false);

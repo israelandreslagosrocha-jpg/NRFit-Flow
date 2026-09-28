@@ -54,12 +54,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 4. Si ya está autenticado y visita login o registro, enviar al portal
-  // (El layout server-side de /para-ti evaluará la membresía y mostrará MembershipGate si no tiene acceso)
+  // 4. Si ya está autenticado y visita login o registro, resolver el portal
+  // exclusivamente en servidor. Enviar siempre a /para-ti aquí convertiría a
+  // un OWNER/ADMIN en una alumna antes de comprobar su rol.
   const isAuthPath = pathname === '/auth/login' || pathname === '/auth/register';
   if (isAuthPath && user) {
     const url = request.nextUrl.clone();
-    url.pathname = '/para-ti';
+    url.pathname = '/auth/post-login';
     return NextResponse.redirect(url);
   }
 

@@ -2,13 +2,12 @@
 
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/client';
 import { ArrowRight, CheckCircle2, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { GoogleMark } from '../../../components/auth/GoogleMark';
 
 function RegisterForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const isTrial = searchParams.get('trial') === 'true' || true; // Default to trial for online membership
 
@@ -63,8 +62,8 @@ function RegisterForm() {
 
       // Si Supabase no requiere confirmación de email y devuelve sesión directa
       if (data?.session) {
-        router.push('/checkout');
-        router.refresh();
+        window.location.assign('/auth/post-login');
+        return;
       } else {
         setSuccessMsg('¡Cuenta creada con éxito! Revisa tu bandeja de entrada para confirmar tu correo e iniciar tu prueba.');
         setLoading(false);
