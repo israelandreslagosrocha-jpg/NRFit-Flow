@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/client';
 import { ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
+import { GoogleMark } from '../../../components/auth/GoogleMark';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +13,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('error') === 'google') {
+      setErrorMsg('No fue posible completar el acceso con Google. Inténtalo nuevamente o usa tu correo.');
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,6 +102,23 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setErrorMsg(null);
+    setLoading(true);
+
+    const supabase = createClient();
+    const callbackUrl = new URL('/auth/callback', window.location.origin);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: callbackUrl.toString() },
+    });
+
+    if (error) {
+      setErrorMsg('No pudimos iniciar el acceso con Google. Inténtalo nuevamente o usa tu correo.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="auth-card">
       <div className="auth-brand">
@@ -117,6 +141,13 @@ export default function LoginPage() {
           </div>
         </div>
       )}
+
+      <button type="button" onClick={handleGoogleLogin} disabled={loading} className="auth-google-btn">
+        {loading ? <Loader2 size={18} className="animate-spin" /> : <GoogleMark />}
+        <span>Continuar con Google</span>
+      </button>
+
+      <div className="auth-divider" aria-hidden="true"><span>o continúa con tu correo</span></div>
 
       <form onSubmit={handleLogin} className="auth-form">
         <div className="auth-field-group">

@@ -47,7 +47,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
               "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.flow.cl https://sandbox.flow.cl https://www.flow.cl https://*.mercadopago.com https://http2.mlstatic.com",
               "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
-              "connect-src 'self' https://wqsmimxjnfanrenlhdgx.supabase.co wss://wqsmimxjnfanrenlhdgx.supabase.co https://*.flow.cl https://sandbox.flow.cl https://www.flow.cl https://*.mercadopago.com https://*.mercadopago.cl",
+              "connect-src 'self' https://wqsmimxjnfanrenlhdgx.supabase.co wss://wqsmimxjnfanrenlhdgx.supabase.co https://elehuiymxddorbhwphat.supabase.co wss://elehuiymxddorbhwphat.supabase.co https://*.flow.cl https://sandbox.flow.cl https://www.flow.cl https://*.mercadopago.com https://*.mercadopago.cl",
               "media-src 'self' https://res.cloudinary.com blob:",
               "frame-src 'self' https://*.flow.cl https://sandbox.flow.cl https://www.flow.cl https://*.mercadopago.com https://*.mercadopago.cl",
               "object-src 'none'",

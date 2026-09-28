@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/client';
 import { ArrowRight, CheckCircle2, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { GoogleMark } from '../../../components/auth/GoogleMark';
 
 function RegisterForm() {
   const router = useRouter();
@@ -74,6 +75,25 @@ function RegisterForm() {
     }
   };
 
+  const handleGoogleRegistration = async () => {
+    setErrorMsg(null);
+    setLoading(true);
+
+    const supabase = createClient();
+    const callbackUrl = new URL('/auth/callback', window.location.origin);
+    callbackUrl.searchParams.set('next', '/auth/onboarding');
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: callbackUrl.toString() },
+    });
+
+    if (error) {
+      setErrorMsg('No pudimos crear tu acceso con Google. Inténtalo nuevamente o usa tu correo.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="auth-card" style={{ maxWidth: '520px' }}>
       <div className="auth-brand">
@@ -115,20 +135,28 @@ function RegisterForm() {
       )}
 
       {!successMsg ? (
-        <form onSubmit={handleRegister} className="auth-form">
-          <div className="auth-field-group">
-            <label className="auth-label" htmlFor="reg-name">Nombre y Apellido</label>
-            <input
-              id="reg-name"
-              type="text"
-              required
-              autoComplete="name"
-              placeholder="Ej: Carolina Martínez"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="auth-input"
-            />
-          </div>
+        <>
+          <button type="button" onClick={handleGoogleRegistration} disabled={loading} className="auth-google-btn">
+            {loading ? <Loader2 size={18} className="animate-spin" /> : <GoogleMark />}
+            <span>Continuar con Google</span>
+          </button>
+
+          <div className="auth-divider" aria-hidden="true"><span>o crea tu cuenta con tu correo</span></div>
+
+          <form onSubmit={handleRegister} className="auth-form">
+            <div className="auth-field-group">
+              <label className="auth-label" htmlFor="reg-name">Nombre y Apellido</label>
+              <input
+                id="reg-name"
+                type="text"
+                required
+                autoComplete="name"
+                placeholder="Ej: Carolina Martínez"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="auth-input"
+              />
+            </div>
 
           <div className="auth-field-group">
             <label className="auth-label" htmlFor="reg-email">Correo Electrónico</label>
@@ -207,20 +235,21 @@ function RegisterForm() {
             </select>
           </div>
 
-          <button type="submit" disabled={loading} className="auth-submit-btn">
-            {loading ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                <span>Creando cuenta...</span>
-              </>
-            ) : (
-              <>
-                <span>EMPEZAR MI PRUEBA DE 7 DÍAS</span>
-                <ArrowRight size={18} />
-              </>
-            )}
-          </button>
-        </form>
+            <button type="submit" disabled={loading} className="auth-submit-btn">
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Creando cuenta...</span>
+                </>
+              ) : (
+                <>
+                  <span>EMPEZAR MI PRUEBA DE 7 DÍAS</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </form>
+        </>
       ) : (
         <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
           <Link href="/auth/login" className="auth-submit-btn" style={{ textDecoration: 'none' }}>
