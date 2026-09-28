@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
-import { getStudentProfileByUserId } from '../../../lib/supabase/profile-helpers';
+import {
+  getStudentProfileByUserId,
+  isStaffRole,
+} from '../../../lib/supabase/profile-helpers';
 import { checkStudentMembershipAccess } from '../../../lib/supabase/membership-helpers';
-
-const ADMIN_PORTAL_ROLES = new Set(['OWNER', 'ADMIN']);
 
 function redirectTo(request: NextRequest, path: string) {
   return NextResponse.redirect(new URL(path, request.url));
@@ -29,14 +30,15 @@ export async function GET(request: NextRequest) {
 
   const resolution = await getStudentProfileByUserId(supabase, user.id);
 
-  // Una falla al consultar el rol nunca debe degradarse a un checkout. Eso
-  // evita tratar a una cuenta administrativa como alumna por una condición
-  // transitoria de infraestructura o RLS.
+  // Una falla al consultar el perfil nunca debe degradarse a checkout ni a
+  // onboarding: se cierra el paso hasta que la identidad pueda verificarse.
   if (resolution.error) {
     return redirectTo(request, '/auth/login?error=profile');
   }
 
-  if (resolution.profile && ADMIN_PORTAL_ROLES.has(resolution.profile.role)) {
+  // El rol persistido en profiles (y protegido por RLS) es la única fuente
+  // autorizada para decidir acceso administrativo.
+  if (resolution.profile && isStaffRole(resolution.profile.role)) {
     return redirectTo(request, '/admin');
   }
 

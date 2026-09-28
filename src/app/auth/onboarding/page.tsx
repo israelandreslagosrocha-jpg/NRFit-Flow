@@ -27,6 +27,17 @@ export default function GoogleOnboardingPage() {
         return;
       }
 
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (profile && ['OWNER', 'ADMIN'].includes(profile.role)) {
+        router.replace('/admin');
+        return;
+      }
+
       setCheckingSession(false);
     };
 

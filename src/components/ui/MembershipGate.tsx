@@ -1,7 +1,11 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
-import { ShieldAlert, CheckCircle, Sparkles, LogOut, Mail, ArrowRight } from 'lucide-react';
+import { ShieldAlert, CheckCircle, Mail, ArrowRight } from 'lucide-react';
 import { AccessEvaluation } from '@/lib/supabase/membership-helpers';
+import { AuthSignOutButton } from '../auth/AuthSignOutButton';
+import styles from './MembershipGate.module.css';
 
 interface MembershipGateProps {
   evaluation: AccessEvaluation;
@@ -35,85 +39,74 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-center items-center px-4 py-12">
-      <div className="max-w-lg w-full bg-neutral-900 border border-neutral-800 rounded-3xl p-8 shadow-2xl space-y-6">
-        {/* Header Icon */}
-        <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mx-auto">
-          <ShieldAlert className="w-7 h-7" />
+    <main className={styles.gate}>
+      <section className={styles.card} aria-labelledby="membership-gate-title">
+        <div className={styles.iconWrap} aria-hidden="true">
+          <ShieldAlert size={28} strokeWidth={2.2} />
         </div>
 
-        {/* Title & Diagnostic */}
-        <div className="text-center space-y-2">
-          <span className="inline-block text-xs font-semibold tracking-wider uppercase text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
-            Acceso Requerido · Estado: {status}
+        <header className={styles.header}>
+          <span className={styles.status}>
+            Acceso a entrenamiento · {status === 'NO_MEMBERSHIP' ? 'sin membresía activa' : status}
           </span>
-          <h1 className="text-2xl font-bold tracking-tight text-white">{title}</h1>
-          <p className="text-sm text-neutral-400 leading-relaxed">{description}</p>
-        </div>
+          <h1 id="membership-gate-title">{title}</h1>
+          <p>{description}</p>
+        </header>
 
-        {/* Benefits Card */}
-        <div className="bg-neutral-950/80 rounded-2xl p-5 border border-neutral-800/80 space-y-3">
-          <div className="flex items-center justify-between text-xs text-neutral-400 border-b border-neutral-800 pb-2">
+        <div className={styles.benefits}>
+          <div className={styles.planRow}>
             <span>Membresía Naty Entrenadora</span>
-            <span className="font-semibold text-rose-400">$21.000 CLP / mes</span>
+            <strong>$21.000 CLP / mes</strong>
           </div>
-          <ul className="space-y-2 text-xs text-neutral-300">
-            <li className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <ul>
+            <li>
+              <CheckCircle size={17} aria-hidden="true" />
               <span>7 días de prueba gratuita ($0 hoy)</span>
             </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-rose-400 shrink-0" />
-              <span>Rutinas guiadas en video adaptadas a tu nivel</span>
+            <li>
+              <CheckCircle size={17} aria-hidden="true" />
+              <span>Rutinas guiadas de entre 10 y 40 minutos</span>
             </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-rose-400 shrink-0" />
-              <span>2 clases en vivo y 3 entrenamientos grabados por semana</span>
+            <li>
+              <CheckCircle size={17} aria-hidden="true" />
+              <span>Sesiones en vivo lunes y miércoles + 3 grabadas por semana</span>
             </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <li>
+              <CheckCircle size={17} aria-hidden="true" />
               <span>Cancela en cualquier momento sin compromisos</span>
             </li>
           </ul>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-3 pt-2">
+        <div className={styles.actions}>
           <Link
             href="/checkout"
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold py-3.5 px-6 rounded-2xl shadow-lg transition-all text-sm group"
+            className={styles.primaryAction}
           >
             <span>{ctaText}</span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            <ArrowRight size={18} aria-hidden="true" />
           </Link>
 
-          <div className="flex items-center justify-between text-xs text-neutral-500 pt-2 px-1">
-            <Link
-              href="/auth/login"
-              className="hover:text-neutral-300 transition-colors flex items-center gap-1.5"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Cambiar de cuenta</span>
-            </Link>
+          <div className={styles.secondaryActions}>
+            <AuthSignOutButton className={styles.signOut} />
 
             <a
               href="mailto:team@natyentrenadora.com"
-              className="hover:text-neutral-300 transition-colors flex items-center gap-1.5"
+              className={styles.support}
             >
-              <Mail className="w-3.5 h-3.5" />
+              <Mail size={16} aria-hidden="true" />
               <span>Soporte</span>
             </a>
           </div>
         </div>
 
-        {/* User Context Footer */}
         {userEmail && (
-          <div className="text-center pt-2 border-t border-neutral-800/60 text-[11px] text-neutral-500">
-            Sesión iniciada como: <span className="text-neutral-400">{userEmail}</span>
+          <footer className={styles.session}>
+            Sesión actual: <span>{userEmail}</span>
             {userName && userName !== 'Alumna' ? ` (${userName})` : ''}
-          </div>
+          </footer>
         )}
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

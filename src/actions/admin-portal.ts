@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '../lib/supabase/server';
 import { createAdminClient } from '../lib/supabase/admin';
+import { isTeamNatyLiveDay, isValidIsoDate } from '../lib/team-naty-schedule';
 
 const CONTENT_TYPES = new Set(['VIDEO', 'TIP', 'ARTICLE', 'PDF_GUIDE', 'BONUS']);
 const STAFF_ROLES = new Set(['ADMIN', 'OWNER']);
@@ -25,7 +26,7 @@ function value(formData: FormData, field: string, maxLength: number): string {
 }
 
 function isIsoDate(input: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(input) && !Number.isNaN(Date.parse(`${input}T00:00:00Z`));
+  return isValidIsoDate(input);
 }
 
 function isTime(input: string): boolean {
@@ -61,9 +62,10 @@ async function requireStaff(): Promise<StaffProfile> {
     .from('profiles')
     .select('id, full_name, role')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
-  if (!profile || !STAFF_ROLES.has(profile.role)) {
+  const isStaff = Boolean(profile && STAFF_ROLES.has(profile.role));
+  if (!isStaff) {
     redirect('/para-ti');
   }
 
@@ -177,6 +179,9 @@ export async function createLiveSessionAction(formData: FormData) {
   if (!title || !isIsoDate(sessionDate) || !isTime(startTime) || !zoomUrl) {
     messageRedirect('error', 'Completa título, fecha, hora y un enlace válido de Zoom.');
   }
+  if (!isTeamNatyLiveDay(sessionDate)) {
+    messageRedirect('error', 'Las sesiones en vivo de Team Naty se programan únicamente los lunes y miércoles.');
+  }
   if (!Number.isInteger(maxCapacity) || maxCapacity < 1 || maxCapacity > 10_000) {
     messageRedirect('error', 'La capacidad debe ser un número entre 1 y 10.000.');
   }
@@ -208,7 +213,7 @@ export async function createLiveSessionAction(formData: FormData) {
 
   const recipients = await notifyActiveStudents(
     'Nueva sesión en vivo',
-    `${title}: ${sessionDate} a las ${startTime}. El enlace de Zoom ya está disponible en tu portal.`
+    `${title}: ${sessionDate} a las ${startTime}. Podrás entrar a Zoom desde tu portal 15 minutos antes de la clase.`
   );
 
   revalidatePath('/admin');
@@ -237,4 +242,19 @@ export async function archiveContentAction(formData: FormData) {
   revalidatePath('/admin');
   revalidatePath('/para-ti');
   messageRedirect('success', 'Contenido archivado. Ya no estará visible para las alumnas.');
+}
+
+export async function sendBroadcastNotificationAction(formData: FormData) {
+  await requireStaff();
+  const title = value(formData, 'title', 255);
+  const message = value(formData, 'message', 2000);
+
+  if (!title || !message) {
+    messageRedirect('error', 'Por favor ingresa un título y mensaje para la notificación.');
+  }
+
+  const recipients = await notifyActiveStudents(title, message);
+  revalidatePath('/admin');
+  revalidatePath('/para-ti');
+  messageRedirect('success', `Notificación enviada con éxito a ${recipients} alumna(s).`);
 }

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, CreditCard } from 'lucide-react';
+import { Sparkles, CreditCard, TrendingUp, Video, MessageCircle } from 'lucide-react';
 import './SidebarAlumna.css';
 
 export default function SidebarAlumna() {
@@ -11,6 +11,8 @@ export default function SidebarAlumna() {
 
   const navItems = [
     { path: '/para-ti', label: 'Para ti', icon: Sparkles },
+    { path: '/para-ti#progreso', label: 'Mi Progreso', icon: TrendingUp },
+    { path: '/para-ti#clases', label: 'Clases & Videos', icon: Video },
     { path: '/checkout', label: 'Membresía', icon: CreditCard },
   ];
 
@@ -28,18 +30,28 @@ export default function SidebarAlumna() {
               href={item.path}
               className={`sidebar-item ${isActive ? 'active' : ''}`}
             >
-              <Icon size={20} className="sidebar-icon" />
+              <Icon size={18} className="sidebar-icon" />
               <span className="sidebar-label">{item.label}</span>
             </Link>
           );
         })}
+
+        <div className="sidebar-divider"></div>
+        <span className="sidebar-section-title">COMUNIDAD</span>
+        <a
+          href="mailto:team@natyentrenadora.com?subject=Acceso%20a%20la%20comunidad%20Team%20Naty"
+          className="sidebar-item community-link"
+        >
+          <MessageCircle size={18} className="sidebar-icon green-icon" />
+          <span className="sidebar-label">Solicitar acceso a comunidad</span>
+        </a>
       </div>
 
       <div className="sidebar-footer-card">
         <div className="naty-avatar-wrapper">
-          <img 
-            src="https://images.unsplash.com/photo-1594381898411-846e7d193883?w=120&auto=format&fit=crop&q=80" 
-            alt="Naty Entrenadora" 
+          <img
+            src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp"
+            alt="Logo oficial Naty Entrenadora"
             className="naty-avatar"
           />
           <span className="live-status-dot" title="Naty en línea"></span>

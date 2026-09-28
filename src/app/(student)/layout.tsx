@@ -1,7 +1,10 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '../../lib/supabase/server';
-import { getStudentProfileByUserId, ensureStudentProfile } from '../../lib/supabase/profile-helpers';
+import {
+  getStudentProfileByUserId,
+  ensureStudentProfile,
+} from '../../lib/supabase/profile-helpers';
 import { checkStudentMembershipAccess } from '../../lib/supabase/membership-helpers';
 import { MembershipGate } from '../../components/ui/MembershipGate';
 import HeaderDashboard from '../../components/ui/HeaderDashboard';
@@ -28,6 +31,9 @@ export default async function StudentDashboardLayout({
 
   // 2. Jerarquía de identidad estricta: auth.users.id -> profiles.user_id -> students.profile_id
   let resolution = await getStudentProfileByUserId(supabase, user.id);
+  if (resolution.error) {
+    redirect('/auth/login?error=profile');
+  }
   if (!resolution.profile) {
     // Fallback de aprovisionamiento si el usuario se registró antes del trigger
     resolution = await ensureStudentProfile(supabase, user);
@@ -37,7 +43,7 @@ export default async function StudentDashboardLayout({
 
   // El portal administrativo tiene su propia ruta y autorización. No se debe
   // renderizar una vista de alumna con datos ficticios para una cuenta staff.
-  const isStaff = profile && ['ADMIN', 'OWNER', 'COACH'].includes(profile.role);
+  const isStaff = profile && ['ADMIN', 'OWNER'].includes(profile.role);
   if (isStaff) {
     redirect('/admin');
   }

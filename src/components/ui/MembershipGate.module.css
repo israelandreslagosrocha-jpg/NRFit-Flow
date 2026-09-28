@@ -1,0 +1,203 @@
+.gate {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 5vw, 56px) 20px;
+  background:
+    radial-gradient(circle at 84% 10%, rgba(255, 79, 184, 0.2), transparent 32%),
+    radial-gradient(circle at 12% 92%, rgba(233, 180, 192, 0.38), transparent 34%),
+    var(--brand-warm-white);
+}
+
+.card {
+  width: min(100%, 580px);
+  display: grid;
+  gap: 24px;
+  padding: clamp(26px, 5vw, 42px);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(11, 11, 11, 0.11);
+  border-radius: 28px;
+  box-shadow: 0 28px 70px -42px rgba(11, 11, 11, 0.52);
+}
+
+.iconWrap {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto -8px;
+  color: #b91d71;
+  background: rgba(255, 79, 184, 0.13);
+  border: 1px solid rgba(255, 79, 184, 0.28);
+  border-radius: 18px;
+}
+
+.header {
+  display: grid;
+  gap: 12px;
+  text-align: center;
+}
+
+.status {
+  justify-self: center;
+  padding: 6px 12px;
+  color: #b91d71;
+  background: rgba(255, 79, 184, 0.1);
+  border: 1px solid rgba(255, 79, 184, 0.28);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  max-width: 460px;
+  margin: 0 auto;
+  color: var(--brand-black);
+  font-size: clamp(1.85rem, 5vw, 2.55rem);
+  letter-spacing: -0.055em;
+}
+
+.header p {
+  max-width: 470px;
+  margin: 0 auto;
+  color: #5f5358;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.benefits {
+  padding: 20px;
+  background: #fff8f6;
+  border: 1px solid rgba(11, 11, 11, 0.1);
+  border-radius: 18px;
+}
+
+.planRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(11, 11, 11, 0.1);
+  color: #63575c;
+  font-size: 0.84rem;
+}
+
+.planRow strong {
+  color: #bd2479;
+  text-align: right;
+}
+
+.benefits ul {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: #30292d;
+  font-size: 0.89rem;
+  line-height: 1.4;
+}
+
+.benefits svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--brand-pink);
+}
+
+.actions {
+  display: grid;
+  gap: 16px;
+}
+
+.primaryAction {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 20px;
+  color: var(--brand-black);
+  background: var(--brand-pink);
+  border-radius: 14px;
+  box-shadow: 0 13px 24px -15px rgba(202, 28, 123, 0.74);
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.primaryAction:hover {
+  background: #ef3da9;
+  transform: translateY(-1px);
+}
+
+.secondaryActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.signOut,
+.support {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 0;
+  color: #66585e;
+  background: transparent;
+  border: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.signOut:hover,
+.support:hover {
+  color: #b91d71;
+}
+
+.signOut:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.session {
+  padding-top: 16px;
+  color: #786970;
+  border-top: 1px solid rgba(11, 11, 11, 0.1);
+  font-size: 0.77rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.session span {
+  color: #4a3e44;
+  font-weight: 700;
+}
+
+@media (max-width: 440px) {
+  .card {
+    gap: 20px;
+    border-radius: 22px;
+  }
+
+  .planRow,
+  .secondaryActions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .planRow strong {
+    text-align: left;
+  }
+}

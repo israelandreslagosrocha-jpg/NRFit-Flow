@@ -23,6 +23,13 @@ export interface StudentProfileResolution {
   error?: string;
 }
 
+export const STAFF_ROLES = new Set(['OWNER', 'ADMIN']);
+
+export function isStaffRole(role?: string | null): boolean {
+  if (!role) return false;
+  return STAFF_ROLES.has(role);
+}
+
 /**
  * Resuelve la jerarquía de identidad:
  * auth.users.id -> profiles.user_id -> students.profile_id
