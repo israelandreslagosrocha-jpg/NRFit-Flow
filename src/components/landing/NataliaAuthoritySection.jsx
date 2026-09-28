@@ -33,14 +33,14 @@ export default function NataliaAuthoritySection() {
         
         <div className="natalia-grid">
           
-          {/* Left Column: Official Profile Image of Natalia */}
+          {/* Left Column: Official Naty Entrenadora brand image */}
           <div className="natalia-photo-box">
             <div className="natalia-photo-frame" style={{ background: 'radial-gradient(circle at center, rgba(255, 79, 184, 0.22) 0%, #FBE7EE 80%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
               <img 
-                src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1769188879/Copia_de_NR_logo_image_efdt04.png" 
-                alt="Natalia Riquelme - Fundadora & Entrenadora Principal" 
+                src="https://res.cloudinary.com/dhgifjpkh/image/upload/v1790559219/compressed_Imagen_de_ChatGPT_27_sept_2026_03_13_25_p.m._caggw7.webp"
+                alt="Naty Entrenadora"
                 loading="lazy"
-                        style={{ width: '80%', height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 15px 30px rgba(11,11,11,0.18))' }}
+                style={{ width: '80%', height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 15px 30px rgba(11,11,11,0.18))' }}
               />
             </div>
             <div className="natalia-exp-badge">
