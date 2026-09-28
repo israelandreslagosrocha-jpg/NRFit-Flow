@@ -294,19 +294,57 @@ describe('FASE M-09R — Suite de Certificación Pasarela Flow Chile y Desacopla
   // ============================================================================
   // 2. SALVAGUARDA ACTIVA ANTI-PRODUCCIÓN
   // ============================================================================
-  describe('2. Salvaguarda Activa Anti-Producción', () => {
-    it('Aborta de inmediato si se intenta usar la URL productiva www.flow.cl', () => {
+  describe('2. Salvaguarda Activa de Entorno', () => {
+    it('Aborta de inmediato si se intenta usar la URL productiva con FLOW_ENV=sandbox', () => {
       assert.throws(
         () => assertSandboxGuard('https://www.flow.cl/api', 'sandbox'),
-        /ABORT_PRODUCTION_GUARD: Cobros reales y endpoints productivos de Flow bloqueados en Fase M-09R/
+        /FLOW_CONFIGURATION_ERROR/
       );
     });
 
-    it('Aborta si FLOW_ENV no es sandbox', () => {
-      assert.throws(
-        () => assertSandboxGuard('https://sandbox.flow.cl/api', 'production'),
-        /ABORT_PRODUCTION_GUARD/
-      );
+    it('Aborta producción hasta que exista habilitación explícita', () => {
+      const original = process.env.FLOW_PRODUCTION_ENABLED;
+      delete process.env.FLOW_PRODUCTION_ENABLED;
+      try {
+        assert.throws(
+          () => assertSandboxGuard('https://www.flow.cl/api', 'production'),
+          /ABORT_PRODUCTION_GUARD/
+        );
+      } finally {
+        if (original) process.env.FLOW_PRODUCTION_ENABLED = original;
+      }
+    });
+
+    it('Permite producción sólo con URL canónica y habilitación explícita', () => {
+      const original = process.env.FLOW_PRODUCTION_ENABLED;
+      process.env.FLOW_PRODUCTION_ENABLED = 'true';
+      try {
+        assert.doesNotThrow(() => {
+          assertSandboxGuard('https://www.flow.cl/api', 'production');
+        });
+      } finally {
+        if (original) process.env.FLOW_PRODUCTION_ENABLED = original;
+        else delete process.env.FLOW_PRODUCTION_ENABLED;
+      }
+    });
+
+    it('Rechaza credenciales simuladas si Flow se declara como producción', () => {
+      const originalEnabled = process.env.FLOW_PRODUCTION_ENABLED;
+      process.env.FLOW_PRODUCTION_ENABLED = 'true';
+      try {
+        assert.throws(
+          () => new FlowClient({
+            apiKey: 'MOCK_FLOW_API_KEY',
+            secretKey: 'MOCK_FLOW_SECRET_KEY',
+            baseUrl: 'https://www.flow.cl/api',
+            env: 'production',
+          }),
+          /FLOW_CONFIGURATION_ERROR: credenciales Flow de producción obligatorias/
+        );
+      } finally {
+        if (originalEnabled) process.env.FLOW_PRODUCTION_ENABLED = originalEnabled;
+        else delete process.env.FLOW_PRODUCTION_ENABLED;
+      }
     });
 
     it('Permite operar en entorno sandbox con https://sandbox.flow.cl/api', () => {

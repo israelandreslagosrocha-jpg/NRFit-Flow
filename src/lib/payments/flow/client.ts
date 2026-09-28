@@ -21,20 +21,53 @@ export function getFlowConfig(): FlowConfig {
   };
 }
 
-/**
- * Salvaguarda activa en runtime: Aborta de forma determinista ante cualquier intento
- * de invocar endpoints productivos de Flow o variables que no sean de sandbox en Fase M-09R.
- */
-export function assertSandboxGuard(url: string, envName?: string) {
-  const currentEnv = envName || process.env.FLOW_ENV || 'sandbox';
-  const isProdUrl = url.includes('www.flow.cl') || (!url.includes('sandbox.flow.cl') && !url.includes('localhost') && !url.includes('127.0.0.1'));
+const FLOW_SANDBOX_BASE_URL = 'https://sandbox.flow.cl/api';
+const FLOW_PRODUCTION_BASE_URL = 'https://www.flow.cl/api';
 
-  if (isProdUrl || currentEnv !== 'sandbox') {
-    throw new Error(
-      'ABORT_PRODUCTION_GUARD: Cobros reales y endpoints productivos de Flow bloqueados en Fase M-09R. Exclusivo sandbox.flow.cl'
-    );
+/**
+ * Salvaguarda activa para ambos entornos de Flow.
+ *
+ * Producción exige una habilitación explícita en secretos de Vercel. Así un
+ * cambio accidental de URL, una credencial copiada a Preview o una variable
+ * incompleta no puede comenzar a cobrar tarjetas reales.
+ */
+export function assertFlowRuntimeGuard(url: string, envName?: string) {
+  const currentEnv = envName || process.env.FLOW_ENV || 'sandbox';
+  const normalizedUrl = url.replace(/\/+$/, '');
+
+  if (currentEnv === 'sandbox') {
+    if (normalizedUrl !== FLOW_SANDBOX_BASE_URL) {
+      throw new Error('FLOW_CONFIGURATION_ERROR: sandbox requiere https://sandbox.flow.cl/api');
+    }
+    return;
+  }
+
+  if (currentEnv === 'production') {
+    if (normalizedUrl !== FLOW_PRODUCTION_BASE_URL) {
+      throw new Error('FLOW_CONFIGURATION_ERROR: producción requiere https://www.flow.cl/api');
+    }
+
+    if (process.env.FLOW_PRODUCTION_ENABLED !== 'true') {
+      throw new Error(
+        'ABORT_PRODUCTION_GUARD: FLOW_PRODUCTION_ENABLED=true es obligatorio antes de cobrar en producción.'
+      );
+    }
+    return;
+  }
+
+  throw new Error('FLOW_CONFIGURATION_ERROR: FLOW_ENV debe ser sandbox o production');
+}
+
+function assertFlowCredentials(apiKey: string, secretKey: string, envName: string) {
+  if (envName !== 'production') return;
+
+  if (!apiKey || !secretKey || apiKey.startsWith('MOCK_') || secretKey.startsWith('MOCK_')) {
+    throw new Error('FLOW_CONFIGURATION_ERROR: credenciales Flow de producción obligatorias');
   }
 }
+
+/** @deprecated Usa assertFlowRuntimeGuard. Se mantiene para compatibilidad. */
+export const assertSandboxGuard = assertFlowRuntimeGuard;
 
 /**
  * Algoritmo oficial de firma Flow Chile:
@@ -81,7 +114,8 @@ export class FlowClient {
     this.baseUrl = config?.baseUrl || defaultCfg.baseUrl || 'https://sandbox.flow.cl/api';
     this.env = config?.env || defaultCfg.env || 'sandbox';
 
-    assertSandboxGuard(this.baseUrl, this.env);
+    assertFlowRuntimeGuard(this.baseUrl, this.env);
+    assertFlowCredentials(this.apiKey, this.secretKey, this.env);
   }
 
   getBaseUrl(): string {
@@ -93,7 +127,7 @@ export class FlowClient {
     endpoint: string,
     params: Record<string, any> = {}
   ): Promise<T> {
-    assertSandboxGuard(this.baseUrl, this.env);
+    assertFlowRuntimeGuard(this.baseUrl, this.env);
 
     const payloadWithAuth: Record<string, any> = {
       apiKey: this.apiKey,

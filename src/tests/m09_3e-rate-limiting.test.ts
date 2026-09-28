@@ -120,8 +120,14 @@ describe('FASE M-09.3E — Rate Limiting & Abuse Protection', () => {
   it('3. PRODUCTION_WITHOUT_DISTRIBUTED_PROVIDER_REPORTS_NOT_CONFIGURED: Producción sin backend Redis/KV reporta PROVIDER_UNAVAILABLE sin bloquear', async () => {
     const originalRedisUrl = process.env.RATE_LIMIT_REDIS_URL;
     const originalUpstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+    const originalUpstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+    const originalVercelKvUrl = process.env.KV_REST_API_URL;
+    const originalVercelKvToken = process.env.KV_REST_API_TOKEN;
     delete process.env.RATE_LIMIT_REDIS_URL;
     delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.KV_REST_API_URL;
+    delete process.env.KV_REST_API_TOKEN;
 
     try {
       const distributed = new DistributedRateLimiter();
@@ -140,6 +146,56 @@ describe('FASE M-09.3E — Rate Limiting & Abuse Protection', () => {
     } finally {
       if (originalRedisUrl) process.env.RATE_LIMIT_REDIS_URL = originalRedisUrl;
       if (originalUpstashUrl) process.env.UPSTASH_REDIS_REST_URL = originalUpstashUrl;
+      if (originalUpstashToken) process.env.UPSTASH_REDIS_REST_TOKEN = originalUpstashToken;
+      if (originalVercelKvUrl) process.env.KV_REST_API_URL = originalVercelKvUrl;
+      if (originalVercelKvToken) process.env.KV_REST_API_TOKEN = originalVercelKvToken;
+    }
+  });
+
+  it('3.1 UPSTASH_REST_PROVIDER_ENFORCES_FIXED_WINDOW_ATOMICALLY: Redis REST devuelve una cuota global compartida y exacta', async () => {
+    const originalUrl = process.env.UPSTASH_REDIS_REST_URL;
+    const originalToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+    const originalFetch = globalThis.fetch;
+    const calls: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
+
+    process.env.UPSTASH_REDIS_REST_URL = 'https://example.upstash.io';
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'test-only-token';
+
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ input, init });
+      const request = JSON.parse(String(init?.body));
+      assert.strictEqual(request[0], 'EVAL');
+      assert.ok(String(request[1]).includes("redis.call('INCR'"));
+      assert.strictEqual(request[2], 1);
+      assert.ok(String(request[3]).startsWith('naty:rate-limit:auth-login:'));
+      assert.strictEqual(request[4], '60');
+
+      return new Response(JSON.stringify({ result: [6, 41] }), { status: 200 });
+    };
+
+    try {
+      const distributed = new DistributedRateLimiter();
+      assert.strictEqual(distributed.configured, true);
+
+      const result = await distributed.checkLimit({
+        namespace: 'auth-login',
+        key: 'ip_hash:fixed-window-test',
+        limit: 5,
+        windowSeconds: 60,
+      });
+
+      assert.strictEqual(result.allowed, false);
+      assert.strictEqual(result.status, 'LIMITED');
+      assert.strictEqual(result.remaining, 0);
+      assert.strictEqual(result.retryAfterSeconds, 41);
+      assert.strictEqual(calls.length, 1, 'La evaluación atómica debe requerir una sola llamada REST');
+      assert.strictEqual(calls[0].init?.headers && new Headers(calls[0].init.headers).get('Authorization'), 'Bearer test-only-token');
+    } finally {
+      globalThis.fetch = originalFetch;
+      if (originalUrl) process.env.UPSTASH_REDIS_REST_URL = originalUrl;
+      else delete process.env.UPSTASH_REDIS_REST_URL;
+      if (originalToken) process.env.UPSTASH_REDIS_REST_TOKEN = originalToken;
+      else delete process.env.UPSTASH_REDIS_REST_TOKEN;
     }
   });
 
