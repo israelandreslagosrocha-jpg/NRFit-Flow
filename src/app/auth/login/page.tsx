@@ -13,8 +13,13 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('error') === 'google') {
+    const error = new URLSearchParams(window.location.search).get('error');
+    if (error === 'google') {
       setErrorMsg('No fue posible completar el acceso con Google. Inténtalo nuevamente o usa tu correo.');
+    } else if (error === 'profile') {
+      setErrorMsg('No pudimos verificar tu perfil de acceso. Vuelve a ingresar; si el problema continúa, contacta al equipo.');
+    } else if (error === 'session') {
+      setErrorMsg('Tu sesión no pudo verificarse. Ingresa nuevamente para continuar.');
     }
   }, []);
 

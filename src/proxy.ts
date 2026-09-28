@@ -58,7 +58,10 @@ export async function proxy(request: NextRequest) {
   // exclusivamente en servidor. Enviar siempre a /para-ti aquí convertiría a
   // un OWNER/ADMIN en una alumna antes de comprobar su rol.
   const isAuthPath = pathname === '/auth/login' || pathname === '/auth/register';
-  if (isAuthPath && user) {
+  // Si post-login devuelve un error explícito, se debe permitir que la ruta
+  // de acceso lo muestre; volver a post-login aquí produciría un ciclo 302.
+  const isLoginError = pathname === '/auth/login' && request.nextUrl.searchParams.has('error');
+  if (isAuthPath && user && !isLoginError) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/post-login';
     return NextResponse.redirect(url);

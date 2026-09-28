@@ -66,6 +66,15 @@ describe('Portal Team Naty — contratos de datos, seguridad y oferta', () => {
     assert.match(adminPage, /STAFF_ROLES\.has\(profile\.role\)/);
   });
 
+  it('no solicita columnas ausentes en el perfil y evita ciclos de login ante errores', () => {
+    const profiles = source('src/lib/supabase/profile-helpers.ts');
+    const proxy = source('src/proxy.ts');
+
+    assert.doesNotMatch(profiles, /updated_at/);
+    assert.match(proxy, /const isLoginError = pathname === '\/auth\/login' && request\.nextUrl\.searchParams\.has\('error'\)/);
+    assert.match(proxy, /isAuthPath && user && !isLoginError/);
+  });
+
   it('no indexa rutas de programas ajenos a Team Naty', () => {
     const sitemap = source('src/app/sitemap.ts');
 

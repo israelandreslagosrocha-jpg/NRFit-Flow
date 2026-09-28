@@ -6,7 +6,6 @@ export interface ProfileRecord {
   full_name: string;
   role: 'STUDENT' | 'COACH' | 'ADMIN' | 'OWNER';
   created_at: string;
-  updated_at: string;
 }
 
 export interface StudentRecord {
@@ -49,7 +48,7 @@ export async function getStudentProfileByUserId(
   // 1. Obtener perfil por user_id (clave foránea hacia auth.users)
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, user_id, full_name, role, created_at, updated_at')
+    .select('id, user_id, full_name, role, created_at')
     .eq('user_id', authUserId)
     .maybeSingle();
 
@@ -112,11 +111,10 @@ export async function ensureStudentProfile(
           user_id: authUser.id,
           full_name: fullName,
           role: 'STUDENT',
-          updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' }
       )
-      .select('id, user_id, full_name, role, created_at, updated_at')
+      .select('id, user_id, full_name, role, created_at')
       .single();
 
     if (insertProfError) {
