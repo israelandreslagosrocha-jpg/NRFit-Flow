@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { getSupabaseSecretKey, getSupabaseUrl } from './environment.ts';
 
 /**
  * Cliente administrativo de Supabase con Service Role Key.
@@ -6,17 +7,7 @@ import { createClient } from '@supabase/supabase-js';
  * para transacciones atómicas seguras y operaciones fuera del contexto de sesión de usuario.
  */
 export function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://wqsmimxjnfanrenlhdgx.supabase.co';
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  // Nunca degradar operaciones privilegiadas a la anon key: una operación de
-  // pagos, contenido o administración debe fallar explícitamente si el entorno
-  // no fue configurado con una credencial de servidor.
-  if (!supabaseServiceKey) {
-    throw new Error('SERVER_CONFIGURATION_ERROR: SUPABASE_SERVICE_ROLE_KEY is required for privileged operations.');
-  }
-
-  return createClient(supabaseUrl, supabaseServiceKey, {
+  return createClient(getSupabaseUrl(), getSupabaseSecretKey(), {
     auth: {
       persistSession: false,
       autoRefreshToken: false,

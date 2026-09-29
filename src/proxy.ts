@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server.js';
+import { getSupabasePublishableKey, getSupabaseUrl } from './lib/supabase/environment.ts';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,12 +16,9 @@ export async function proxy(request: NextRequest) {
     request,
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://wqsmimxjnfanrenlhdgx.supabase.co';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-
   const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
+    getSupabaseUrl(),
+    getSupabasePublishableKey(),
     {
       cookies: {
         getAll() {

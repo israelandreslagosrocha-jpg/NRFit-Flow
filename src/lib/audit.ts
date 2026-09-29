@@ -4,6 +4,7 @@
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseSecretKey, getSupabaseUrl } from './supabase/environment.ts';
 
 export const MAX_AUDIT_METADATA_BYTES = 8192;
 
@@ -158,14 +159,7 @@ let serviceClientInstance: SupabaseClient | null = null;
 export function getServiceSupabaseClient(): SupabaseClient {
   if (serviceClientInstance) return serviceClientInstance;
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://wqsmimxjnfanrenlhdgx.supabase.co';
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!serviceKey) {
-    throw new Error('SERVER_CONFIGURATION_ERROR: SUPABASE_SERVICE_ROLE_KEY is required for security audit writes.');
-  }
-
-  serviceClientInstance = createClient(supabaseUrl, serviceKey, {
+  serviceClientInstance = createClient(getSupabaseUrl(), getSupabaseSecretKey(), {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
