@@ -110,7 +110,7 @@ export default async function CheckoutSuccessPage() {
             </div>
             <div className="summary-row">
               <span className="summary-label">Cobrado hoy</span>
-              <span className="summary-value">{isTrial ? '$0 CLP' : `$${(membership.price_contracted || 21000).toLocaleString('es-CL')} CLP`}</span>
+              <span className="summary-value">{isTrial ? '$0 CLP' : membership.price_contracted ? `$${membership.price_contracted.toLocaleString('es-CL')} CLP` : 'Por confirmar'}</span>
             </div>
             <div className="summary-row">
               <span className="summary-label">Vigencia del ciclo</span>

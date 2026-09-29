@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-export default function FaqSection() {
+export default function FaqSection({ offer }) {
   const [openIdx, setOpenIdx] = useState(null);
 
   const toggle = (idx) => {
@@ -40,15 +40,17 @@ export default function FaqSection() {
     },
     {
       q: "¿Qué ocurre durante y después de los 7 días de prueba?",
-      a: "Durante los 7 días tienes acceso completo a la plataforma, clases en vivo, grabadas y comunidad. Al terminar el período de prueba, si decides quedarte, se aplica la oferta de preventa de $21.000 CLP/mes que se te muestre antes de confirmar. Si cancelas antes de que terminen los 7 días, tu costo es $0."
+      a: `Durante los 7 días tienes acceso completo a la plataforma, clases en vivo, grabadas y comunidad. Al terminar, se aplica el valor mensual que viste y aceptaste antes de inscribirte: $${offer.monthlyPrice.toLocaleString('es-CL')} CLP/mes. Si cancelas antes de que terminen los 7 días, tu costo es $0.`
     },
     {
       q: "¿Cuánto cuesta la membresía y qué incluye?",
-      a: "El precio regular es de $25.000 CLP/mes, pero durante la preventa accedes a $21.000 CLP/mes. Incluye 5 entrenamientos semanales: 2 clases en vivo por Zoom, 3 entrenamientos grabados, videoteca, portal personal de alumna, comunidad Team Naty y soporte directo con Natalia."
+      a: `La membresía vigente cuesta $${offer.monthlyPrice.toLocaleString('es-CL')} CLP/mes después de tus 7 días gratis. Incluye 5 entrenamientos semanales: 2 clases en vivo por Zoom, 3 entrenamientos grabados, videoteca, portal personal de alumna, comunidad Team Naty y soporte directo con Natalia.`
     },
     {
-      q: "¿Cuál es el precio de preventa de lanzamiento?",
-      a: "Durante la preventa, la membresía cuesta $21.000 CLP/mes en lugar de $25.000 CLP/mes. Las condiciones aplicables se muestran de forma explícita antes de confirmar tu inscripción."
+      q: offer.isPresale ? "¿Hasta cuándo está disponible la preventa?" : "¿Cuál es el valor de la membresía?",
+      a: offer.isPresale
+        ? "La preventa está disponible hasta el domingo 4 de octubre. Si completas tu inscripción dentro de ese plazo, conservas el valor mensual de $21.000 CLP después de la semana gratis. Desde el lunes 5 de octubre, las nuevas inscripciones tienen un valor de $25.000 CLP/mes."
+        : "Desde el lunes 5 de octubre, las nuevas inscripciones tienen un valor de $25.000 CLP/mes después de la semana de prueba gratuita."
     },
     {
       q: "¿Cómo funciona el sistema de recompensas y constancia?",

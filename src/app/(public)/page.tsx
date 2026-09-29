@@ -1,6 +1,8 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import Home from '../../views/Home';
+import { getCurrentMembershipOffer } from '../../lib/offers/membership-offer';
 
 export const metadata: Metadata = {
   title: 'Naty Entrenadora | Entrena para la vida que tienes',
@@ -31,7 +33,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PublicHomePage() {
+export default async function PublicHomePage() {
+  // La campaña cambia en una fecha concreta; esperar una petición real evita
+  // que el HTML quede congelado con el precio usado durante el build.
+  await connection();
+  const offer = getCurrentMembershipOffer();
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -64,7 +71,7 @@ export default function PublicHomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Home />
+      <Home offer={offer} />
     </>
   );
 }

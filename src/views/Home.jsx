@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import '../components/landing/Landing.css';
 import HeroSection from '../components/landing/HeroSection';
@@ -16,14 +14,14 @@ import OfferPricingSection from '../components/landing/OfferPricingSection';
 import FaqSection from '../components/landing/FaqSection';
 import FinalCtaSection from '../components/landing/FinalCtaSection';
 
-export default function Home() {
+export default function Home({ offer }) {
   return (
     <main className="landing-page" style={{ background: '#0A0A0C', color: '#FFFFFF', minHeight: '100vh' }}>
       {/* 1. Hero Principal */}
-      <HeroSection />
+      <HeroSection offer={offer} />
 
       {/* 2. Campaña de preventa: 5 entrenamientos semanales */}
-      <PreLaunchCampaignSection />
+      <PreLaunchCampaignSection offer={offer} />
 
       {/* 3. Identificación y Empatía */}
       <IdentificationSection />
@@ -50,13 +48,13 @@ export default function Home() {
       <TestimonialsSection />
 
       {/* 11. Oferta oficial de preventa ($21.000 CLP + 7 días gratis) */}
-      <OfferPricingSection />
+      <OfferPricingSection offer={offer} />
 
       {/* 12. Preguntas Frecuentes (12 FAQs) */}
-      <FaqSection />
+      <FaqSection offer={offer} />
 
       {/* 13. CTA Final */}
-      <FinalCtaSection />
+      <FinalCtaSection offer={offer} />
     </main>
   );
 }

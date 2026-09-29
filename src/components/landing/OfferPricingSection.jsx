@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
 
-export default function OfferPricingSection() {
+export default function OfferPricingSection({ offer }) {
   const benefits = [
     "5 entrenamientos semanales adaptados a tu vida cotidiana.",
     "Entrenamientos LIVE los Lunes y Miércoles a las 20:00 hrs con corrección técnica directa de Natalia.",
@@ -37,7 +37,7 @@ export default function OfferPricingSection() {
             
             {/* Top Badge */}
             <div className="pricing-badge-top">
-              PREVENTA DE LANZAMIENTO
+              {offer.label}
             </div>
 
             <div style={{ textAlign: 'center' }}>
@@ -46,13 +46,13 @@ export default function OfferPricingSection() {
               </span>
               
               <div className="pricing-val-box">
-                <span className="pricing-old">$25.000</span>
-                <span className="pricing-num">$21.000</span>
+                {offer.isPresale && <span className="pricing-old">$25.000</span>}
+                <span className="pricing-num">${offer.monthlyPrice.toLocaleString('es-CL')}</span>
                 <span className="pricing-period">CLP / mes</span>
               </div>
 
               <p style={{ fontSize: '0.85rem', color: 'var(--nt-pink)', fontWeight: 700, margin: '0.5rem 0 0 0' }}>
-                ⭐ Precio de preventa de lanzamiento: $21.000 CLP/mes.
+                {offer.detail}
               </p>
             </div>
 

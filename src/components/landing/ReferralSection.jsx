@@ -24,7 +24,7 @@ export default function ReferralSection() {
 
           <p className="nt-subtitle" style={{ maxWidth: 620, margin: '1rem auto 1.75rem auto' }}>
             Al convertirte en alumna activa del Team Naty, recibes un cupón exclusivo para invitar a quien tú quieras. 
-            Tu invitada accederá también al precio de preventa de <strong style={{ color: 'var(--nt-text-primary)' }}>$21.000 CLP</strong> (en lugar de $25.000)
+            Tu invitada accederá a la oferta vigente que verá antes de confirmar su inscripción,
             y ambas suman puntos de constancia para recompensas en la plataforma.
           </p>
 

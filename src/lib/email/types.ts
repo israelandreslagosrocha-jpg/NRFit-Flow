@@ -62,6 +62,10 @@ export function renderEmailTemplate(
 ): EmailTemplateContent {
   const brandName = 'Team Naty Entrenadora';
   const supportEmail = getOfficialSenderEmail();
+  const amount = Number(payload.amount);
+  const formattedAmount = Number.isFinite(amount) && amount > 0
+    ? `$${amount.toLocaleString('es-CL')} CLP`
+    : 'el valor informado al momento de tu inscripción';
 
   switch (templateId) {
     case 'trial_welcome':
@@ -76,7 +80,7 @@ export function renderEmailTemplate(
             <ul>
               <li><strong>Plan:</strong> Membresía Mensual Team Naty</li>
               <li><strong>Prueba gratuita:</strong> 7 días corridos (hasta el ${payload.trialEndsAt || payload.trialEndDate || 'día 7'})</li>
-              <li><strong>Monto del plan:</strong> $${(payload.amount || 21000).toLocaleString('es-CL')} CLP</li>
+              <li><strong>Monto del plan:</strong> ${formattedAmount}</li>
             </ul>
             <p>Recuerda que puedes cancelar en 1 clic antes de la fecha del primer cobro desde tu perfil si no deseas continuar, evitando cualquier cobro futuro.</p>
             <p>¡Disfruta tus entrenamientos en vivo y la videoteca on-demand!</p>
@@ -95,7 +99,7 @@ export function renderEmailTemplate(
             <h1 style="color: #0f172a;">Pago Confirmado</h1>
             <p>Hola, ${payload.studentName || 'Alumna'}. Hemos recibido correctamente tu pago de membresía.</p>
             <ul>
-              <li><strong>Monto pagado:</strong> $${(payload.amount || 21000).toLocaleString('es-CL')} ${payload.currency || 'CLP'}</li>
+              <li><strong>Monto pagado:</strong> ${formattedAmount}</li>
               <li><strong>Fecha:</strong> ${payload.paymentDate || 'Hoy'}</li>
               <li><strong>Próxima renovación:</strong> ${payload.nextBillingDate || payload.periodEnd || 'Próximo mes'}</li>
             </ul>
@@ -112,7 +116,7 @@ export function renderEmailTemplate(
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
             <h1 style="color: #dc2626;">Problema al renovar tu membresía</h1>
-            <p>Hola, ${payload.studentName || 'Alumna'}. La pasarela de pagos no pudo procesar el cobro de tu membresía por $${(payload.amount || 21000).toLocaleString('es-CL')} CLP.</p>
+            <p>Hola, ${payload.studentName || 'Alumna'}. La pasarela de pagos no pudo procesar el cobro de tu membresía por ${formattedAmount}.</p>
             <p>Por favor revisa el estado o los fondos de tu tarjeta para mantener tu acceso activo.</p>
             <p style="color: #64748b; font-size: 13px;">Equipo Naty Entrenadora • ${supportEmail}</p>
           </div>

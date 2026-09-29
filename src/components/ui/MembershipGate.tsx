@@ -6,6 +6,7 @@ import { ShieldAlert, CheckCircle, Mail, ArrowRight } from 'lucide-react';
 import { AccessEvaluation } from '@/lib/supabase/membership-helpers';
 import { AuthSignOutButton } from '../auth/AuthSignOutButton';
 import styles from './MembershipGate.module.css';
+import { getCurrentMembershipOffer } from '@/lib/offers/membership-offer';
 
 interface MembershipGateProps {
   evaluation: AccessEvaluation;
@@ -15,6 +16,7 @@ interface MembershipGateProps {
 
 export function MembershipGate({ evaluation, userEmail, userName }: MembershipGateProps) {
   const { status, reason } = evaluation;
+  const offer = getCurrentMembershipOffer();
 
   let title = 'Activa tu membresía para comenzar';
   let description =
@@ -35,7 +37,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
     title = 'Tu período de prueba o suscripción ha finalizado';
     description =
       'Esperamos que hayas disfrutado tus entrenamientos. Activa tu plan mensual para mantener tu constancia.';
-    ctaText = 'Reactivar membresía ($21.000 CLP/mes)';
+    ctaText = `Reactivar membresía ($${offer.monthlyPrice.toLocaleString('es-CL')} CLP/mes)`;
   }
 
   return (
@@ -56,7 +58,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
         <div className={styles.benefits}>
           <div className={styles.planRow}>
             <span>Membresía Naty Entrenadora</span>
-            <strong>$21.000 CLP / mes</strong>
+            <strong>${offer.monthlyPrice.toLocaleString('es-CL')} CLP / mes</strong>
           </div>
           <ul>
             <li>

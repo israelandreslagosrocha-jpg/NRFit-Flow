@@ -48,9 +48,13 @@ describe('Portal Team Naty — contratos de datos, seguridad y oferta', () => {
 
   it('evita métricas comerciales inventadas y refleja la oferta oficial', () => {
     const admin = source('src/app/admin/AdminDashboardClient.tsx');
+    const offer = source('src/lib/offers/membership-offer.ts');
 
     assert.doesNotMatch(admin, /\+14%|\+22%|78%|renovaci[oó]n autom[aá]tica/i);
-    assert.match(admin, /\$21\.000 CLP al mes, con 7 días de prueba/);
+    assert.match(admin, /precio mensual fijado al momento de cada inscripción/);
+    assert.match(offer, /PRESALE_LAST_LOCAL_DATE = '2026-10-04'/);
+    assert.match(offer, /monthlyPrice: 21000/);
+    assert.match(offer, /monthlyPrice: 25000/);
     assert.match(admin, /Dos clases en vivo: lunes y miércoles/);
     assert.match(admin, /Sesiones de entre 10 y 40 minutos/);
   });

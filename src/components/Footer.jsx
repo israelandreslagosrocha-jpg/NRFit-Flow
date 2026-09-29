@@ -52,7 +52,7 @@ export default function Footer() {
               <li><Link href="/#natalia">Natalia</Link></li>
               <li><Link href="/#plataforma">Plataforma</Link></li>
               <li><Link href="/#comunidad">Comunidad</Link></li>
-              <li><Link href="/#oferta">Preventa</Link></li>
+              <li><Link href="/#oferta">Membresía</Link></li>
               <li><Link href="/#faq">Preguntas Frecuentes</Link></li>
             </ul>
           </div>

@@ -4,6 +4,11 @@ import { createClient } from '../lib/supabase/server';
 import { createAdminClient } from '../lib/supabase/admin';
 import { getPaymentGateway } from '../lib/payments';
 import { generateTraceId, logger } from '../lib/logger';
+import {
+  getCurrentMembershipOffer,
+  type MembershipOfferId,
+} from '../lib/offers/membership-offer';
+import { getFlowPlanIdForOffer } from '../lib/payments/flow/plan';
 
 /**
  * Server Action para iniciar el checkout de suscripción con Flow Chile (Fase M-09R / M-09.3B)
@@ -11,8 +16,20 @@ import { generateTraceId, logger } from '../lib/logger';
  * Jerarquía de identidad: auth.users.id -> profiles.user_id -> students.profile_id -> Flow Customer (externalId = student.id)
  * Trazabilidad E2E: Genera trace_id en backend y lo ancla en memberships y email_outbox.
  */
-export async function createCheckoutSubscriptionAction() {
+export async function createCheckoutSubscriptionAction(expectedOfferId: MembershipOfferId) {
   const traceId = generateTraceId();
+  const offer = getCurrentMembershipOffer();
+
+  // El monto que vio y aceptó la alumna debe ser el mismo que se contrata.
+  // Si dejó el checkout abierto durante el cambio de campaña, no iniciamos
+  // una membresía con el nuevo precio sin que vuelva a verlo y aceptarlo.
+  if (expectedOfferId !== offer.id) {
+    return {
+      success: false,
+      error: 'La oferta vigente cambió. Actualiza esta página para revisar el nuevo valor antes de continuar.',
+    };
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -48,17 +65,18 @@ export async function createCheckoutSubscriptionAction() {
   const studentId = resolution.student.id;
   const studentName = resolution.profile?.full_name || 'Alumna';
 
-  // 2. Obtener plan mensual de preventa ($21.000 CLP)
+  // 2. Resolver el plan interno y fijar el precio vigente en el instante de
+  // inscripción. `price_contracted` es la fuente de verdad histórica.
   const { data: plan } = await adminClient
     .from('plans')
-    .select('id, price')
+    .select('id')
     .eq('is_active', true)
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
 
   const planId = plan?.id || '00000000-0000-0000-0000-000000000001';
-  const price = plan?.price || 21000;
+  const price = offer.monthlyPrice;
 
   // 3. Crear registro de membresía en PENDING_PAYMENT con trace_id (Anclaje Inequívoco, $0 hoy)
   const startDate = new Date().toISOString().split('T')[0];
@@ -136,7 +154,7 @@ export async function createCheckoutSubscriptionAction() {
 
     // 4.3 Modo SUBSCRIPTION_PAYMENT_LINK (Suscripción sin tarjeta forzada)
     // Se crea la suscripción con 7 días de trial. Al vencer, Flow emite factura con paymentLink
-    const flowPlanId = process.env.FLOW_PLAN_ID || 'naty-mensual-preventa-21k-v1';
+    const flowPlanId = getFlowPlanIdForOffer(offer);
     const sub = await gateway.createSubscription({
       planId: flowPlanId,
       customerId: customer.id,

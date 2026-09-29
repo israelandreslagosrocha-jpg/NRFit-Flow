@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
-export default function FinalCtaSection() {
+export default function FinalCtaSection({ offer }) {
   return (
     <section className="final-cta-section">
       <div className="landing-container">
@@ -33,7 +33,7 @@ export default function FinalCtaSection() {
               <ShieldCheck size={16} style={{ color: 'var(--nt-pink)' }} /> 7 días de prueba sin riesgo
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Sparkles size={16} style={{ color: 'var(--nt-pink)' }} /> $21.000 CLP/mes Preventa de Lanzamiento
+              <Sparkles size={16} style={{ color: 'var(--nt-pink)' }} /> {offer.isPresale ? '$21.000 CLP/mes hasta el 4 de octubre' : '$25.000 CLP/mes'}
             </span>
             <span>✓ Condiciones claras antes de confirmar</span>
           </div>

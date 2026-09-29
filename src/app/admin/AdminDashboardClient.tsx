@@ -454,7 +454,7 @@ export default function AdminDashboardClient({
                   </div>
                 </div>
                 <ul className="admin-operation-list brand-list">
-                  <li><CheckCircle2 size={17} /><span>$21.000 CLP al mes, con 7 días de prueba.</span></li>
+                  <li><CheckCircle2 size={17} /><span>7 días de prueba y precio mensual fijado al momento de cada inscripción.</span></li>
                   <li><CheckCircle2 size={17} /><span>Dos clases en vivo: lunes y miércoles.</span></li>
                   <li><CheckCircle2 size={17} /><span>Tres entrenamientos grabados por semana.</span></li>
                   <li><CheckCircle2 size={17} /><span>Sesiones de entre 10 y 40 minutos.</span></li>
@@ -623,7 +623,7 @@ export default function AdminDashboardClient({
                               </div>
                             </div>
                           </td>
-                          <td>Team Naty Online ($21.000)</td>
+                          <td>Team Naty Online</td>
                           <td>
                             <span className={`status-badge ${isActive ? 'active' : 'pending'}`}>
                               {isActive ? 'Activa' : (m?.status || 'Inactiva')}
@@ -959,7 +959,7 @@ export default function AdminDashboardClient({
               <div className="kpi-card">
                 <span className="kpi-title">TOTAL SUSCRIPCIONES</span>
                 <strong className="kpi-big-num">{activeStudentsCount}</strong>
-                <span className="kpi-foot">Team Naty Online ($21.000)</span>
+                <span className="kpi-foot">Team Naty Online</span>
               </div>
               <div className="kpi-card">
                 <span className="kpi-title">COBROS RECIBIDOS</span>

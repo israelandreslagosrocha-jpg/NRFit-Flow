@@ -6,6 +6,8 @@ import { checkRateLimit, resolveRateLimitKey } from '../../../lib/rate-limit/ind
 import { RATE_LIMIT_CONFIG } from '../../../lib/rate-limit/config.ts';
 import { createRateLimitExceededResponse } from '../../../lib/rate-limit/headers.ts';
 import { logger } from '../../../lib/logger.ts';
+import { getMembershipOfferForPrice } from '../../../lib/offers/membership-offer.ts';
+import { getFlowPlanIdForOffer } from '../../../lib/payments/flow/plan.ts';
 
 export async function GET(req: NextRequest) {
   return handleFlowReturn(req);
@@ -103,8 +105,15 @@ async function handleFlowReturn(req: NextRequest) {
       return NextResponse.redirect(new URL('/checkout/success', req.url));
     }
 
-    // 4. Crear la suscripción oficial en Flow con 7 días de Trial
-    const flowPlanId = process.env.FLOW_PLAN_ID || 'naty-mensual-preventa-21k-v1';
+    // 4. Crear la suscripción oficial con el precio que se fijó al iniciar
+    // el checkout. No se usa la oferta vigente: el retorno de Flow puede
+    // ocurrir después del cierre de preventa.
+    const offer = getMembershipOfferForPrice(membership.price_contracted);
+    if (!offer) {
+      throw new Error('FLOW_CONFIGURATION_ERROR: la membresía no tiene un precio de campaña reconocible.');
+    }
+
+    const flowPlanId = getFlowPlanIdForOffer(offer);
     const sub = await gateway.createSubscription({
       planId: flowPlanId,
       customerId: regStatus.customerId,
@@ -134,7 +143,7 @@ async function handleFlowReturn(req: NextRequest) {
       payload: {
         studentName: user.user_metadata?.full_name || 'Alumna',
         trialEndsAt,
-        amount: membership.price_contracted || 21000,
+        amount: offer.monthlyPrice,
         cardLast4: regStatus.last4CardDigits,
       },
     });

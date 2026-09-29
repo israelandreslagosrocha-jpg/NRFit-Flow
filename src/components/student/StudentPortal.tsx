@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import BodyMeasurementsModal from './BodyMeasurementsModal';
 import { markNotificationReadAction } from '../../actions/measurements';
+import { getCurrentMembershipOffer } from '../../lib/offers/membership-offer';
 import './StudentPortal.css';
 
 const BRAND_LOGO = 'https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp';
@@ -119,6 +120,7 @@ export default function StudentPortal({
   const nextSession = sessions[0] || null;
   const latestRecorded = content.find((c) => c.type === 'VIDEO') || content[0] || null;
   const unreadNotifications = notificationItems.filter((item) => !item.is_read);
+  const displayedMembershipPrice = membership?.amount ?? getCurrentMembershipOffer().monthlyPrice;
 
   // Medidas más recientes y cálculos de tendencia
   const latestMeasurement = measurements[0] || null;
@@ -390,7 +392,7 @@ export default function StudentPortal({
             <div className="membership-info-box">
               <div className="membership-row">
                 <span className="m-label">Plan</span>
-                <span className="m-value">Team Naty Online ($21.000 CLP / mes)</span>
+                <span className="m-value">Team Naty Online (${displayedMembershipPrice.toLocaleString('es-CL')} CLP / mes)</span>
               </div>
               <div className="membership-row">
                 <span className="m-label">Próxima renovación</span>

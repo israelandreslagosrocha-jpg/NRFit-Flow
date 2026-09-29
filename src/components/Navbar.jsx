@@ -26,7 +26,7 @@ export default function Navbar() {
     { path: '/#natalia', label: 'NATALIA' },
     { path: '/#plataforma', label: 'PLATAFORMA' },
     { path: '/#comunidad', label: 'COMUNIDAD' },
-    { path: '/#oferta', label: 'PREVENTA' },
+    { path: '/#oferta', label: 'MEMBRESÍA' },
     { path: '/#faq', label: 'PREGUNTAS' },
   ];
 

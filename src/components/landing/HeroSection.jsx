@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Sparkles, Radio, Flame, Users } from 'lucide-react';
 
-export default function HeroSection() {
+export default function HeroSection({ offer }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -57,11 +57,11 @@ export default function HeroSection() {
             {/* Price Tag & Founder Offer */}
             <div className="hero-price-tag">
               <div>
-                <span className="hero-price-val">$21.000</span>
+                <span className="hero-price-val">${offer.monthlyPrice.toLocaleString('es-CL')}</span>
                 <span style={{ fontSize: '0.85rem', color: 'var(--nt-text-secondary)' }}> CLP / mes</span>
               </div>
-              <span className="hero-price-old">$25.000</span>
-              <span className="hero-price-badge">PREVENTA</span>
+              {offer.isPresale && <span className="hero-price-old">$25.000</span>}
+              <span className="hero-price-badge">{offer.isPresale ? 'PREVENTA HASTA 4 OCT' : 'VALOR OFICIAL'}</span>
             </div>
 
             {/* CTAs */}
