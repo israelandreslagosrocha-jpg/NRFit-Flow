@@ -2,14 +2,14 @@
 
 ## Estado registrado — 30 de septiembre de 2026
 
-- Ramas de preproducción y producción: `migration/nextjs-15` y `main`, ambas en el commit `f531505`.
+- La rama de lanzamiento está en `migration/nextjs-15` (commit `29dbad7`); se promoverá a `main` tras esta certificación local.
 - Vercel ya desplegó Producción desde `main`: la portada responde correctamente y `GET /api/callbacks/flow` confirma `FLOW_CALLBACK_ENDPOINT_READY`.
-- En Flow ya existen y están activos dos planes mensuales, ambos con 7 días de prueba y duración indefinida:
+- En Flow ya existen y están activos dos planes mensuales, ambos con duración indefinida:
   - `NATY_PREVENTA_21K` — Team Naty · Preventa — $21.000 CLP/mes.
   - `NATY_REGULAR_25K` — Team Naty · Membresía mensual — $25.000 CLP/mes.
 - Ambos planes notifican a `https://natyentrenadora.com/api/callbacks/flow`.
 - Vercel ya tiene asociados `natyentrenadora.com` para Production y `www.natyentrenadora.com` con redirección permanente (308) al dominio raíz.
-- Aún no se ha movido el DNS en Hostinger. Esto es intencional: antes hay que ingresar las claves de producción de Flow, verificar el checkout real y aprobar el corte final.
+- Aún no se ha movido el DNS en Hostinger. Esto es intencional: las claves de producción de Flow ya están en Vercel, pero falta verificar el checkout controlado y aprobar el corte final.
 
 El repositorio ya incluye alta de cuenta, checkout Flow en sandbox, portal de alumna, panel de administración, publicaciones por enlace HTTPS, sesiones Zoom y avisos dentro de la plataforma. No se debe habilitar el lanzamiento público hasta completar esta lista fuera del repositorio.
 
@@ -46,14 +46,19 @@ Si se usa un limitador distribuido o el worker cron externo, añadir también su
 
 ## 4. Pagos
 
-El código actual deja Flow en modo **sandbox de forma deliberada**. Su guardia de producción evita cobros reales accidentales. Para pasar a producción hace falta una revisión separada y controlada con:
+La primera inscripción sólo crea una prueba gratuita de siete días: no registra tarjeta ni crea una suscripción en Flow. Al terminarla, la alumna ve dos opciones en su panel:
+
+- **Recordatorio y enlace mensual:** se crea la suscripción sin segundo trial y Flow entrega su enlace de pago; el enlace se consulta bajo sesión y no se guarda como token en la base de datos.
+- **Pago automático mensual:** Flow registra la tarjeta directamente y solicita la autorización explícita de la alumna; la suscripción se crea sin segundo trial. El callback S2S sigue siendo la única autoridad que concede acceso de pago.
+
+La guardia de producción evita cobros reales accidentales. Para habilitar el primer cobro real hace falta una revisión controlada con:
 
 - contrato/cuenta Flow de producción y un plan real de preventa de $21.000 CLP;
 - endpoints de callback y retorno bajo `https://natyentrenadora.com`;
 - una prueba de pago, rechazo, reintento, cancelación y conciliación en staging;
 - confirmación comercial y legal de los términos, la política de cancelación y el cobro automático.
 
-No activar `FLOW_AUTOMATIC_CHARGE_ENABLED` ni sustituir la guardia sandbox con credenciales reales sin esas validaciones.
+No activar `FLOW_PRODUCTION_ENABLED=true` ni iniciar una suscripción real sin esas validaciones y una confirmación explícita justo antes de la prueba.
 
 ## 5. Operación de contenidos
 
