@@ -1,14 +1,15 @@
 # Puesta en marcha de Naty Entrenadora
 
-## Estado registrado — 29 de septiembre de 2026
+## Estado registrado — 30 de septiembre de 2026
 
-- Rama de preproducción: `migration/nextjs-15`, commit `6c0e05b`.
+- Ramas de preproducción y producción: `migration/nextjs-15` y `main`, ambas en el commit `f531505`.
+- Vercel ya desplegó Producción desde `main`: la portada responde correctamente y `GET /api/callbacks/flow` confirma `FLOW_CALLBACK_ENDPOINT_READY`.
 - En Flow ya existen y están activos dos planes mensuales, ambos con 7 días de prueba y duración indefinida:
   - `NATY_PREVENTA_21K` — Team Naty · Preventa — $21.000 CLP/mes.
   - `NATY_REGULAR_25K` — Team Naty · Membresía mensual — $25.000 CLP/mes.
 - Ambos planes notifican a `https://natyentrenadora.com/api/callbacks/flow`.
 - Vercel ya tiene asociados `natyentrenadora.com` para Production y `www.natyentrenadora.com` con redirección permanente (308) al dominio raíz.
-- Aún no se ha movido el DNS en Hostinger ni se ha promovido esta rama a `main`. Esto es intencional: antes hay que ingresar las claves de producción de Flow, verificar el checkout real y aprobar el corte final.
+- Aún no se ha movido el DNS en Hostinger. Esto es intencional: antes hay que ingresar las claves de producción de Flow, verificar el checkout real y aprobar el corte final.
 
 El repositorio ya incluye alta de cuenta, checkout Flow en sandbox, portal de alumna, panel de administración, publicaciones por enlace HTTPS, sesiones Zoom y avisos dentro de la plataforma. No se debe habilitar el lanzamiento público hasta completar esta lista fuera del repositorio.
 
