@@ -69,8 +69,9 @@ type Membership = {
   status: string;
   trial_ends_at: string | null;
   current_period_end: string | null;
-  amount: number | null;
-  currency: string | null;
+  price_contracted: number | null;
+  auto_renew: boolean | null;
+  renewal_mode: 'AUTO_CHARGE' | 'MANUAL_RENEWAL' | 'EXPIRE_ON_DATE' | null;
 };
 
 interface Props {
@@ -120,7 +121,12 @@ export default function StudentPortal({
   const nextSession = sessions[0] || null;
   const latestRecorded = content.find((c) => c.type === 'VIDEO') || content[0] || null;
   const unreadNotifications = notificationItems.filter((item) => !item.is_read);
-  const displayedMembershipPrice = membership?.amount ?? getCurrentMembershipOffer().monthlyPrice;
+  const displayedMembershipPrice = membership?.price_contracted ?? getCurrentMembershipOffer().monthlyPrice;
+  const renewalLabel = membership?.renewal_mode === 'AUTO_CHARGE'
+    ? 'Pago automático mensual'
+    : membership?.renewal_mode === 'MANUAL_RENEWAL'
+      ? 'Recordatorio y enlace mensual'
+      : 'Decidirás al finalizar tu prueba';
 
   // Medidas más recientes y cálculos de tendencia
   const latestMeasurement = measurements[0] || null;
@@ -399,6 +405,10 @@ export default function StudentPortal({
                 <span className="m-value">
                   {formatPeriodEnd(membership?.current_period_end || membership?.trial_ends_at || null)}
                 </span>
+              </div>
+              <div className="membership-row">
+                <span className="m-label">Modalidad de pago</span>
+                <span className="m-value">{renewalLabel}</span>
               </div>
               <div className="membership-row">
                 <span className="m-label">Beneficios incluidos</span>

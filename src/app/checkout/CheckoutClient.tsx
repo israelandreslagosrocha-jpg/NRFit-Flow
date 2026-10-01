@@ -99,7 +99,7 @@ export default function CheckoutClient({ offer }: CheckoutClientProps) {
             <span className="summary-value">7 días corridos</span>
           </div>
           <div className="summary-row">
-            <span className="summary-label">Fecha del primer cobro</span>
+            <span className="summary-label">Fin de tu prueba</span>
             <span className="summary-value">{chargeDate}</span>
           </div>
           <div className="summary-row">
@@ -112,7 +112,7 @@ export default function CheckoutClient({ offer }: CheckoutClientProps) {
           </div>
           <div className="summary-row">
             <span className="summary-label">Renovación</span>
-            <span className="summary-value">La modalidad de pago se confirma en la siguiente etapa segura</span>
+            <span className="summary-value">Al terminar tu prueba, tú eliges: pago automático o recordatorio mensual con enlace.</span>
           </div>
         </div>
 
@@ -131,7 +131,7 @@ export default function CheckoutClient({ offer }: CheckoutClientProps) {
             onChange={(event) => setAcceptedTerms(event.target.checked)}
           />
           <span>
-            He leído y acepto los <Link href="/terminos" className="terms-link">Términos y Condiciones</Link> y la <Link href="/privacidad" className="terms-link">Política de Privacidad</Link>. Antes de finalizar, confirmaré la modalidad de pago y las condiciones aplicables a mi membresía.
+            He leído y acepto los <Link href="/terminos" className="terms-link">Términos y Condiciones</Link> y la <Link href="/privacidad" className="terms-link">Política de Privacidad</Link>. Entiendo que hoy no se solicitará ni cobrará ningún medio de pago; elegiré cómo continuar al finalizar mi prueba.
           </span>
         </label>
 
@@ -143,11 +143,11 @@ export default function CheckoutClient({ offer }: CheckoutClientProps) {
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              <span>Conectando con Flow / Webpay...</span>
+              <span>Activando tu prueba gratuita...</span>
             </>
           ) : (
             <>
-              <span>CONTINUAR CON MI INSCRIPCIÓN</span>
+              <span>ACTIVAR MIS 7 DÍAS GRATIS</span>
               <ArrowRight size={18} />
             </>
           )}
@@ -155,7 +155,7 @@ export default function CheckoutClient({ offer }: CheckoutClientProps) {
 
         <div className="mp-security-badge">
           <ShieldCheck size={16} />
-          <span>La pasarela de pago y sus condiciones se muestran antes de confirmar. Naty Entrenadora no almacena datos de tarjeta.</span>
+          <span>Hoy no se solicita tarjeta. Al finalizar tu prueba, la modalidad que elijas se procesa de forma segura con Flow.</span>
         </div>
       </div>
     </div>

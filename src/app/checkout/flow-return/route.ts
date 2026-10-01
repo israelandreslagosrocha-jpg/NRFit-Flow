@@ -83,7 +83,8 @@ async function handleFlowReturn(req: NextRequest) {
       return NextResponse.redirect(new URL('/checkout?error=card_declined', req.url));
     }
 
-    // 3. Buscar la membresía en PENDING_PAYMENT de la alumna
+    // 3. Buscar exclusivamente una activación de cargo automático pendiente.
+    // Un enlace mensual nunca pasa por este retorno de enrolamiento de tarjeta.
     const { getStudentProfileByUserId } = await import('../../../lib/supabase/profile-helpers.ts');
     const { student } = await getStudentProfileByUserId(adminClient, user.id);
 
@@ -96,6 +97,7 @@ async function handleFlowReturn(req: NextRequest) {
       .select('id, plan_id, price_contracted')
       .eq('student_id', student.id)
       .eq('status', 'PENDING_PAYMENT')
+      .eq('renewal_mode', 'AUTO_CHARGE')
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
@@ -106,8 +108,7 @@ async function handleFlowReturn(req: NextRequest) {
     }
 
     // 4. Crear la suscripción oficial con el precio que se fijó al iniciar
-    // el checkout. No se usa la oferta vigente: el retorno de Flow puede
-    // ocurrir después del cierre de preventa.
+    // el checkout. La prueba ya terminó: nunca se agrega un segundo trial.
     const offer = getMembershipOfferForPrice(membership.price_contracted);
     if (!offer) {
       throw new Error('FLOW_CONFIGURATION_ERROR: la membresía no tiene un precio de campaña reconocible.');
@@ -117,38 +118,23 @@ async function handleFlowReturn(req: NextRequest) {
     const sub = await gateway.createSubscription({
       planId: flowPlanId,
       customerId: regStatus.customerId,
-      trialPeriodDays: 7,
+      trialPeriodDays: 0,
     });
 
-    const trialEndsAt = sub.trialEndsAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
-    // 5. Activar estado TRIAL en base de datos
+    // 5. El retorno del navegador no confirma un cobro. La membresía sigue
+    // pendiente hasta que el callback S2S o el reconciliador confirme Flow.
     await adminClient
       .from('memberships')
       .update({
-        status: 'TRIAL',
         gateway: 'FLOW',
         gateway_subscription_id: sub.id,
-        gateway_status: 'trial',
-        trial_ends_at: trialEndsAt,
+        gateway_plan_id: flowPlanId,
+        gateway_status: 'card_registered_awaiting_payment',
+        gateway_customer_id: regStatus.customerId,
       })
       .eq('id', membership.id);
 
-    // 6. Encolar email de confirmación en outbox
-    await adminClient.from('email_outbox').insert({
-      dedupe_key: `flow-trial-card:${membership.id}`,
-      recipient_email: user.email,
-      subject: '¡Tarjeta vinculada y 7 días de prueba activados!',
-      template_id: 'flow_trial_welcome',
-      payload: {
-        studentName: user.user_metadata?.full_name || 'Alumna',
-        trialEndsAt,
-        amount: offer.monthlyPrice,
-        cardLast4: regStatus.last4CardDigits,
-      },
-    });
-
-    // 7. Redirigir a success limpiamente SIN exponer UUIDs internos
+    // 6. Redirigir a success limpiamente SIN exponer UUIDs internos
     return NextResponse.redirect(new URL('/checkout/success', req.url));
   } catch (err: any) {
     logger.error('Error en flow-return handler:', {}, err);

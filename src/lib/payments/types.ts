@@ -52,6 +52,8 @@ export interface GatewaySubscription {
   currentPeriodStart?: string;
   currentPeriodEnd?: string;
   cancelAtPeriodEnd?: boolean;
+  /** Enlace de una factura Flow pendiente. Se consulta bajo sesión y no se persiste. */
+  pendingPaymentUrl?: string;
   rawStatus: number;
   morose: number; // 0 = sin mora, 1 = invoice vencido, 2 = invoice pendiente pero no vencido
 }

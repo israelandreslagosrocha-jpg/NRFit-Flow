@@ -191,6 +191,10 @@ export class FlowGatewayAdapter implements PaymentGateway {
       domainStatus = 'CANCELLED';
     }
 
+    const pendingInvoice = Array.isArray(flowSub.invoices)
+      ? flowSub.invoices.find((invoice: any) => invoice?.status === 0 && invoice?.paymentLink)
+      : null;
+
     return {
       id: flowSub.subscriptionId,
       planId: flowSub.planId,
@@ -200,6 +204,7 @@ export class FlowGatewayAdapter implements PaymentGateway {
       currentPeriodStart: flowSub.period_start,
       currentPeriodEnd: flowSub.period_end,
       cancelAtPeriodEnd: flowSub.cancel_at_period_end === 1,
+      pendingPaymentUrl: pendingInvoice?.paymentLink,
       rawStatus: flowSub.status,
       morose: flowSub.morose ?? 0,
     };

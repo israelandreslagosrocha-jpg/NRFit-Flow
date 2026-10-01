@@ -22,6 +22,8 @@ export interface MembershipRecord {
   cancelled_at?: string | null;
   cancel_reason?: string | null;
   price_contracted?: number;
+  auto_renew?: boolean;
+  renewal_mode?: 'AUTO_CHARGE' | 'MANUAL_RENEWAL' | 'EXPIRE_ON_DATE' | string | null;
   gateway_subscription_id?: string | null;
   gateway_status?: string | null;
   gateway_sync_state?: 'HEALTHY' | 'ANOMALY' | string | null;

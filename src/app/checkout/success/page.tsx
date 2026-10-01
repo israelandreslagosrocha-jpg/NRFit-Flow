@@ -79,8 +79,8 @@ export default async function CheckoutSuccessPage() {
         <p className="checkout-subtitle" style={{ fontSize: '15px', lineHeight: '1.6', marginBottom: '24px' }}>
           {isTrial && (
             <>
-              Tu medio de pago ha sido verificado por Flow / Webpay y tu período de prueba de{' '}
-              <strong>7 días gratuitos ($0 CLP)</strong> ha comenzado.
+              Tu período de prueba de <strong>7 días gratuitos ($0 CLP)</strong> ha comenzado.
+              No solicitamos una tarjeta: al terminar tú decidirás si continúas, con pago automático o con recordatorio y enlace mensual.
             </>
           )}
           {isActive && (
@@ -109,7 +109,7 @@ export default async function CheckoutSuccessPage() {
               </span>
             </div>
             <div className="summary-row">
-              <span className="summary-label">Cobrado hoy</span>
+              <span className="summary-label">Pagado hoy</span>
               <span className="summary-value">{isTrial ? '$0 CLP' : membership.price_contracted ? `$${membership.price_contracted.toLocaleString('es-CL')} CLP` : 'Por confirmar'}</span>
             </div>
             <div className="summary-row">
