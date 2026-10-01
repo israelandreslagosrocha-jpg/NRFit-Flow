@@ -41,7 +41,7 @@ Si se usa un limitador distribuido o el worker cron externo, añadir también su
 ## 3. Dominio y correo
 
 1. En Hostinger, reemplazar los registros web cuando se apruebe el corte final: `A @ → 216.150.1.1` y `CNAME www → 79e9b88e7e1ec2b1.vercel-dns-017.com`. Vercel redirige `www` permanentemente al dominio raíz.
-2. En Supabase Auth, registrar las URLs de producción de login, recuperación de contraseña y callback.
+2. En Supabase Auth, fijar Site URL en `https://natyentrenadora.com` y autorizar al menos `https://natyentrenadora.com/auth/callback` y `https://natyentrenadora.com/auth/reset-password` como Redirect URLs.
 3. En Hostinger, validar SPF, DKIM y DMARC para `natyentrenadora.com`, y enviar un correo de prueba a una casilla controlada antes de activar los avisos.
 
 ## 4. Pagos
