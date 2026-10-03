@@ -30,6 +30,15 @@ export interface MembershipRecord {
   gateway_access_blocked_at?: string | null;
   gateway_access_block_reason?: string | null;
   last_gateway_snapshot_request_started_at?: string | null;
+  membership_source?: 'SELF_SERVICE' | 'EXTERNAL_PAYMENT' | 'COMPLIMENTARY' | string | null;
+  is_complimentary?: boolean | null;
+  complimentary_expires_at?: string | null;
+  complimentary_revoked_at?: string | null;
+  discount_percent?: number | null;
+  discount_status?: 'NONE' | 'RESERVED' | 'APPLIED' | 'REVOKED' | 'EXPIRED' | string | null;
+  discount_code?: string | null;
+  discount_expires_at?: string | null;
+  discount_applied_at?: string | null;
   created_at: string;
 }
 
@@ -53,6 +62,9 @@ export interface AccessEvaluation {
  *    - Requiere inicio válido (start_date <= now) y (current_period_end ?? end_date) en el futuro.
  *    - NO exige trial_ends_at.
  *    - FALLA CERRADO: Si faltan ambas fechas de fin, se deniega acceso.
+ *    - Excepción explícita: una cortesía (`is_complimentary`) puede no tener
+ *      término. Sólo Natalia puede otorgarla/revocarla por Server Action; no
+ *      usamos fechas ficticias ni la hacemos pasar por una membresía pagada.
  * 3. CANCELLED:
  *    - Si la suscripción fue cancelada pero current_period_end >= now, mantiene acceso hasta término de ciclo.
  *    - Si no tiene ciclo pagado o ya venció, se deniega acceso.
@@ -100,6 +112,28 @@ export function validateMembershipDates(
   // 2. Rama ACTIVE (Fail-closed)
   if (statusUpper === 'ACTIVE') {
     const isStarted = membership.start_date != null && new Date(membership.start_date) <= now;
+    const complimentaryEndsAt = membership.complimentary_expires_at;
+
+    if (membership.is_complimentary) {
+      const wasRevoked = membership.complimentary_revoked_at != null;
+      const isComplimentaryActive = !complimentaryEndsAt || new Date(complimentaryEndsAt) >= now;
+      if (isStarted && !wasRevoked && isComplimentaryActive) {
+        return {
+          hasAccess: true,
+          status: 'ACTIVE',
+          reason: complimentaryEndsAt ? 'Cortesía vigente por tiempo definido' : 'Cortesía vigente hasta revocación de Natalia',
+          membership,
+        };
+      }
+
+      return {
+        hasAccess: false,
+        status: 'EXPIRED',
+        reason: wasRevoked ? 'Cortesía revocada por administración' : 'Cortesía finalizada',
+        membership,
+      };
+    }
+
     const periodEnd = membership.current_period_end ?? membership.end_date;
     const isPeriodActive = periodEnd != null && new Date(periodEnd) >= now;
 
@@ -135,7 +169,7 @@ export function validateMembershipDates(
   // prepara su enlace. No se aplica a ningún otro PENDING_PAYMENT.
   if (
     statusUpper === 'PENDING_PAYMENT'
-    && membership.gateway_status === 'early_manual_payment_pending'
+    && ['early_manual_payment_pending', 'discount_first_cycle_payment_pending'].includes(membership.gateway_status || '')
   ) {
     const isStarted = membership.start_date != null && new Date(membership.start_date) <= now;
     const isTrialStillActive = membership.trial_ends_at != null && new Date(membership.trial_ends_at) >= now;

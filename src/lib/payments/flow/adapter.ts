@@ -68,7 +68,7 @@ export class FlowGatewayAdapter implements PaymentGateway {
       customerId: params.customerId,
       trial_period_days: params.trialPeriodDays ?? 7,
       subscription_start: params.subscriptionStart,
-      periods_number: 0,
+      periods_number: params.periodsNumber ?? 0,
     });
 
     return this.mapFlowSubscription(res);

@@ -41,6 +41,8 @@ export interface CreateSubscriptionInput {
   customerId: string;
   trialPeriodDays?: number;
   subscriptionStart?: string;
+  /** 1 se usa exclusivamente en el primer ciclo con cupón; 0 significa indefinida. */
+  periodsNumber?: number;
 }
 
 export interface GatewaySubscription {

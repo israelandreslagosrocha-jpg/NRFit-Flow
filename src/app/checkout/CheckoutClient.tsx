@@ -15,6 +15,7 @@ type CheckoutClientProps = {
 export default function CheckoutClient({ offer }: CheckoutClientProps) {
   const router = useRouter();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [referralCoupon, setReferralCoupon] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -34,7 +35,7 @@ export default function CheckoutClient({ offer }: CheckoutClientProps) {
     setErrorMessage(null);
 
     try {
-      const result = await createCheckoutSubscriptionAction(offer.id);
+      const result = await createCheckoutSubscriptionAction(offer.id, referralCoupon);
 
       if (!result.success) {
         if (result.redirectUrl) {
@@ -114,6 +115,20 @@ export default function CheckoutClient({ offer }: CheckoutClientProps) {
             <span className="summary-label">Renovación</span>
             <span className="summary-value">Al terminar tu prueba, tú eliges: pago automático o recordatorio mensual con enlace.</span>
           </div>
+        </div>
+
+        <div className="checkout-coupon-field">
+          <label htmlFor="referral-coupon">¿Tienes un cupón de invitación?</label>
+          <input
+            id="referral-coupon"
+            name="referral_coupon"
+            value={referralCoupon}
+            onChange={(event) => setReferralCoupon(event.target.value.toUpperCase())}
+            maxLength={50}
+            placeholder="Ej.: NATY-AB12CD34"
+            autoComplete="off"
+          />
+          <p>Si es válido, mantienes tus 7 días gratis y el descuento se aplicará sólo a tu primer mes pagado.</p>
         </div>
 
         <div className="cancellation-note">

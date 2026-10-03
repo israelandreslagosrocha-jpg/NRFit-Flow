@@ -1200,7 +1200,7 @@
 }
 
 .student-drawer-card {
-  width: 380px;
+  width: min(480px, 100%);
   background: #ffffff;
   height: 100%;
   padding: 2rem;
@@ -1209,6 +1209,14 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.drawer-body {
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .drawer-header {
@@ -1291,6 +1299,129 @@
 
 .drawer-info-row strong {
   color: #0f172a;
+  text-align: right;
+  max-width: 62%;
+}
+
+.drawer-management-section {
+  background: #fffafc;
+  border: 1px solid rgba(255, 79, 184, 0.18);
+}
+
+.complimentary-section {
+  background: #f7fffb;
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+.drawer-help {
+  margin: -0.1rem 0 0.2rem;
+  color: #64748b;
+  font-size: 0.77rem;
+  line-height: 1.4;
+}
+
+.drawer-form,
+.drawer-inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.drawer-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.drawer-form input,
+.drawer-form select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dbe3ef;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 8px;
+  padding: 0.55rem 0.6rem;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.drawer-form input:focus,
+.drawer-form select:focus {
+  outline: 2px solid rgba(255, 79, 184, 0.25);
+  border-color: var(--admin-pink);
+}
+
+.drawer-action-button {
+  width: 100%;
+  border: 0;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #b91d71, #ff4fb8);
+  color: #ffffff;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.drawer-action-button:hover {
+  filter: brightness(0.98);
+}
+
+.drawer-action-button.neutral-action {
+  background: #334155;
+}
+
+.drawer-action-button.violet-action {
+  background: #7c3aed;
+}
+
+.drawer-action-button.danger-action {
+  background: #dc2626;
+}
+
+.drawer-discounts-summary {
+  background: #f8f7ff;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+}
+
+.drawer-discount-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(124, 58, 237, 0.12);
+  padding-top: 0.7rem;
+}
+
+.drawer-discount-row:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.drawer-discount-row strong,
+.drawer-discount-row span,
+.drawer-discount-row small {
+  display: block;
+}
+
+.drawer-discount-row strong {
+  color: #312e81;
+  font-size: 0.8rem;
+}
+
+.drawer-discount-row span,
+.drawer-discount-row small {
+  color: #64748b;
+  font-size: 0.72rem;
+  margin-top: 0.18rem;
+}
+
+.drawer-discount-row small {
+  text-align: right;
+  white-space: nowrap;
 }
 
 /* Responsive */

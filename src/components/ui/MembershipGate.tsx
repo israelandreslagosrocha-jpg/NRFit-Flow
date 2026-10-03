@@ -11,6 +11,7 @@ import {
   beginMembershipRenewalAction,
   getManualPaymentLinkAction,
 } from '@/actions/subscription';
+import { isDiscountPercentage } from '@/lib/memberships/admin-membership';
 
 interface MembershipGateProps {
   evaluation: AccessEvaluation;
@@ -24,8 +25,19 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
   const membership = evaluation.membership;
   const contractedPrice = Number(membership?.price_contracted) || offer.monthlyPrice;
   const isFinishedFreeTrial = status === 'EXPIRED' && membership?.status === 'TRIAL';
+  const paidPeriodEnd = membership?.current_period_end || membership?.end_date;
+  const hasFinishedPaidPeriod = Boolean(paidPeriodEnd)
+    && new Date(paidPeriodEnd!).getTime() <= Date.now();
+  const isExpiredPaidMembership = status === 'EXPIRED'
+    && membership?.status !== 'TRIAL'
+    && membership?.membership_source !== 'EXTERNAL_PAYMENT'
+    && !membership?.is_complimentary
+    && (membership?.status === 'EXPIRED' || hasFinishedPaidPeriod);
+  const canChooseRenewal = isFinishedFreeTrial || isExpiredPaidMembership;
   const isManualPaymentPending = membership?.status === 'PENDING_PAYMENT'
     && membership?.renewal_mode === 'MANUAL_RENEWAL';
+  const hasFirstCycleDiscount = membership?.discount_status === 'RESERVED'
+    && isDiscountPercentage(Number(membership?.discount_percent));
   const [renewalLoading, setRenewalLoading] = useState<'AUTO_CHARGE' | 'MANUAL_RENEWAL' | 'PAYMENT_LINK' | null>(null);
   const [renewalMessage, setRenewalMessage] = useState<string | null>(null);
   const [renewalError, setRenewalError] = useState<string | null>(null);
@@ -50,6 +62,11 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
     title = '¿Quieres continuar con Team Naty?';
     description =
       'Tu prueba de 7 días terminó. Si deseas seguir, elige ahora cómo prefieres pagar cada mes. No se aplicará ningún cargo sin tu elección.';
+    ctaText = '';
+  } else if (isExpiredPaidMembership) {
+    title = '¿Quieres renovar tu membresía?';
+    description =
+      'Tu último ciclo ya terminó. Elige cómo continuar al valor vigente de tu inscripción. No se aplicará ningún cargo sin tu elección.';
     ctaText = '';
   } else if (isManualPaymentPending) {
     title = 'Tu pago mensual está pendiente';
@@ -123,7 +140,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
             <strong>${contractedPrice.toLocaleString('es-CL')} CLP / mes</strong>
           </div>
           <ul>
-            {!isFinishedFreeTrial && !isManualPaymentPending && (
+            {!canChooseRenewal && !isManualPaymentPending && (
               <li>
                 <CheckCircle size={17} aria-hidden="true" />
                 <span>7 días de prueba gratuita ($0 hoy)</span>
@@ -145,7 +162,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
         </div>
 
         <div className={styles.actions}>
-          {isFinishedFreeTrial && (
+          {canChooseRenewal && (
             <div className={styles.renewalChoices}>
               <button
                 type="button"
@@ -155,13 +172,13 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
               >
                 <CalendarClock size={22} aria-hidden="true" />
                 <span>
-                  <strong>Recordatorio y enlace mensual</strong>
-                  <small>Flow te mostrará un enlace seguro cada mes. Tú decides cuándo pagarlo.</small>
+                  <strong>{hasFirstCycleDiscount ? `Usar mi descuento de ${membership?.discount_percent}%` : 'Recordatorio y enlace mensual'}</strong>
+                  <small>{hasFirstCycleDiscount ? 'Recibirás un enlace Flow para un único primer mes con descuento. Después decidirás tu modalidad normal al valor contratado.' : 'Flow te mostrará un enlace seguro cada mes. Tú decides cuándo pagarlo.'}</small>
                 </span>
                 {renewalLoading === 'MANUAL_RENEWAL' ? <Loader2 className={styles.spinner} size={19} /> : <ArrowRight size={19} />}
               </button>
 
-              <button
+              {!hasFirstCycleDiscount && <button
                 type="button"
                 className={`${styles.renewalChoice} ${styles.autoChoice}`}
                 onClick={() => handleRenewalChoice('AUTO_CHARGE')}
@@ -173,7 +190,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
                   <small>Registrarás tu tarjeta directamente en Flow y autorizarás los cargos mensuales.</small>
                 </span>
                 {renewalLoading === 'AUTO_CHARGE' ? <Loader2 className={styles.spinner} size={19} /> : <ArrowRight size={19} />}
-              </button>
+              </button>}
             </div>
           )}
 
@@ -203,7 +220,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
             </a>
           )}
 
-          {!isFinishedFreeTrial && !isManualPaymentPending && ctaText && (
+          {!canChooseRenewal && !isManualPaymentPending && ctaText && (
             <Link href="/checkout" className={styles.primaryAction}>
               <span>{ctaText}</span>
               <ArrowRight size={18} aria-hidden="true" />

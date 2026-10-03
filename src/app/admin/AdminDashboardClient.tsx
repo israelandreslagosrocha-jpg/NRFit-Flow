@@ -36,6 +36,11 @@ import {
   updateLiveSessionAction,
   deleteLiveSessionAction,
   sendBroadcastNotificationAction,
+  recordExternalMembershipPaymentAction,
+  assignComplimentaryMembershipAction,
+  revokeComplimentaryMembershipAction,
+  assignPersonalDiscountAction,
+  createReferralCouponAction,
 } from '../../actions/admin-portal';
 
 type Student = {
@@ -46,12 +51,34 @@ type Student = {
     full_name: string;
   } | null;
   memberships: Array<{
+    id: string;
     status: string;
+    start_date?: string | null;
+    end_date?: string | null;
     trial_ends_at: string | null;
     current_period_end: string | null;
     created_at: string;
     price_contracted?: number | null;
     billing_email?: string | null;
+    gateway?: string | null;
+    gateway_subscription_id?: string | null;
+    membership_source?: string | null;
+    is_complimentary?: boolean | null;
+    complimentary_expires_at?: string | null;
+    complimentary_revoked_at?: string | null;
+    discount_percent?: number | null;
+    discount_status?: string | null;
+    discount_code?: string | null;
+    discount_expires_at?: string | null;
+  }>;
+  membership_discounts: Array<{
+    id: string;
+    source: 'PERSONAL' | 'REFERRAL' | string;
+    discount_percent: number;
+    status: string;
+    expires_at: string | null;
+    membership_id: string | null;
+    coupon?: { code?: string | null; expires_at?: string | null } | Array<{ code?: string | null; expires_at?: string | null }> | null;
   }>;
 };
 
@@ -137,6 +164,18 @@ function nextTeamNatyLiveDate(): string {
   const candidate = new Date(Date.UTC(year, month - 1, day, 12));
   while (![1, 3].includes(candidate.getUTCDay())) candidate.setUTCDate(candidate.getUTCDate() + 1);
   return candidate.toISOString().slice(0, 10);
+}
+
+function dateInputAfterDays(days: number): string {
+  const [year, month, day] = santiagoDateInputValue().split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12));
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function couponCode(discount: Student['membership_discounts'][number]): string | null {
+  const coupon = Array.isArray(discount.coupon) ? discount.coupon[0] : discount.coupon;
+  return coupon?.code || null;
 }
 
 export default function AdminDashboardClient({
@@ -671,28 +710,103 @@ export default function AdminDashboardClient({
                     <button onClick={() => setSelectedStudent(null)} className="btn-close-drawer">✕</button>
                   </div>
                   <div className="drawer-body">
-                    <div className="drawer-avatar-row">
-                      <div className="drawer-big-avatar">{selectedStudent.profile?.full_name?.charAt(0) || 'A'}</div>
-                      <div>
-                        <h4>{selectedStudent.profile?.full_name || 'Alumna'}</h4>
-                        <span>Registrada el {formatDate(selectedStudent.created_at)}</span>
-                      </div>
-                    </div>
-                    <div className="drawer-section">
-                      <h5>Membresía Actual</h5>
-                      <div className="drawer-info-row">
-                        <span>Plan:</span>
-                        <strong>Team Naty Online</strong>
-                      </div>
-                      <div className="drawer-info-row">
-                        <span>Estado:</span>
-                        <strong>{(selectedStudent.memberships || [])[0]?.status || 'Sin membresía'}</strong>
-                      </div>
-                      <div className="drawer-info-row">
-                        <span>Vigencia:</span>
-                        <strong>{formatDate((selectedStudent.memberships || [])[0]?.trial_ends_at || (selectedStudent.memberships || [])[0]?.current_period_end)}</strong>
-                      </div>
-                    </div>
+                    {(() => {
+                      const membership = (selectedStudent.memberships || [])[0];
+                      const activeDiscounts = (selectedStudent.membership_discounts || []).filter((discount) =>
+                        ['AVAILABLE', 'RESERVED'].includes(discount.status)
+                      );
+                      const isComplimentary = Boolean(membership?.is_complimentary && membership.status === 'ACTIVE');
+                      const defaultPrice = Number(membership?.price_contracted) > 0 ? Number(membership.price_contracted) : 25000;
+
+                      return <>
+                        <div className="drawer-avatar-row">
+                          <div className="drawer-big-avatar">{selectedStudent.profile?.full_name?.charAt(0) || 'A'}</div>
+                          <div>
+                            <h4>{selectedStudent.profile?.full_name || 'Alumna'}</h4>
+                            <span>Registrada el {formatDate(selectedStudent.created_at)}</span>
+                          </div>
+                        </div>
+
+                        <div className="drawer-section">
+                          <h5>Membresía actual</h5>
+                          <div className="drawer-info-row"><span>Plan:</span><strong>Team Naty Online</strong></div>
+                          <div className="drawer-info-row"><span>Estado:</span><strong>{membership?.status || 'Sin membresía'}</strong></div>
+                          <div className="drawer-info-row"><span>Origen:</span><strong>{membership?.membership_source === 'EXTERNAL_PAYMENT' ? 'Pago registrado por Natalia' : isComplimentary ? 'Cortesía de Natalia' : 'Inscripción por plataforma'}</strong></div>
+                          <div className="drawer-info-row"><span>{isComplimentary ? 'Cortesía vigente:' : 'Próxima renovación:'}</span><strong>{isComplimentary && !membership?.complimentary_expires_at ? 'Hasta que Natalia la revoque' : formatDate(membership?.complimentary_expires_at || membership?.trial_ends_at || membership?.current_period_end)}</strong></div>
+                        </div>
+
+                        <section className="drawer-section drawer-management-section">
+                          <h5>Registrar pago recibido fuera de Flow</h5>
+                          <p className="drawer-help">No crea cargos automáticos. Deja la próxima renovación calculada desde la fecha de pago.</p>
+                          <form action={recordExternalMembershipPaymentAction} className="drawer-form">
+                            <input type="hidden" name="student_id" value={selectedStudent.id} />
+                            <div className="form-row-2">
+                              <label>Desde cuándo<input type="date" name="paid_from" required defaultValue={santiagoDateInputValue()} /></label>
+                              <label>Monto CLP<input type="number" name="amount" min="1" max="9999999" step="1" required defaultValue={defaultPrice} /></label>
+                            </div>
+                            <div className="form-row-2">
+                              <label>Medio<select name="payment_method" defaultValue="TRANSFERENCIA"><option value="TRANSFERENCIA">Transferencia</option><option value="EFECTIVO">Efectivo</option><option value="OTRO">Otro</option></select></label>
+                              <label>Referencia<input name="payment_reference" minLength={3} maxLength={120} required placeholder="Ej.: transferencia 05 oct" /></label>
+                            </div>
+                            <button type="submit" className="drawer-action-button neutral-action">Registrar pago externo</button>
+                          </form>
+                        </section>
+
+                        <section className="drawer-section drawer-management-section complimentary-section">
+                          <h5>Membresía gratuita</h5>
+                          <p className="drawer-help">Deja la fecha de término vacía para mantenerla activa hasta que Natalia la revoque.</p>
+                          <form action={assignComplimentaryMembershipAction} className="drawer-form">
+                            <input type="hidden" name="student_id" value={selectedStudent.id} />
+                            <div className="form-row-2">
+                              <label>Inicio<input type="date" name="complimentary_start_date" required defaultValue={santiagoDateInputValue()} /></label>
+                              <label>Termina el (opcional)<input type="date" name="complimentary_end_date" min={santiagoDateInputValue()} /></label>
+                            </div>
+                            <button type="submit" className="drawer-action-button">Asignar membresía gratuita</button>
+                          </form>
+                          {isComplimentary && <form action={revokeComplimentaryMembershipAction} className="drawer-inline-form">
+                            <input type="hidden" name="student_id" value={selectedStudent.id} />
+                            <button type="submit" className="drawer-action-button danger-action" onClick={(event) => { if (!window.confirm('¿Revocar ahora la membresía gratuita y cerrar el acceso?')) event.preventDefault(); }}>Revocar membresía gratuita</button>
+                          </form>}
+                        </section>
+
+                        <section className="drawer-section drawer-management-section">
+                          <h5>Descuento personal · primer mes</h5>
+                          <p className="drawer-help">Se reserva para su primer pago después de los 7 días gratis. El valor mensual siguiente vuelve al precio contratado.</p>
+                          <form action={assignPersonalDiscountAction} className="drawer-form">
+                            <input type="hidden" name="student_id" value={selectedStudent.id} />
+                            <div className="form-row-2">
+                              <label>Descuento<select name="discount_percent" defaultValue="10"><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option></select></label>
+                              <label>Vence el (opcional)<input type="date" name="discount_expires_at" min={santiagoDateInputValue()} /></label>
+                            </div>
+                            <button type="submit" className="drawer-action-button violet-action">Asignar descuento</button>
+                          </form>
+                        </section>
+
+                        <section className="drawer-section drawer-management-section">
+                          <h5>Cupón para invitar a una amiga</h5>
+                          <p className="drawer-help">Código único, válido para una invitada. Conserva los 7 días gratis y aplica el descuento sólo a su primer mes pagado.</p>
+                          <form action={createReferralCouponAction} className="drawer-form">
+                            <input type="hidden" name="student_id" value={selectedStudent.id} />
+                            <div className="form-row-2">
+                              <label>Descuento<select name="discount_percent" defaultValue="10"><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option></select></label>
+                              <label>Vence el<input type="date" name="coupon_expires_at" min={santiagoDateInputValue()} required defaultValue={dateInputAfterDays(30)} /></label>
+                            </div>
+                            <button type="submit" className="drawer-action-button">Crear cupón de invitación</button>
+                          </form>
+                        </section>
+
+                        {activeDiscounts.length > 0 && <section className="drawer-section drawer-discounts-summary">
+                          <h5>Descuentos y cupones pendientes</h5>
+                          {activeDiscounts.map((discount) => {
+                            const code = couponCode(discount);
+                            return <div className="drawer-discount-row" key={discount.id}>
+                              <div><strong>{discount.source === 'REFERRAL' ? 'Invitación' : 'Personal'} · {discount.discount_percent}%</strong><span>{code ? `Código ${code}` : 'Aplicación directa a la alumna'}</span></div>
+                              <small>{discount.expires_at ? `Vence ${formatDate(discount.expires_at)}` : 'Sin vencimiento'}</small>
+                            </div>;
+                          })}
+                        </section>}
+                      </>;
+                    })()}
                   </div>
                 </div>
               </div>

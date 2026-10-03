@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPaymentGateway } from '../index.ts';
 import { logger, generateTraceId, sanitizeValue } from '../../logger.ts';
 import { deriveMembershipState, type FlowSubscriptionSnapshot } from './state-machine.ts';
+import { getMembershipOfferForPrice } from '../../offers/membership-offer.ts';
+import { getDiscountedMonthlyPrice, isDiscountPercentage } from '../../memberships/admin-membership.ts';
 
 export interface ProcessFlowCallbackInput {
   supabase: SupabaseClient;
@@ -83,7 +85,7 @@ export async function processFlowCallback(
 
   let membershipQuery = supabase
     .from('memberships')
-    .select('id, student_id, billing_email, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, last_gateway_snapshot_request_started_at, gateway_sync_state, gateway_snapshot_sequence_counter, last_applied_snapshot_sequence');
+    .select('id, student_id, billing_email, trace_id, status, gateway_subscription_id, current_period_start, current_period_end, trial_ends_at, price_contracted, discount_percent, discount_status, last_gateway_snapshot_request_started_at, gateway_sync_state, gateway_snapshot_sequence_counter, last_applied_snapshot_sequence');
 
   if (targetSubId) {
     membershipQuery = membershipQuery.eq('gateway_subscription_id', targetSubId);
@@ -253,6 +255,41 @@ export async function processFlowCallback(
             trace_id: localTraceId,
             membership_id: matchedMembership.id,
             error: rpcErr.message,
+          });
+        }
+      }
+
+      // Un descuento reservado sólo se marca como aplicado si el importe que
+      // Flow confirmó coincide exactamente con el primer ciclo prometido. La
+      // comparación evita consumir un cupón ante una configuración errónea de
+      // plan y conserva evidencia para que Natalia pueda corregirlo.
+      const discountPercent = Number(matchedMembership.discount_percent);
+      if (
+        matchedMembership.discount_status === 'RESERVED'
+        && isDiscountPercentage(discountPercent)
+      ) {
+        const offer = getMembershipOfferForPrice(matchedMembership.price_contracted);
+        const expectedAmount = offer
+          ? getDiscountedMonthlyPrice(offer.monthlyPrice, discountPercent)
+          : null;
+
+        if (expectedAmount !== null && Number(pay.amount) === expectedAmount) {
+          const appliedAt = new Date().toISOString();
+          await supabase
+            .from('memberships')
+            .update({ discount_status: 'APPLIED', discount_applied_at: appliedAt })
+            .eq('id', matchedMembership.id);
+          await supabase
+            .from('membership_discounts')
+            .update({ status: 'APPLIED', applied_at: appliedAt, updated_at: appliedAt })
+            .eq('membership_id', matchedMembership.id)
+            .eq('status', 'RESERVED');
+        } else {
+          logger.error('discounted_first_cycle_amount_mismatch', {
+            trace_id: localTraceId,
+            membership_id: matchedMembership.id,
+            expected_amount: expectedAmount,
+            received_amount: Number(pay.amount),
           });
         }
       }

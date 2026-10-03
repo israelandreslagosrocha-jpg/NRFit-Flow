@@ -9,19 +9,37 @@ import {
   getMembershipOfferForPrice,
   type MembershipOfferId,
 } from '../lib/offers/membership-offer';
-import { getFlowPlanIdForOffer } from '../lib/payments/flow/plan';
+import {
+  getFlowPlanIdForFirstCycleDiscount,
+  getFlowPlanIdForOffer,
+} from '../lib/payments/flow/plan';
 import {
   createFreeTrialWindow,
   getRenewalSettings,
   isFreeTrialFinished,
   type RenewalChoice,
 } from '../lib/memberships/renewal-policy';
+import {
+  getDiscountedMonthlyPrice,
+  isDiscountPercentage,
+  type DiscountPercentage,
+} from '../lib/memberships/admin-membership';
+
+function normalizeReferralCouponCode(value: string | null | undefined): string | null {
+  const normalized = (value || '').trim().toUpperCase();
+  if (!normalized) return null;
+  return /^[A-Z0-9-]{4,50}$/.test(normalized) ? normalized : null;
+}
+
+function isUsableDiscountExpiry(value: string | null | undefined, now: Date = new Date()): boolean {
+  return !value || new Date(value).getTime() >= now.getTime();
+}
 
 /**
  * Inicia exclusivamente el período gratuito. No llama a Flow ni pide tarjeta:
  * la alumna elige su modalidad al finalizar sus siete días de prueba.
  */
-export async function createCheckoutSubscriptionAction(expectedOfferId: MembershipOfferId) {
+export async function createCheckoutSubscriptionAction(expectedOfferId: MembershipOfferId, referralCouponInput?: string) {
   const traceId = generateTraceId();
   const offer = getCurrentMembershipOffer();
 
@@ -92,6 +110,15 @@ export async function createCheckoutSubscriptionAction(expectedOfferId: Membersh
         redirectUrl: '/para-ti',
       };
     }
+
+    // La prueba es única por cuenta. Si existe una membresía terminada, el
+    // portal le ofrece continuar sin regalar una segunda semana al volver al
+    // checkout.
+    return {
+      success: false,
+      error: 'Esta cuenta ya utilizó su prueba gratuita. Desde tu portal puedes elegir cómo continuar tu membresía.',
+      redirectUrl: '/para-ti',
+    };
   }
 
   // 3. Resolver el plan interno y fijar el precio vigente en el instante de
@@ -106,6 +133,57 @@ export async function createCheckoutSubscriptionAction(expectedOfferId: Membersh
 
   const planId = plan?.id || '00000000-0000-0000-0000-000000000001';
   const price = offer.monthlyPrice;
+
+  // Un descuento personal pertenece a la alumna; un cupón de invitación se
+  // valida antes de crear la prueba. Ambos se reservan en la membresía y sólo
+  // se usan para el primer ciclo pagado, nunca para rebajar renovaciones.
+  const now = new Date();
+  const { data: personalDiscount } = await adminClient
+    .from('membership_discounts')
+    .select('id, discount_percent, expires_at')
+    .eq('student_id', studentId)
+    .eq('source', 'PERSONAL')
+    .eq('status', 'AVAILABLE')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let referralCoupon: { id: string; code: string; discount_value: number | string; expires_at: string | null; issued_to_student_id: string | null; issued_by_profile_id: string } | null = null;
+  const referralCode = normalizeReferralCouponCode(referralCouponInput);
+  if (referralCouponInput?.trim() && !referralCode) {
+    return { success: false, error: 'El código promocional tiene un formato inválido.' };
+  }
+  if (referralCode) {
+    const { data } = await adminClient
+      .from('coupons')
+      .select('id, code, discount_value, expires_at, issued_to_student_id, issued_by_profile_id, is_active, scope')
+      .eq('code', referralCode)
+      .eq('scope', 'REFERRAL')
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (!data || data.issued_to_student_id === studentId || !isUsableDiscountExpiry(data.expires_at, now) || !isDiscountPercentage(Number(data.discount_value))) {
+      return { success: false, error: 'Este cupón no está disponible. Revisa el código o pide uno vigente a quien te invitó.' };
+    }
+
+    const { data: priorClaim, error: claimLookupError } = await adminClient
+      .from('membership_discounts')
+      .select('id')
+      .eq('coupon_id', data.id)
+      .limit(1)
+      .maybeSingle();
+    if (claimLookupError || priorClaim) {
+      return { success: false, error: 'Este cupón ya fue reservado o utilizado. Pide un nuevo código a quien te invitó.' };
+    }
+    referralCoupon = data;
+  }
+
+  const selectedDiscountPercent = referralCoupon
+    ? Number(referralCoupon.discount_value) as DiscountPercentage
+    : personalDiscount && isUsableDiscountExpiry(personalDiscount.expires_at, now) && isDiscountPercentage(Number(personalDiscount.discount_percent))
+      ? Number(personalDiscount.discount_percent) as DiscountPercentage
+      : null;
+  const selectedDiscountExpiry = referralCoupon?.expires_at || personalDiscount?.expires_at || null;
 
   // 4. Crear una prueba autónoma. No se crea cliente, suscripción ni factura
   // en Flow hasta que la alumna decida continuar al terminar la prueba.
@@ -127,6 +205,10 @@ export async function createCheckoutSubscriptionAction(expectedOfferId: Membersh
       gateway_status: 'trial_pending_choice',
       trace_id: traceId,
       billing_email: user.email,
+      discount_percent: selectedDiscountPercent,
+      discount_status: selectedDiscountPercent ? 'RESERVED' : 'NONE',
+      discount_code: referralCoupon?.code || null,
+      discount_expires_at: selectedDiscountExpiry,
     })
     .select('id')
     .single();
@@ -140,6 +222,65 @@ export async function createCheckoutSubscriptionAction(expectedOfferId: Membersh
       success: false,
       error: 'Error al inicializar la membresía interna.',
     };
+  }
+
+  if (referralCoupon && selectedDiscountPercent) {
+    // Cierre compare-and-set: aunque dos navegadores hayan validado el código
+    // a la vez, sólo el primero puede desactivarlo. El segundo no obtiene una
+    // prueba sin el descuento prometido.
+    const { data: claimedCoupon, error: claimError } = await adminClient
+      .from('coupons')
+      .update({ is_active: false })
+      .eq('id', referralCoupon.id)
+      .eq('is_active', true)
+      .select('id')
+      .maybeSingle();
+
+    if (claimError || !claimedCoupon) {
+      await adminClient.from('memberships').delete().eq('id', membership.id).eq('status', 'TRIAL');
+      return { success: false, error: 'Este cupón acaba de ser utilizado. Pide un código nuevo e inténtalo nuevamente.' };
+    }
+
+    const { error: discountError } = await adminClient.from('membership_discounts').insert({
+      student_id: studentId,
+      membership_id: membership.id,
+      coupon_id: referralCoupon.id,
+      source: 'REFERRAL',
+      discount_percent: selectedDiscountPercent,
+      applies_to: 'FIRST_PAID_CYCLE',
+      status: 'RESERVED',
+      expires_at: selectedDiscountExpiry,
+      assigned_by_profile_id: referralCoupon.issued_by_profile_id,
+    });
+    if (discountError) {
+      logger.error('referral_coupon_reservation_failed', {
+        trace_id: traceId,
+        membership_id: membership.id,
+        coupon_id: referralCoupon.id,
+      }, discountError);
+      // Conservador: no dejamos una prueba creada con un código consumido pero
+      // sin el descuento. La reserva se revierte antes de enviar bienvenida.
+      await adminClient.from('coupons').update({ is_active: true }).eq('id', referralCoupon.id).eq('is_active', false);
+      await adminClient.from('memberships').delete().eq('id', membership.id).eq('status', 'TRIAL');
+      return { success: false, error: 'No fue posible reservar el cupón. No se inició ninguna prueba; inténtalo nuevamente.' };
+    }
+  } else if (personalDiscount && selectedDiscountPercent) {
+    const { error: discountError } = await adminClient
+      .from('membership_discounts')
+      .update({
+        membership_id: membership.id,
+        status: 'RESERVED',
+        updated_at: now.toISOString(),
+      })
+      .eq('id', personalDiscount.id)
+      .eq('status', 'AVAILABLE');
+    if (discountError) {
+      logger.warn('personal_discount_reservation_failed', {
+        trace_id: traceId,
+        membership_id: membership.id,
+        discount_id: personalDiscount.id,
+      });
+    }
   }
 
   logger.info('free_trial_started', {
@@ -157,6 +298,10 @@ export async function createCheckoutSubscriptionAction(expectedOfferId: Membersh
       studentName,
       trialEndsAt: trialWindow.trialEndsAt,
       amount: price,
+      firstPaidCycleAmount: selectedDiscountPercent
+        ? getDiscountedMonthlyPrice(price, selectedDiscountPercent)
+        : price,
+      firstPaidCycleDiscountPercent: selectedDiscountPercent,
       trace_id: traceId,
     },
   });
@@ -204,7 +349,7 @@ export async function beginMembershipRenewalAction(
 
   const { data: membership } = await adminClient
     .from('memberships')
-    .select('id, status, trial_ends_at, price_contracted, gateway_customer_id, gateway_subscription_id, renewal_mode')
+    .select('id, status, trial_ends_at, current_period_end, end_date, price_contracted, gateway_customer_id, gateway_subscription_id, gateway_status, auto_renew, renewal_mode, membership_source, is_complimentary, discount_percent, discount_status, discount_expires_at, discount_code')
     .eq('student_id', student.id)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -227,17 +372,53 @@ export async function beginMembershipRenewalAction(
   const isActiveTrial = membership.status === 'TRIAL' && !isFreeTrialFinished(membership.trial_ends_at);
   const canPayNow = timing === 'PAY_NOW' && choice === 'MANUAL_RENEWAL' && isActiveTrial;
   const canRenewAfterTrial = membership.status === 'TRIAL' && isFreeTrialFinished(membership.trial_ends_at);
+  const periodEnd = membership.current_period_end || membership.end_date;
+  const periodHasFinished = Boolean(periodEnd) && new Date(periodEnd!).getTime() <= Date.now();
+  const isExternallyManaged = membership.membership_source === 'EXTERNAL_PAYMENT' || membership.is_complimentary;
+  // Una mensualidad pagada que terminó (incluido un primer ciclo con cupón de
+  // un solo período) puede continuar sin volver a crear una prueba gratis.
+  // Aceptamos ACTIVE sólo cuando su fecha contractual ya venció: el helper de
+  // acceso la trata como EXPIRADA antes de que el reconciliador la normalice.
+  const canRenewExpiredPaidCycle = timing === 'AFTER_TRIAL'
+    && !isExternallyManaged
+    && (
+      membership.status === 'EXPIRED'
+      || (membership.status === 'CANCELLED' && periodHasFinished)
+      || (membership.status === 'ACTIVE' && periodHasFinished)
+    );
 
-  if (!canPayNow && !canRenewAfterTrial) {
+  if (isExternallyManaged) {
     return {
       success: false,
-      error: 'Esta modalidad estará disponible al finalizar tu prueba. El pago anticipado sólo puede hacerse mediante enlace manual de Flow.',
+      error: 'Esta membresía es gestionada directamente por Natalia. Escríbenos para revisar su renovación.',
+    };
+  }
+
+  if (!canPayNow && !canRenewAfterTrial && !canRenewExpiredPaidCycle) {
+    return {
+      success: false,
+      error: 'Esta modalidad estará disponible al finalizar tu período vigente. El pago anticipado sólo puede hacerse mediante enlace manual de Flow.',
     };
   }
 
   const offer = getMembershipOfferForPrice(membership.price_contracted);
   if (!offer) {
     return { success: false, error: 'No fue posible recuperar el precio fijado de tu inscripción.' };
+  }
+
+  const firstCycleDiscount = membership.discount_status === 'RESERVED'
+    && isDiscountPercentage(Number(membership.discount_percent))
+    && isUsableDiscountExpiry(membership.discount_expires_at);
+  const discountPercent = firstCycleDiscount ? Number(membership.discount_percent) as DiscountPercentage : null;
+
+  // Un cupón de primer mes se procesa mediante un enlace manual de un solo
+  // ciclo. Así Flow no puede reutilizar la rebaja en meses posteriores y la
+  // alumna vuelve a decidir su modalidad normal al terminar ese ciclo.
+  if (discountPercent && choice === 'AUTO_CHARGE') {
+    return {
+      success: false,
+      error: `Tu descuento de ${discountPercent}% se aplica mediante un enlace seguro de Flow sólo para el primer mes. Después podrás elegir pago automático o recordatorio mensual al valor normal.`,
+    };
   }
 
   const renewal = getRenewalSettings(choice);
@@ -249,14 +430,18 @@ export async function beginMembershipRenewalAction(
       renewal_mode: renewal.renewalMode,
       gateway: 'FLOW',
       gateway_status: canPayNow
-        ? 'early_manual_payment_pending'
+        ? discountPercent
+          ? 'discount_first_cycle_payment_pending'
+          : 'early_manual_payment_pending'
         : choice === 'AUTO_CHARGE'
           ? 'card_registration_pending'
-          : 'payment_link_pending',
+          : discountPercent
+            ? 'discount_first_cycle_payment_pending'
+            : 'payment_link_pending',
       billing_email: user.email,
     })
     .eq('id', membership.id)
-    .eq('status', 'TRIAL')
+    .eq('status', membership.status)
     .select('id, gateway_customer_id')
     .maybeSingle();
 
@@ -299,11 +484,14 @@ export async function beginMembershipRenewalAction(
       };
     }
 
-    const flowPlanId = getFlowPlanIdForOffer(offer);
+    const flowPlanId = discountPercent
+      ? getFlowPlanIdForFirstCycleDiscount(offer, discountPercent)
+      : getFlowPlanIdForOffer(offer);
     const subscription = await gateway.createSubscription({
       planId: flowPlanId,
       customerId,
       trialPeriodDays: renewal.flowTrialPeriodDays,
+      periodsNumber: discountPercent ? 1 : undefined,
     });
     subscriptionCreated = true;
 
@@ -321,7 +509,9 @@ export async function beginMembershipRenewalAction(
       mode: 'MANUAL_RENEWAL' as const,
       paymentUrl: subscription.pendingPaymentUrl || null,
       message: subscription.pendingPaymentUrl
-        ? 'Tu enlace de pago ya está disponible.'
+        ? discountPercent
+          ? `Tu enlace de pago con ${discountPercent}% de descuento para el primer mes ya está disponible.`
+          : 'Tu enlace de pago ya está disponible.'
         : 'Flow está preparando tu enlace de pago. Vuelve a esta pantalla en unos momentos.',
     };
   } catch (err: any) {
@@ -332,10 +522,10 @@ export async function beginMembershipRenewalAction(
       await adminClient
         .from('memberships')
         .update({
-          status: 'TRIAL',
-          auto_renew: false,
-          renewal_mode: 'EXPIRE_ON_DATE',
-          gateway_status: 'renewal_choice_error',
+          status: membership.status,
+          auto_renew: membership.auto_renew,
+          renewal_mode: membership.renewal_mode,
+          gateway_status: membership.gateway_status || 'renewal_choice_error',
         })
         .eq('id', membership.id)
         .eq('status', 'PENDING_PAYMENT');

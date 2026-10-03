@@ -58,6 +58,47 @@
   margin-bottom: 24px;
 }
 
+.checkout-coupon-field {
+  margin: -4px 0 24px;
+  padding: 14px;
+  border: 1px dashed rgba(197, 46, 136, 0.42);
+  border-radius: 10px;
+  background: rgba(255, 79, 184, 0.045);
+}
+
+.checkout-coupon-field label {
+  display: block;
+  color: #34272e;
+  font-size: 13px;
+  font-weight: 750;
+  margin-bottom: 7px;
+}
+
+.checkout-coupon-field input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(11, 11, 11, 0.18);
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #0B0B0B;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.checkout-coupon-field input:focus {
+  border-color: #FF4FB8;
+  box-shadow: 0 0 0 3px rgba(255, 79, 184, 0.15);
+  outline: none;
+}
+
+.checkout-coupon-field p {
+  margin: 8px 0 0;
+  color: #6D6065;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .summary-row {
   display: flex;
   justify-content: space-between;

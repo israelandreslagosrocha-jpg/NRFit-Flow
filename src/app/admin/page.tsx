@@ -40,7 +40,7 @@ export default async function AdminPage({
     const [studentsResult, contentResult, sessionsResult, transactionsResult] = await Promise.all([
       admin
         .from('students')
-        .select('id, created_at, profile:profiles!inner(id, full_name, user_id), memberships(status, trial_ends_at, current_period_end, created_at, price_contracted, billing_email)')
+        .select('id, created_at, profile:profiles!inner(id, full_name, user_id), memberships(id, status, start_date, end_date, trial_ends_at, current_period_end, created_at, price_contracted, billing_email, gateway, gateway_subscription_id, membership_source, is_complimentary, complimentary_expires_at, complimentary_revoked_at, discount_percent, discount_status, discount_code, discount_expires_at), membership_discounts(id, source, discount_percent, status, expires_at, membership_id, coupon:coupons(code, expires_at))')
         .order('created_at', { ascending: false })
         .limit(50),
       admin
@@ -67,6 +67,9 @@ export default async function AdminPage({
       ...s,
       profile: Array.isArray(s.profile) ? s.profile[0] : s.profile,
       memberships: [...(s.memberships || [])].sort(
+        (a: any, b: any) => String(b.created_at).localeCompare(String(a.created_at))
+      ),
+      membership_discounts: [...(s.membership_discounts || [])].sort(
         (a: any, b: any) => String(b.created_at).localeCompare(String(a.created_at))
       ),
     }));
