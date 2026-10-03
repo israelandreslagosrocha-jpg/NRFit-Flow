@@ -10,12 +10,12 @@ export default function PreLaunchCampaignSection({ offer }) {
       <div className="landing-container campaign-grid">
         <div className="campaign-copy">
           <span className="nt-badge">{offer.label}</span>
-          <h2 className="nt-title">Cinco entrenamientos cada semana, <span className="nt-highlight">desde tu nivel.</span></h2>
+          <h2 className="nt-title">Dos clases en vivo cada semana, <span className="nt-highlight">más movimiento a tu ritmo.</span></h2>
           <p className="nt-subtitle">Una estructura para entrenar desde casa, sostener el hábito y volver a elegirte sin pedirle más horas a tu semana.</p>
 
           <div className="campaign-details" aria-label="Detalles de la membresía">
             <span><Radio size={17} /> 2 clases en vivo por Zoom</span>
-            <span><Video size={17} /> 3 entrenamientos grabados</span>
+            <span><Video size={17} /> Biblioteca asíncrona de libre disposición</span>
             <span><CalendarDays size={17} /> Sesiones de 10 a 40 minutos</span>
           </div>
 

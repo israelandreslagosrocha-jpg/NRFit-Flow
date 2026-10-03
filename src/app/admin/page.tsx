@@ -40,7 +40,7 @@ export default async function AdminPage({
     const [studentsResult, contentResult, sessionsResult, transactionsResult] = await Promise.all([
       admin
         .from('students')
-        .select('id, created_at, profile:profiles!inner(id, full_name, user_id), memberships(status, trial_ends_at, current_period_end, created_at, amount, currency, billing_email)')
+        .select('id, created_at, profile:profiles!inner(id, full_name, user_id), memberships(status, trial_ends_at, current_period_end, created_at, price_contracted, billing_email)')
         .order('created_at', { ascending: false })
         .limit(50),
       admin

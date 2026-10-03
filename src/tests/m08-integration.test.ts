@@ -291,6 +291,26 @@ describe('FASE M-08 — Fundamentos de Lanzamiento: Suite de Integración y Segu
       assert.strictEqual(result.status, 'PENDING_PAYMENT');
     });
 
+    it('Pago manual anticipado conserva sólo los días gratuitos restantes', () => {
+      const earlyPayment: MembershipRecord = {
+        id: 'mem-early-payment',
+        student_id: 'student-early',
+        status: 'PENDING_PAYMENT',
+        gateway_status: 'early_manual_payment_pending',
+        start_date: '2026-09-16',
+        trial_ends_at: '2026-09-25T12:00:00Z',
+        created_at: '2026-09-16T10:00:00Z',
+      };
+
+      const activeDuringTrial = validateMembershipDates(earlyPayment, new Date('2026-09-20T12:00:00Z'));
+      const blockedAfterTrial = validateMembershipDates(earlyPayment, new Date('2026-09-26T12:00:00Z'));
+
+      assert.strictEqual(activeDuringTrial.hasAccess, true);
+      assert.strictEqual(activeDuringTrial.status, 'TRIAL');
+      assert.strictEqual(blockedAfterTrial.hasAccess, false);
+      assert.strictEqual(blockedAfterTrial.status, 'PENDING_PAYMENT');
+    });
+
     it('Estado CANCELLED: Bloqueado terminantemente', () => {
       const membership: MembershipRecord = {
         id: 'mem-cancelled',

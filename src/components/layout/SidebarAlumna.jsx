@@ -2,18 +2,20 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Sparkles, CreditCard, TrendingUp, Video, MessageCircle } from 'lucide-react';
 import './SidebarAlumna.css';
 
 export default function SidebarAlumna() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeSection = searchParams.get('seccion') || 'inicio';
 
   const navItems = [
-    { path: '/para-ti', label: 'Para ti', icon: Sparkles },
-    { path: '/para-ti#progreso', label: 'Mi Progreso', icon: TrendingUp },
-    { path: '/para-ti#clases', label: 'Clases & Videos', icon: Video },
-    { path: '/checkout', label: 'Membresía', icon: CreditCard },
+    { path: '/para-ti', section: 'inicio', label: 'Para ti', icon: Sparkles },
+    { path: '/para-ti?seccion=progreso', section: 'progreso', label: 'Mi Progreso', icon: TrendingUp },
+    { path: '/para-ti?seccion=clases', section: 'clases', label: 'Clases & Videos', icon: Video },
+    { path: '/para-ti?seccion=membresia', section: 'membresia', label: 'Membresía', icon: CreditCard },
   ];
 
   return (
@@ -22,7 +24,7 @@ export default function SidebarAlumna() {
         <span className="sidebar-section-title">MENÚ PRINCIPAL</span>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.path;
+          const isActive = pathname === '/para-ti' && activeSection === item.section;
 
           return (
             <Link

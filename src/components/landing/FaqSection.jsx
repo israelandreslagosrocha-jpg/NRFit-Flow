@@ -24,11 +24,11 @@ export default function FaqSection({ offer }) {
     },
     {
       q: "¿Qué ocurre si no puedo asistir al LIVE de los lunes o miércoles a las 20:00?",
-      a: "No pasa nada. Todas las clases en vivo quedan grabadas y subidas a tu videoteca personal en la plataforma dentro de las 24 horas siguientes. Puedes hacerla al día siguiente en el horario que mejor se adapte a tu rutina."
+      a: "No pasa nada. Cuando Natalia publique la repetición de una clase en vivo, aparecerá claramente separada en tu biblioteca. Además, tienes entrenamientos asíncronos disponibles para moverte en el horario que mejor se adapte a tu rutina."
     },
     {
       q: "¿Puedo hacer únicamente las clases grabadas a mi propio ritmo?",
-      a: "¡Totalmente! Si tus horarios de trabajo o familia no coinciden con las sesiones en vivo, puedes realizar los entrenamientos grabados cuando quieras. El sistema registrará tu asistencia y constancia exactamente igual."
+      a: "¡Totalmente! Si tus horarios de trabajo o familia no coinciden con las sesiones en vivo, puedes usar la biblioteca cuando quieras. La asistencia se registra para las clases en vivo que Natalia confirma; no se inventan métricas de constancia por reproducir un video."
     },
     {
       q: "¿Desde qué nivel de condición física puedo comenzar?",
@@ -40,11 +40,11 @@ export default function FaqSection({ offer }) {
     },
     {
       q: "¿Qué ocurre durante y después de los 7 días de prueba?",
-      a: `Durante los 7 días tienes acceso completo a la plataforma, clases en vivo, grabadas y comunidad. Al terminar, se aplica el valor mensual que viste y aceptaste antes de inscribirte: $${offer.monthlyPrice.toLocaleString('es-CL')} CLP/mes. Si cancelas antes de que terminen los 7 días, tu costo es $0.`
+      a: `Durante los 7 días tienes acceso completo a la plataforma, clases en vivo, biblioteca y comunidad. Al terminar, eliges si continúas con pago automático o con un enlace mensual de Flow. El valor que viste al inscribirte queda fijado: $${offer.monthlyPrice.toLocaleString('es-CL')} CLP/mes. Si cancelas antes de que terminen los 7 días, tu costo es $0.`
     },
     {
       q: "¿Cuánto cuesta la membresía y qué incluye?",
-      a: `La membresía vigente cuesta $${offer.monthlyPrice.toLocaleString('es-CL')} CLP/mes después de tus 7 días gratis. Incluye 5 entrenamientos semanales: 2 clases en vivo por Zoom, 3 entrenamientos grabados, videoteca, portal personal de alumna, comunidad Team Naty y soporte directo con Natalia.`
+      a: `La membresía vigente cuesta $${offer.monthlyPrice.toLocaleString('es-CL')} CLP/mes después de tus 7 días gratis. Incluye 2 clases en vivo por Zoom cada semana, una biblioteca de entrenamientos asíncronos de libre disposición, portal personal de alumna, comunidad Team Naty y soporte directo con Natalia.`
     },
     {
       q: offer.isPresale ? "¿Hasta cuándo está disponible la preventa?" : "¿Cuál es el valor de la membresía?",

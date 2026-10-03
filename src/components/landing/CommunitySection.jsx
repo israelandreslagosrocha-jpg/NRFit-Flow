@@ -3,7 +3,7 @@ import { CalendarDays, HeartHandshake, ShieldCheck, Sparkles } from 'lucide-reac
 export default function CommunitySection() {
   const commitments = [
     { icon: <Sparkles size={20} />, eyebrow: 'A TU RITMO', title: 'Tu semana también cuenta.', desc: 'Entrena cuando puedas y retoma sin sentir que partes desde cero.' },
-    { icon: <CalendarDays size={20} />, eyebrow: 'ESTRUCTURA CLARA', title: 'Cinco momentos para ti.', desc: 'Dos clases en vivo y tres rutinas grabadas, todas entre 10 y 40 minutos.' },
+    { icon: <CalendarDays size={20} />, eyebrow: 'ESTRUCTURA CLARA', title: 'Dos clases que te guían.', desc: 'Dos sesiones en vivo semanales y biblioteca flexible, con rutinas de entre 10 y 40 minutos.' },
     { icon: <ShieldCheck size={20} />, eyebrow: 'GUÍA PROFESIONAL', title: 'Acompañada por Natalia.', desc: 'Una preparación cercana para entrenar con seguridad y criterio.' },
     { icon: <HeartHandshake size={20} />, eyebrow: 'SIN JUICIOS', title: 'Volver a intentarlo es avanzar.', desc: 'Aquí celebramos la constancia real, incluso en las semanas difíciles.' },
   ];

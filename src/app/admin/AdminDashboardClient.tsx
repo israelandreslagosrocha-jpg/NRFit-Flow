@@ -44,8 +44,7 @@ type Student = {
     trial_ends_at: string | null;
     current_period_end: string | null;
     created_at: string;
-    amount?: number | null;
-    currency?: string | null;
+    price_contracted?: number | null;
     billing_email?: string | null;
   }>;
 };
@@ -223,7 +222,7 @@ export default function AdminDashboardClient({
             className={`nav-button ${activeTab === 'contenido' ? 'active' : ''}`}
           >
             <Film size={19} />
-            <span>Contenido</span>
+            <span>Biblioteca y recursos</span>
           </button>
 
           <button
@@ -309,7 +308,7 @@ export default function AdminDashboardClient({
               {activeTab === 'dashboard' && 'Resumen General'}
               {activeTab === 'alumnas' && 'Directorio de Alumnas'}
               {activeTab === 'clases' && 'Sesiones en Vivo (Zoom)'}
-              {activeTab === 'contenido' && 'Biblioteca Multimedia'}
+              {activeTab === 'contenido' && 'Biblioteca y recursos'}
               {activeTab === 'pagos' && 'Membresías & Transacciones Flow'}
               {activeTab === 'comunicaciones' && 'Avisos & Comunicaciones'}
             </span>
@@ -456,7 +455,7 @@ export default function AdminDashboardClient({
                 <ul className="admin-operation-list brand-list">
                   <li><CheckCircle2 size={17} /><span>7 días de prueba y precio mensual fijado al momento de cada inscripción.</span></li>
                   <li><CheckCircle2 size={17} /><span>Dos clases en vivo: lunes y miércoles.</span></li>
-                  <li><CheckCircle2 size={17} /><span>Tres entrenamientos grabados por semana.</span></li>
+                  <li><CheckCircle2 size={17} /><span>Biblioteca asíncrona de libre disposición.</span></li>
                   <li><CheckCircle2 size={17} /><span>Sesiones de entre 10 y 40 minutos.</span></li>
                 </ul>
               </div>
@@ -819,8 +818,8 @@ export default function AdminDashboardClient({
               <div className="panel-card">
                 <div className="panel-header-between">
                   <div>
-                    <h3 className="panel-title">Biblioteca de Clases</h3>
-                    <span className="panel-subtitle">Material visible para alumnas activas</span>
+                    <h3 className="panel-title">Biblioteca y recursos</h3>
+                    <span className="panel-subtitle">Separa entrenamientos asíncronos, repeticiones live y material de apoyo.</span>
                   </div>
                   <span className="total-students-pill">{content.length} Recursos</span>
                 </div>
@@ -874,14 +873,14 @@ export default function AdminDashboardClient({
               <div className="panel-card">
                 <div className="panel-header-between">
                   <div>
-                    <h3 className="panel-title">Publicar Nuevo Video</h3>
-                    <span className="panel-subtitle">Aparece de inmediato en el portal de alumnas</span>
+                    <h3 className="panel-title">Publicar entrenamiento o recurso</h3>
+                    <span className="panel-subtitle">Aparece en la sección correcta del portal y genera un aviso para alumnas activas.</span>
                   </div>
                 </div>
 
                 <form action={publishContentAction} className="admin-form-styled">
                   <div className="form-group">
-                    <label>Título del video o material *</label>
+                    <label>Título del entrenamiento o material *</label>
                     <input
                       name="title"
                       required
@@ -892,26 +891,29 @@ export default function AdminDashboardClient({
 
                   <div className="form-row-2">
                     <div className="form-group">
-                      <label>Tipo *</label>
+                      <label>Formato *</label>
                       <select name="type" defaultValue="VIDEO">
-                        <option value="VIDEO">Video de Clase</option>
+                        <option value="VIDEO">Video de entrenamiento</option>
                         <option value="TIP">Tip de Nutrición/Técnica</option>
                         <option value="PDF_GUIDE">Guía PDF</option>
                         <option value="BONUS">Bonus Especial</option>
                       </select>
                     </div>
                     <div className="form-group">
-                      <label>Categoría</label>
-                      <input
+                      <label>Ubicación en el portal *</label>
+                      <select
                         name="category"
-                        maxLength={100}
-                        placeholder="Ej: Fuerza funcional, movilidad"
-                      />
+                        defaultValue="ENTRENAMIENTO_ASINCRONO"
+                      >
+                        <option value="ENTRENAMIENTO_ASINCRONO">Entrenamiento asíncrono · Biblioteca flexible</option>
+                        <option value="REPETICION_VIVO">Repetición de una clase en vivo</option>
+                        <option value="RECURSO_PROXIMA_SESION">Recurso para próxima sesión</option>
+                      </select>
                     </div>
                   </div>
 
                   <div className="form-group">
-                    <label>Enlace del video (YouTube, Vimeo, Cloudinary) *</label>
+                    <label>Enlace del video o documento (YouTube, Vimeo, Cloudinary, PDF) *</label>
                     <input
                       name="media_url"
                       type="url"
@@ -941,7 +943,7 @@ export default function AdminDashboardClient({
 
                   <button type="submit" className="btn-submit-action">
                     <Film size={16} />
-                    <span>Publicar Video y Notificar</span>
+                    <span>Publicar y Notificar</span>
                   </button>
                 </form>
               </div>

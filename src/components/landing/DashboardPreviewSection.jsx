@@ -39,13 +39,10 @@ export default function DashboardPreviewSection() {
               <p className="dash-card-eyebrow"><Calendar size={15} /> TU SEMANA</p>
               <h3>Una ruta clara, sin adivinar qué toca hoy</h3>
               <div className="dash-demo-week" aria-hidden="true">
-                <div><span>1</span><strong>Grabado</strong></div>
+                <div><span>1</span><strong>En vivo</strong></div>
                 <div><span>2</span><strong>En vivo</strong></div>
-                <div><span>3</span><strong>Grabado</strong></div>
-                <div><span>4</span><strong>En vivo</strong></div>
-                <div><span>5</span><strong>Grabado</strong></div>
               </div>
-              <p>Dos sesiones en vivo y tres grabadas aparecen ordenadas dentro de tu portal.</p>
+              <p>Dos sesiones en vivo aparecen ordenadas. La biblioteca queda disponible para entrenar con flexibilidad.</p>
             </article>
 
             <article className="dash-mock-box">

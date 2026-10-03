@@ -130,6 +130,20 @@ export function validateMembershipDates(
   }
 
   // 4. Estado PAST_DUE (Sin gracia comercial asumida hasta confirmación explícita)
+  // Excepción comercial acotada: una alumna que eligió voluntariamente pagar
+  // antes del fin de su prueba mantiene esos días gratuitos mientras Flow
+  // prepara su enlace. No se aplica a ningún otro PENDING_PAYMENT.
+  if (
+    statusUpper === 'PENDING_PAYMENT'
+    && membership.gateway_status === 'early_manual_payment_pending'
+  ) {
+    const isStarted = membership.start_date != null && new Date(membership.start_date) <= now;
+    const isTrialStillActive = membership.trial_ends_at != null && new Date(membership.trial_ends_at) >= now;
+    if (isStarted && isTrialStillActive) {
+      return { hasAccess: true, status: 'TRIAL', reason: 'Pago anticipado en preparación', membership };
+    }
+  }
+
   if (statusUpper === 'PAST_DUE') {
     return {
       hasAccess: false,

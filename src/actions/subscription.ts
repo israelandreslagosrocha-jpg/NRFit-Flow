@@ -169,11 +169,16 @@ export async function createCheckoutSubscriptionAction(expectedOfferId: Membersh
 }
 
 /**
- * Inicia el método elegido por la alumna después de su prueba gratuita.
+ * Inicia el método elegido por la alumna después de su prueba gratuita o,
+ * si ella lo solicita expresamente, un pago manual anticipado. En este último
+ * caso se informa antes de salir a Flow que el ciclo pagado comienza hoy.
  * La elección se determina en servidor y queda persistida antes de llamar a
  * Flow; el navegador jamás puede imponer una modalidad de pago por sí solo.
  */
-export async function beginMembershipRenewalAction(choice: RenewalChoice) {
+export async function beginMembershipRenewalAction(
+  choice: RenewalChoice,
+  timing: 'AFTER_TRIAL' | 'PAY_NOW' = 'AFTER_TRIAL'
+) {
   if (choice !== 'AUTO_CHARGE' && choice !== 'MANUAL_RENEWAL') {
     return { success: false, error: 'La modalidad de pago seleccionada no es válida.' };
   }
@@ -219,10 +224,14 @@ export async function beginMembershipRenewalAction(choice: RenewalChoice) {
     };
   }
 
-  if (membership.status !== 'TRIAL' || !isFreeTrialFinished(membership.trial_ends_at)) {
+  const isActiveTrial = membership.status === 'TRIAL' && !isFreeTrialFinished(membership.trial_ends_at);
+  const canPayNow = timing === 'PAY_NOW' && choice === 'MANUAL_RENEWAL' && isActiveTrial;
+  const canRenewAfterTrial = membership.status === 'TRIAL' && isFreeTrialFinished(membership.trial_ends_at);
+
+  if (!canPayNow && !canRenewAfterTrial) {
     return {
       success: false,
-      error: 'Esta modalidad estará disponible cuando finalice tu período de prueba.',
+      error: 'Esta modalidad estará disponible al finalizar tu prueba. El pago anticipado sólo puede hacerse mediante enlace manual de Flow.',
     };
   }
 
@@ -239,7 +248,11 @@ export async function beginMembershipRenewalAction(choice: RenewalChoice) {
       auto_renew: renewal.autoRenew,
       renewal_mode: renewal.renewalMode,
       gateway: 'FLOW',
-      gateway_status: choice === 'AUTO_CHARGE' ? 'card_registration_pending' : 'payment_link_pending',
+      gateway_status: canPayNow
+        ? 'early_manual_payment_pending'
+        : choice === 'AUTO_CHARGE'
+          ? 'card_registration_pending'
+          : 'payment_link_pending',
       billing_email: user.email,
     })
     .eq('id', membership.id)

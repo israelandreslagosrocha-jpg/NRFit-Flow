@@ -6,13 +6,13 @@ import { getCurrentMembershipOffer } from '../../lib/offers/membership-offer';
 
 export const metadata: Metadata = {
   title: 'Naty Entrenadora | Entrena para la vida que tienes',
-  description: 'Cinco entrenamientos online por semana para mujeres que quieren recuperar fuerza, energía, movilidad y constancia, adaptando el entrenamiento a la vida que realmente tienen.',
+  description: 'Dos clases online en vivo por semana y una biblioteca de entrenamientos flexibles para mujeres que quieren recuperar fuerza, energía, movilidad y constancia.',
   alternates: {
     canonical: 'https://natyentrenadora.com',
   },
   openGraph: {
     title: 'Naty Entrenadora | Entrena para la vida que tienes',
-    description: 'Cinco entrenamientos semanales: 2 clases en vivo por Zoom y 3 grabados para entrenar desde casa.',
+    description: 'Dos clases en vivo por Zoom cada semana y una biblioteca flexible para entrenar desde casa.',
     url: 'https://natyentrenadora.com',
     siteName: 'Naty Entrenadora',
     images: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Naty Entrenadora | Entrena para la vida que tienes',
-    description: 'Cinco entrenamientos semanales para mujeres reales: 2 clases en vivo y 3 grabados.',
+    description: 'Dos clases en vivo semanales y entrenamientos flexibles para mujeres reales.',
     images: ['https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp'],
   },
 };
@@ -60,7 +60,7 @@ export default async function PublicHomePage() {
         '@id': 'https://natyentrenadora.com/#website',
         'url': 'https://natyentrenadora.com',
         'name': 'Naty Entrenadora',
-        'description': 'Entrena para la vida que tienes. Cinco entrenamientos online por semana para mujeres.',
+        'description': 'Entrena para la vida que tienes. Dos clases en vivo semanales y biblioteca flexible para mujeres.',
       },
     ],
   };

@@ -20,7 +20,7 @@ export default function Home({ offer }) {
       {/* 1. Hero Principal */}
       <HeroSection offer={offer} />
 
-      {/* 2. Campaña de preventa: 5 entrenamientos semanales */}
+      {/* 2. Campaña de preventa: dos clases en vivo y biblioteca flexible */}
       <PreLaunchCampaignSection offer={offer} />
 
       {/* 3. Identificación y Empatía */}

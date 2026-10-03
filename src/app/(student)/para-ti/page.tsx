@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
+import { createAdminClient } from '../../../lib/supabase/admin';
 import StudentPortal from '../../../components/student/StudentPortal';
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 export default async function StudentParaTiPage({
   searchParams,
 }: {
-  searchParams: Promise<{ zoom?: string }>;
+  searchParams: Promise<{ zoom?: string; seccion?: string }>;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -60,7 +61,7 @@ export default async function StudentParaTiPage({
     profile
       ? supabase
           .from('students')
-          .select('id, memberships(status, trial_ends_at, current_period_end, price_contracted, auto_renew, renewal_mode, created_at)')
+          .select('id, memberships(status, start_date, trial_ends_at, current_period_end, price_contracted, auto_renew, renewal_mode, gateway_status, created_at)')
           .eq('profile_id', profile.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
@@ -68,16 +69,36 @@ export default async function StudentParaTiPage({
 
   const student = studentResult.data;
   let measurements: any[] = [];
+  let attendance = { booked: 0, attended: 0, excused: 0, absent: 0 };
 
   if (student?.id) {
-    const { data: measurementsData } = await supabase
-      .from('body_measurements')
-      .select('id, date, weight_kg, waist_cm, hips_cm, notes, created_at')
-      .eq('student_id', student.id)
-      .order('date', { ascending: false })
-      .limit(10);
+    // El usuario ya fue autenticado y su student.id se resolvió desde su
+    // profile. Las métricas agregadas se consultan sólo para esa alumna,
+    // nunca para otra cuenta del portal.
+    const admin = createAdminClient();
+    const [measurementsResult, bookingsResult] = await Promise.all([
+      supabase
+        .from('body_measurements')
+        .select('id, date, weight_kg, waist_cm, hips_cm, notes, created_at')
+        .eq('student_id', student.id)
+        .order('date', { ascending: false })
+        .limit(10),
+      admin
+        .from('bookings')
+        .select('id, attendance(status)')
+        .eq('student_id', student.id)
+        .limit(100),
+    ]);
 
-    measurements = measurementsData || [];
+    measurements = measurementsResult.data || [];
+    const bookings = bookingsResult.data || [];
+    attendance.booked = bookings.length;
+    for (const booking of bookings as Array<{ attendance?: { status?: string } | Array<{ status?: string }> | null }>) {
+      const record = Array.isArray(booking.attendance) ? booking.attendance[0] : booking.attendance;
+      if (record?.status === 'ATTENDED') attendance.attended += 1;
+      if (record?.status === 'ABSENT_EXCUSED') attendance.excused += 1;
+      if (record?.status === 'ABSENT_UNEXCUSED') attendance.absent += 1;
+    }
   }
 
   const rawMemberships = student?.memberships as any[] | undefined;
@@ -99,6 +120,8 @@ export default async function StudentParaTiPage({
       notifications={notificationsResult.data || []}
       membership={activeMembership}
       measurements={measurements}
+      attendance={attendance}
+      initialSection={query.seccion}
       zoomState={query.zoom}
     />
   );

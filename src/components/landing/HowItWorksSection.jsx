@@ -8,10 +8,10 @@ export default function HowItWorksSection() {
     {
       badge: "A TU RITMO",
       day: "Tu semana",
-      title: "3 Entrenamientos grabados",
+      title: "Biblioteca de entrenamientos",
       time: "Disponibles desde tu portal",
       icon: <Video size={24} style={{ color: 'var(--nt-pink)' }} />,
-      desc: "Tres entrenamientos grabados para realizar desde casa, cuando tu rutina te lo permita y desde el nivel en que estés hoy."
+      desc: "Entrenamientos asíncronos para realizar desde casa cuando tu rutina te lo permita, desde el nivel en que estés hoy."
     },
     {
       badge: "EN VIVO CON NATALIA",
@@ -39,16 +39,15 @@ export default function HowItWorksSection() {
         <div className="nt-section-header">
           <span className="nt-badge">ESTRUCTURA CLARA</span>
           <h2 className="nt-title">
-            5 Entrenamientos por semana. <br />
-            <span className="nt-highlight">Claridad absoluta antes de empezar.</span>
+            Dos clases en vivo cada semana. <br />
+            <span className="nt-highlight">Una biblioteca flexible para el resto de tu vida real.</span>
           </h2>
           <p className="nt-subtitle">
-            Sin improvisaciones ni rutinas confusas. Una estructura semanal que te permite organizarte, 
-            asistir a clases en vivo y recuperar cualquier sesión que no alcances a realizar.
+            Sin improvisaciones ni presión por cumplir una cuota imposible. Las clases en vivo te dan estructura y la biblioteca te permite sumar movimiento a tu ritmo.
           </p>
         </div>
 
-        {/* 3 modalities: 3 recordings plus 2 live sessions */}
+        {/* Biblioteca flexible más dos sesiones en vivo semanales */}
         <div className="schedule-grid">
           {schedule.map((item, idx) => (
             <div key={idx} className="nt-card schedule-card">

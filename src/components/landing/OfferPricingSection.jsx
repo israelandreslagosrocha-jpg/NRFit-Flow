@@ -6,9 +6,9 @@ import { CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export default function OfferPricingSection({ offer }) {
   const benefits = [
-    "5 entrenamientos semanales adaptados a tu vida cotidiana.",
+    "2 clases en vivo semanales para dar estructura a tu proceso.",
     "Entrenamientos LIVE los Lunes y Miércoles a las 20:00 hrs con corrección técnica directa de Natalia.",
-    "3 entrenamientos grabados semanales disponibles para entrenar cuando tú puedas.",
+    "Biblioteca de entrenamientos asíncronos disponible para entrenar cuando tú puedas.",
     "Acceso total a la videoteca con todas las rutinas grabadas anteriores.",
     "Portal personal de alumna con agenda, contenido y avisos.",
     "Comunidad exclusiva del Team Naty para mantener la motivación.",

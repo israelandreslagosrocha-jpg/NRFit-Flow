@@ -135,7 +135,7 @@ export function MembershipGate({ evaluation, userEmail, userName }: MembershipGa
             </li>
             <li>
               <CheckCircle size={17} aria-hidden="true" />
-              <span>Sesiones en vivo lunes y miércoles + 3 grabadas por semana</span>
+              <span>Dos sesiones en vivo semanales + biblioteca flexible a tu ritmo</span>
             </li>
             <li>
               <CheckCircle size={17} aria-hidden="true" />

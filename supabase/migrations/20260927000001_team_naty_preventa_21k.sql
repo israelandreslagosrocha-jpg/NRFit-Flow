@@ -1,5 +1,5 @@
--- Oferta comercial de lanzamiento: 5 entrenamientos semanales
--- (2 sesiones Zoom + 3 entrenamientos grabados) por $21.000 CLP/mes.
+-- Oferta comercial de lanzamiento: 2 sesiones Zoom semanales y biblioteca
+-- asíncrona de libre disposición por $21.000 CLP/mes.
 -- Debe aplicarse junto con la configuración equivalente del plan en Flow.
 
 UPDATE public.plans

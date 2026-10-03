@@ -40,7 +40,7 @@ describe('Portal Team Naty — contratos de datos, seguridad y oferta', () => {
     const zoomRoute = source('src/app/(student)/para-ti/zoom/[sessionId]/route.ts');
 
     assert.doesNotMatch(portal, /zoom_join_url/);
-    assert.match(portal, /\/para-ti\/zoom\/\$\{nextSession\.id\}/);
+    assert.match(portal, /\/para-ti\/zoom\/\$\{session\.id\}/);
     assert.match(page, /has_zoom_link: Boolean\(zoom_join_url\)/);
     assert.match(zoomRoute, /elapsedMinutes < -15 \|\| elapsedMinutes > 180/);
     assert.match(zoomRoute, /checkStudentMembershipAccess/);
