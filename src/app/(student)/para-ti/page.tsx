@@ -61,7 +61,7 @@ export default async function StudentParaTiPage({
     profile
       ? supabase
           .from('students')
-          .select('id, memberships(status, start_date, trial_ends_at, current_period_end, price_contracted, auto_renew, renewal_mode, gateway_status, created_at)')
+          .select('id, memberships(status, start_date, trial_ends_at, current_period_start, current_period_end, price_contracted, auto_renew, renewal_mode, gateway_status, created_at)')
           .eq('profile_id', profile.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
