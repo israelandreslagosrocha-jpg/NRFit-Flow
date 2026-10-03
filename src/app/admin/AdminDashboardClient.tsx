@@ -23,12 +23,18 @@ import {
   Sparkles,
   Send,
   Trash2,
+  Pencil,
+  X,
 } from 'lucide-react';
 import { AuthSignOutButton } from '../../components/auth/AuthSignOutButton';
 import {
   publishContentAction,
   createLiveSessionAction,
   archiveContentAction,
+  updateContentAction,
+  deleteContentAction,
+  updateLiveSessionAction,
+  deleteLiveSessionAction,
   sendBroadcastNotificationAction,
 } from '../../actions/admin-portal';
 
@@ -52,6 +58,7 @@ type Student = {
 type ContentItem = {
   id: string;
   title: string;
+  description: string | null;
   type: string;
   category: string | null;
   duration_seconds: number | null;
@@ -144,6 +151,8 @@ export default function AdminDashboardClient({
   const [studentSearch, setStudentSearch] = useState('');
   const [studentFilter, setStudentFilter] = useState<'TODAS' | 'ACTIVAS' | 'NUEVAS' | 'INACTIVAS'>('TODAS');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [editingSession, setEditingSession] = useState<LiveSession | null>(null);
+  const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
   const earliestLiveDate = santiagoDateInputValue();
   const defaultLiveDate = nextTeamNatyLiveDate();
 
@@ -696,6 +705,64 @@ export default function AdminDashboardClient({
         {/* ============================================================== */}
         {activeTab === 'clases' && (
           <div className="tab-pane animate-fade-in">
+            {editingSession && (
+              <section className="admin-editor-card" aria-label="Editar clase en vivo">
+                <div className="panel-header-between">
+                  <div>
+                    <h3 className="panel-title">Editar clase en vivo</h3>
+                    <span className="panel-subtitle">Actualiza el horario, título, capacidad o enlace de Zoom sin volver a crear la clase.</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-close-editor"
+                    onClick={() => setEditingSession(null)}
+                    aria-label="Cerrar edición de clase"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <form action={updateLiveSessionAction} className="admin-form-styled editor-form">
+                  <input type="hidden" name="session_id" value={editingSession.id} />
+                  <div className="form-group">
+                    <label>Título de la clase *</label>
+                    <input name="title" required maxLength={255} defaultValue={editingSession.title || ''} />
+                  </div>
+                  <div className="form-row-2">
+                    <div className="form-group">
+                      <label>Fecha *</label>
+                      <input
+                        type="date"
+                        name="session_date"
+                        required
+                        min={earliestLiveDate}
+                        defaultValue={editingSession.session_date}
+                      />
+                      <span className="form-help">Solo lunes o miércoles.</span>
+                    </div>
+                    <div className="form-group">
+                      <label>Hora *</label>
+                      <input type="time" name="start_time" required defaultValue={editingSession.start_time.slice(0, 5)} />
+                    </div>
+                  </div>
+                  <div className="form-row-2">
+                    <div className="form-group">
+                      <label>Enlace de Zoom *</label>
+                      <input type="url" name="zoom_join_url" required defaultValue={editingSession.zoom_join_url || ''} />
+                    </div>
+                    <div className="form-group">
+                      <label>Capacidad *</label>
+                      <input type="number" name="max_capacity" min="1" max="10000" required defaultValue={editingSession.max_capacity} />
+                    </div>
+                  </div>
+                  <button type="submit" className="btn-submit-action">
+                    <Pencil size={16} />
+                    <span>Guardar cambios de la clase</span>
+                  </button>
+                </form>
+              </section>
+            )}
+
             <div className="dashboard-double-panel">
               {/* Agenda de Clases Programadas */}
               <div className="panel-card">
@@ -722,17 +789,38 @@ export default function AdminDashboardClient({
                           </span>
                         </div>
                       </div>
-                      {s.zoom_join_url && (
-                        <a
-                          href={s.zoom_join_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn-join-zoom-direct"
-                        >
-                          <Video size={16} />
-                          <span>Abrir Zoom</span>
-                        </a>
-                      )}
+                      <div className="session-admin-actions">
+                        {s.zoom_join_url && (
+                          <a
+                            href={s.zoom_join_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn-join-zoom-direct"
+                          >
+                            <Video size={16} />
+                            <span>Abrir Zoom</span>
+                          </a>
+                        )}
+                        <button type="button" className="btn-edit-inline" onClick={() => setEditingSession(s)}>
+                          <Pencil size={14} />
+                          <span>Editar</span>
+                        </button>
+                        <form action={deleteLiveSessionAction}>
+                          <input type="hidden" name="session_id" value={s.id} />
+                          <button
+                            type="submit"
+                            className="btn-delete-inline"
+                            onClick={(event) => {
+                              if (!window.confirm('¿Eliminar esta clase de la agenda? Solo se puede eliminar si no tiene reservas ni asistencia.')) {
+                                event.preventDefault();
+                              }
+                            }}
+                          >
+                            <Trash2 size={14} />
+                            <span>Eliminar</span>
+                          </button>
+                        </form>
+                      </div>
                     </div>
                   ))}
                   {sessions.length === 0 && (
@@ -813,6 +901,81 @@ export default function AdminDashboardClient({
         {/* ============================================================== */}
         {activeTab === 'contenido' && (
           <div className="tab-pane animate-fade-in">
+            {editingContent && (
+              <section className="admin-editor-card" aria-label="Editar contenido publicado">
+                <div className="panel-header-between">
+                  <div>
+                    <h3 className="panel-title">Editar contenido</h3>
+                    <span className="panel-subtitle">Corrige el enlace, la miniatura o la información sin volver a notificar a las alumnas.</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-close-editor"
+                    onClick={() => setEditingContent(null)}
+                    aria-label="Cerrar edición de contenido"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <form action={updateContentAction} className="admin-form-styled editor-form">
+                  <input type="hidden" name="content_id" value={editingContent.id} />
+                  <div className="form-group">
+                    <label>Título del entrenamiento o material *</label>
+                    <input name="title" required maxLength={255} defaultValue={editingContent.title} />
+                  </div>
+                  <div className="form-row-2">
+                    <div className="form-group">
+                      <label>Formato *</label>
+                      <select name="type" defaultValue={editingContent.type}>
+                        <option value="VIDEO">Video de entrenamiento</option>
+                        <option value="TIP">Tip de nutrición o técnica</option>
+                        <option value="ARTICLE">Artículo</option>
+                        <option value="PDF_GUIDE">Guía PDF</option>
+                        <option value="BONUS">Bonus especial</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Ubicación en el portal *</label>
+                      <select name="category" defaultValue={editingContent.category || 'ENTRENAMIENTO_ASINCRONO'}>
+                        <option value="ENTRENAMIENTO_ASINCRONO">Entrenamiento asíncrono · Biblioteca flexible</option>
+                        <option value="REPETICION_VIVO">Repetición de una clase en vivo</option>
+                        <option value="RECURSO_PROXIMA_SESION">Recurso para próxima sesión</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="form-row-2">
+                    <div className="form-group">
+                      <label>Enlace del video o documento</label>
+                      <input type="url" name="media_url" defaultValue={editingContent.media_url || ''} />
+                    </div>
+                    <div className="form-group">
+                      <label>Enlace de la miniatura</label>
+                      <input type="url" name="thumbnail_url" defaultValue={editingContent.thumbnail_url || ''} />
+                    </div>
+                  </div>
+                  <div className="form-row-2">
+                    <div className="form-group">
+                      <label>Fecha de publicación *</label>
+                      <input type="date" name="publish_date" required defaultValue={editingContent.publish_date || santiagoDateInputValue()} />
+                    </div>
+                    <div className="form-group">
+                      <label>Duración en segundos</label>
+                      <input type="number" name="duration_seconds" min="0" max="86400" defaultValue={editingContent.duration_seconds || ''} />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>Descripción breve</label>
+                    <textarea name="description" rows={3} maxLength={2000} defaultValue={editingContent.description || ''} />
+                  </div>
+                  <button type="submit" className="btn-submit-action">
+                    <Pencil size={16} />
+                    <span>Guardar cambios del contenido</span>
+                  </button>
+                </form>
+              </section>
+            )}
+
             <div className="dashboard-double-panel">
               {/* Catálogo de Videos Publicados */}
               <div className="panel-card">
@@ -848,15 +1011,34 @@ export default function AdminDashboardClient({
                               <span>Ver</span>
                             </a>
                           )}
+                          <button type="button" className="btn-edit-inline" onClick={() => setEditingContent(item)}>
+                            <Pencil size={13} />
+                            <span>Editar</span>
+                          </button>
                           {item.is_active && (
                             <form action={archiveContentAction}>
                               <input type="hidden" name="content_id" value={item.id} />
-                              <button type="submit" className="btn-archive" title="Archivar">
+                              <button type="submit" className="btn-archive" title="Ocultar del portal de alumnas">
                                 <Trash2 size={13} />
-                                <span>Archivar</span>
+                                <span>Ocultar</span>
                               </button>
                             </form>
                           )}
+                          <form action={deleteContentAction}>
+                            <input type="hidden" name="content_id" value={item.id} />
+                            <button
+                              type="submit"
+                              className="btn-delete-inline"
+                              onClick={(event) => {
+                                if (!window.confirm(`¿Eliminar definitivamente “${item.title}”? Esta acción no se puede deshacer.`)) {
+                                  event.preventDefault();
+                                }
+                              }}
+                            >
+                              <Trash2 size={13} />
+                              <span>Eliminar</span>
+                            </button>
+                          </form>
                         </div>
                       </div>
                     </div>
@@ -895,6 +1077,7 @@ export default function AdminDashboardClient({
                       <select name="type" defaultValue="VIDEO">
                         <option value="VIDEO">Video de entrenamiento</option>
                         <option value="TIP">Tip de Nutrición/Técnica</option>
+                        <option value="ARTICLE">Artículo</option>
                         <option value="PDF_GUIDE">Guía PDF</option>
                         <option value="BONUS">Bonus Especial</option>
                       </select>

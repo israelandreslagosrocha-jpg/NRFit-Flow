@@ -45,7 +45,7 @@ export default async function AdminPage({
         .limit(50),
       admin
         .from('content_items')
-        .select('id, title, type, category, duration_seconds, publish_date, is_active, media_url, thumbnail_url')
+        .select('id, title, description, type, category, duration_seconds, publish_date, is_active, media_url, thumbnail_url')
         .order('created_at', { ascending: false })
         .limit(24),
       admin

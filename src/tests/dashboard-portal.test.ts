@@ -70,6 +70,21 @@ describe('Portal Team Naty — contratos de datos, seguridad y oferta', () => {
     assert.match(adminPage, /STAFF_ROLES\.has\(profile\.role\)/);
   });
 
+  it('permite a staff editar contenido y protege las eliminaciones de agenda', () => {
+    const actions = source('src/actions/admin-portal.ts');
+    const admin = source('src/app/admin/AdminDashboardClient.tsx');
+
+    assert.match(actions, /export async function updateContentAction\(formData: FormData\) \{\s+await requireStaff\(\)/);
+    assert.match(actions, /export async function deleteContentAction\(formData: FormData\) \{\s+await requireStaff\(\)/);
+    assert.match(actions, /export async function updateLiveSessionAction\(formData: FormData\) \{\s+await requireStaff\(\)/);
+    assert.match(actions, /export async function deleteLiveSessionAction\(formData: FormData\) \{\s+await requireStaff\(\)/);
+    assert.match(actions, /from\('bookings'\)[\s\S]*count: 'exact', head: true/);
+    assert.match(actions, /No se elimina automáticamente para proteger el registro de las alumnas/);
+    assert.match(admin, /Editar clase en vivo/);
+    assert.match(admin, /Guardar cambios del contenido/);
+    assert.match(admin, /Eliminar definitivamente/);
+  });
+
   it('no solicita columnas ausentes en el perfil y evita ciclos de login ante errores', () => {
     const profiles = source('src/lib/supabase/profile-helpers.ts');
     const proxy = source('src/proxy.ts');

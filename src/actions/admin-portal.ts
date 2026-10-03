@@ -50,6 +50,48 @@ function safeZoomUrl(input: string): string | null {
   return host === 'zoom.us' || host.endsWith('.zoom.us') ? url : null;
 }
 
+function isUuid(input: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input);
+}
+
+function contentFields(formData: FormData) {
+  const title = value(formData, 'title', 255);
+  const description = value(formData, 'description', 2000);
+  const contentType = value(formData, 'type', 30);
+  const mediaUrlInput = value(formData, 'media_url', 500);
+  const thumbnailUrlInput = value(formData, 'thumbnail_url', 500);
+  const mediaUrl = safeHttpsUrl(mediaUrlInput);
+  const thumbnailUrl = safeHttpsUrl(thumbnailUrlInput);
+  const category = value(formData, 'category', 100);
+  const publishDate = value(formData, 'publish_date', 10) || new Date().toISOString().slice(0, 10);
+  const durationRaw = value(formData, 'duration_seconds', 8);
+  const durationSeconds = durationRaw ? Number(durationRaw) : null;
+
+  if (!title || !CONTENT_TYPES.has(contentType) || !isIsoDate(publishDate)) {
+    messageRedirect('error', 'Revisa título, tipo y fecha de publicación.');
+  }
+  if (durationSeconds !== null && (!Number.isInteger(durationSeconds) || durationSeconds < 0 || durationSeconds > 86_400)) {
+    messageRedirect('error', 'La duración debe ser un número válido de segundos.');
+  }
+  if (mediaUrlInput && !mediaUrl) {
+    messageRedirect('error', 'El enlace de contenido debe comenzar con https://.');
+  }
+  if (thumbnailUrlInput && !thumbnailUrl) {
+    messageRedirect('error', 'La miniatura debe comenzar con https://.');
+  }
+
+  return {
+    title,
+    description: description || null,
+    type: contentType,
+    media_url: mediaUrl,
+    thumbnail_url: thumbnailUrl,
+    duration_seconds: durationSeconds,
+    category: category || null,
+    publish_date: publishDate,
+  };
+}
+
 async function requireStaff(): Promise<StaffProfile> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -115,41 +157,12 @@ async function notifyActiveStudents(title: string, message: string) {
 
 export async function publishContentAction(formData: FormData) {
   await requireStaff();
-
-  const title = value(formData, 'title', 255);
-  const description = value(formData, 'description', 2000);
-  const contentType = value(formData, 'type', 30);
-  const mediaUrl = safeHttpsUrl(value(formData, 'media_url', 500));
-  const thumbnailUrl = safeHttpsUrl(value(formData, 'thumbnail_url', 500));
-  const category = value(formData, 'category', 100);
-  const publishDate = value(formData, 'publish_date', 10) || new Date().toISOString().slice(0, 10);
-  const durationRaw = value(formData, 'duration_seconds', 8);
-  const durationSeconds = durationRaw ? Number(durationRaw) : null;
-
-  if (!title || !CONTENT_TYPES.has(contentType) || !isIsoDate(publishDate)) {
-    messageRedirect('error', 'Revisa título, tipo y fecha de publicación.');
-  }
-  if (durationSeconds !== null && (!Number.isInteger(durationSeconds) || durationSeconds < 0 || durationSeconds > 86_400)) {
-    messageRedirect('error', 'La duración debe ser un número válido de segundos.');
-  }
-  if (value(formData, 'media_url', 500) && !mediaUrl) {
-    messageRedirect('error', 'El enlace de contenido debe comenzar con https://.');
-  }
-  if (value(formData, 'thumbnail_url', 500) && !thumbnailUrl) {
-    messageRedirect('error', 'La miniatura debe comenzar con https://.');
-  }
+  const content = contentFields(formData);
 
   const admin = createAdminClient();
   const { error } = await admin.from('content_items').insert({
-    title,
-    description: description || null,
-    type: contentType,
-    media_url: mediaUrl,
-    thumbnail_url: thumbnailUrl,
-    duration_seconds: durationSeconds,
-    category: category || null,
+    ...content,
     access_level: 'MEMBER',
-    publish_date: publishDate,
     is_active: true,
   });
 
@@ -159,7 +172,7 @@ export async function publishContentAction(formData: FormData) {
 
   const recipients = await notifyActiveStudents(
     'Nuevo contenido disponible',
-    `${title} ya está disponible en tu portal.`
+    `${content.title} ya está disponible en tu portal.`
   );
 
   revalidatePath('/admin');
@@ -225,7 +238,7 @@ export async function archiveContentAction(formData: FormData) {
   await requireStaff();
   const contentId = value(formData, 'content_id', 36);
 
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(contentId)) {
+  if (!isUuid(contentId)) {
     messageRedirect('error', 'No se reconoció el contenido que deseas archivar.');
   }
 
@@ -242,6 +255,139 @@ export async function archiveContentAction(formData: FormData) {
   revalidatePath('/admin');
   revalidatePath('/para-ti');
   messageRedirect('success', 'Contenido archivado. Ya no estará visible para las alumnas.');
+}
+
+export async function updateContentAction(formData: FormData) {
+  await requireStaff();
+  const contentId = value(formData, 'content_id', 36);
+  if (!isUuid(contentId)) {
+    messageRedirect('error', 'No se reconoció el contenido que deseas editar.');
+  }
+
+  const content = contentFields(formData);
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('content_items')
+    .update(content)
+    .eq('id', contentId);
+
+  if (error) {
+    messageRedirect('error', 'No fue posible guardar los cambios del contenido.');
+  }
+
+  revalidatePath('/admin');
+  revalidatePath('/para-ti');
+  messageRedirect('success', 'Contenido actualizado. El portal de alumnas ya muestra la información nueva.');
+}
+
+export async function deleteContentAction(formData: FormData) {
+  await requireStaff();
+  const contentId = value(formData, 'content_id', 36);
+  if (!isUuid(contentId)) {
+    messageRedirect('error', 'No se reconoció el contenido que deseas eliminar.');
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('content_items')
+    .delete()
+    .eq('id', contentId);
+
+  if (error) {
+    messageRedirect('error', 'No fue posible eliminar el contenido. Prueba ocultarlo en su lugar.');
+  }
+
+  revalidatePath('/admin');
+  revalidatePath('/para-ti');
+  messageRedirect('success', 'Contenido eliminado definitivamente.');
+}
+
+export async function updateLiveSessionAction(formData: FormData) {
+  await requireStaff();
+  const sessionId = value(formData, 'session_id', 36);
+  const title = value(formData, 'title', 255);
+  const sessionDate = value(formData, 'session_date', 10);
+  const startTime = value(formData, 'start_time', 5);
+  const zoomUrl = safeZoomUrl(value(formData, 'zoom_join_url', 500));
+  const capacityRaw = value(formData, 'max_capacity', 4) || '100';
+  const maxCapacity = Number(capacityRaw);
+
+  if (!isUuid(sessionId) || !title || !isIsoDate(sessionDate) || !isTime(startTime) || !zoomUrl) {
+    messageRedirect('error', 'Completa título, fecha, hora y un enlace válido de Zoom.');
+  }
+  if (!isTeamNatyLiveDay(sessionDate)) {
+    messageRedirect('error', 'Las sesiones en vivo de Team Naty se programan únicamente los lunes y miércoles.');
+  }
+  if (!Number.isInteger(maxCapacity) || maxCapacity < 1 || maxCapacity > 10_000) {
+    messageRedirect('error', 'La capacidad debe ser un número entre 1 y 10.000.');
+  }
+
+  const admin = createAdminClient();
+  const { data: existingSession, error: lookupError } = await admin
+    .from('sessions')
+    .select('id')
+    .eq('id', sessionId)
+    .eq('delivery_type', 'ONLINE')
+    .maybeSingle();
+
+  if (lookupError || !existingSession) {
+    messageRedirect('error', 'La clase ya no está disponible para editar.');
+  }
+
+  const { error } = await admin
+    .from('sessions')
+    .update({
+      title,
+      session_date: sessionDate,
+      start_time: startTime,
+      zoom_join_url: zoomUrl,
+      max_capacity: maxCapacity,
+    })
+    .eq('id', sessionId)
+    .eq('delivery_type', 'ONLINE');
+
+  if (error) {
+    messageRedirect('error', 'No fue posible guardar los cambios de la clase.');
+  }
+
+  revalidatePath('/admin');
+  revalidatePath('/para-ti');
+  messageRedirect('success', 'Clase actualizada. Las alumnas verán los nuevos datos en su portal.');
+}
+
+export async function deleteLiveSessionAction(formData: FormData) {
+  await requireStaff();
+  const sessionId = value(formData, 'session_id', 36);
+  if (!isUuid(sessionId)) {
+    messageRedirect('error', 'No se reconoció la clase que deseas eliminar.');
+  }
+
+  const admin = createAdminClient();
+  const { count: bookingCount, error: bookingError } = await admin
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('session_id', sessionId);
+
+  if (bookingError) {
+    messageRedirect('error', 'No fue posible comprobar las reservas de esta clase.');
+  }
+  if ((bookingCount || 0) > 0) {
+    messageRedirect('error', 'Esta clase tiene reservas o asistencia. No se elimina automáticamente para proteger el registro de las alumnas.');
+  }
+
+  const { error } = await admin
+    .from('sessions')
+    .delete()
+    .eq('id', sessionId)
+    .eq('delivery_type', 'ONLINE');
+
+  if (error) {
+    messageRedirect('error', 'No fue posible eliminar la clase.');
+  }
+
+  revalidatePath('/admin');
+  revalidatePath('/para-ti');
+  messageRedirect('success', 'Clase eliminada de la agenda.');
 }
 
 export async function sendBroadcastNotificationAction(formData: FormData) {
