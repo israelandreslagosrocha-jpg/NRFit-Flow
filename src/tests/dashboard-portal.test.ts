@@ -46,6 +46,17 @@ describe('Portal Team Naty — contratos de datos, seguridad y oferta', () => {
     assert.match(zoomRoute, /checkStudentMembershipAccess/);
   });
 
+  it('reproduce videos de biblioteca dentro del portal mediante un embed de YouTube', () => {
+    const portal = source('src/components/student/StudentPortal.tsx');
+    const nextConfig = source('next.config.js');
+
+    assert.match(portal, /function youtubeEmbedUrl/);
+    assert.match(portal, /https:\/\/www\.youtube-nocookie\.com\/embed/);
+    assert.match(portal, /student-video-dialog/);
+    assert.match(portal, /content-library-play-button/);
+    assert.match(nextConfig, /frame-src 'self' https:\/\/www\.youtube-nocookie\.com/);
+  });
+
   it('evita métricas comerciales inventadas y refleja la oferta oficial', () => {
     const admin = source('src/app/admin/AdminDashboardClient.tsx');
     const offer = source('src/lib/offers/membership-offer.ts');
