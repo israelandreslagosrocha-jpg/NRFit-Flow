@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '../../../../../lib/supabase/server';
+import { createAdminClient } from '../../../../../lib/supabase/admin';
 import { getStudentProfileByUserId } from '../../../../../lib/supabase/profile-helpers';
 import { checkStudentMembershipAccess } from '../../../../../lib/supabase/membership-helpers';
 
@@ -74,7 +75,10 @@ export async function GET(
   const access = await checkStudentMembershipAccess(supabase, student.id);
   if (!access.hasAccess) return portalRedirect(request, 'membership');
 
-  const { data: session } = await supabase
+  // La sesión ya fue autenticada y su membresía validada arriba. El cliente
+  // administrativo evita que una cortesía legítima quede bloqueada por una
+  // policy histórica; el enlace sigue estando sólo en esta ruta server-side.
+  const { data: session } = await createAdminClient()
     .from('sessions')
     .select('session_date, start_time, zoom_join_url')
     .eq('id', sessionId)

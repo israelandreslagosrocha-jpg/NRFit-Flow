@@ -220,7 +220,7 @@ async function notifyActiveStudents(title: string, message: string) {
   const admin = createAdminClient();
   const { data: memberships, error } = await admin
     .from('memberships')
-    .select('status, start_date, trial_ends_at, current_period_end, end_date, student:students!inner(profile_id)')
+    .select('status, start_date, trial_ends_at, current_period_end, end_date, is_complimentary, complimentary_expires_at, complimentary_revoked_at, student:students!inner(profile_id)')
     .in('status', ['TRIAL', 'ACTIVE', 'CANCELLED']);
 
   if (error) throw new Error('NOTIFICATION_TARGETS_UNAVAILABLE');
@@ -230,6 +230,10 @@ async function notifyActiveStudents(title: string, message: string) {
     if (!membership.start_date || new Date(membership.start_date) > now) return false;
     if (membership.status === 'TRIAL') {
       return Boolean(membership.trial_ends_at && new Date(membership.trial_ends_at) >= now);
+    }
+    if (membership.is_complimentary) {
+      return !membership.complimentary_revoked_at
+        && (!membership.complimentary_expires_at || new Date(membership.complimentary_expires_at) >= now);
     }
     const periodEnd = membership.current_period_end || membership.end_date;
     return Boolean(periodEnd && new Date(periodEnd) >= now);

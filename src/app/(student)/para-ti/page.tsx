@@ -31,10 +31,15 @@ export default async function StudentParaTiPage({
     .single();
 
   const today = new Date().toISOString().slice(0, 10);
+  // El layout ya autentica la sesión y valida la membresía antes de renderizar
+  // esta página. Usamos el cliente de servidor para que el material publicado
+  // se entregue también a cortesías legítimas, sin exponer enlaces Zoom al
+  // navegador (se eliminan antes de pasar las props al componente cliente).
+  const admin = createAdminClient();
 
   // Consultar simultáneamente contenido, clases en vivo, notificaciones y ficha de alumna
   const [contentResult, sessionsResult, notificationsResult, studentResult] = await Promise.all([
-    supabase
+    admin
       .from('content_items')
       .select('id, title, description, media_url, thumbnail_url, type, category, duration_seconds, publish_date')
       .eq('is_active', true)
@@ -42,7 +47,7 @@ export default async function StudentParaTiPage({
       .order('publish_date', { ascending: false })
       .order('priority', { ascending: false })
       .limit(12),
-    supabase
+    admin
       .from('sessions')
       .select('id, title, session_date, start_time, zoom_join_url')
       .eq('delivery_type', 'ONLINE')
@@ -75,7 +80,6 @@ export default async function StudentParaTiPage({
     // El usuario ya fue autenticado y su student.id se resolvió desde su
     // profile. Las métricas agregadas se consultan sólo para esa alumna,
     // nunca para otra cuenta del portal.
-    const admin = createAdminClient();
     const [measurementsResult, bookingsResult] = await Promise.all([
       supabase
         .from('body_measurements')

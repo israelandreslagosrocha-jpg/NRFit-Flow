@@ -87,4 +87,17 @@ describe('Controles administrativos de membresía', () => {
     assert.match(actions, /payment_transactions/);
     assert.match(actions, /membership\.discount_status !== 'APPLIED'/);
   });
+
+  it('trata una cortesía vigente como acceso válido a contenido, agenda y avisos', () => {
+    const visibilityMigration = source('supabase/migrations/20261005000000_complimentary_member_portal_visibility.sql');
+    const portal = source('src/app/(student)/para-ti/page.tsx');
+    const notifications = source('src/actions/admin-portal.ts');
+
+    assert.match(visibilityMigration, /m\.is_complimentary = true/);
+    assert.match(visibilityMigration, /m\.complimentary_revoked_at IS NULL/);
+    assert.match(visibilityMigration, /m\.complimentary_expires_at IS NULL/);
+    assert.match(portal, /const admin = createAdminClient\(\)/);
+    assert.match(notifications, /membership\.is_complimentary/);
+    assert.match(notifications, /membership\.complimentary_revoked_at/);
+  });
 });
