@@ -5,6 +5,7 @@ import { CheckCircle2, AlertCircle, ArrowRight, Dumbbell } from 'lucide-react';
 import { createClient } from '../../../lib/supabase/server';
 import { getStudentProfileByUserId } from '../../../lib/supabase/profile-helpers';
 import '../checkout.css';
+import TrialConfirmation from '../../../components/analytics/TrialConfirmation';
 
 export default async function CheckoutSuccessPage() {
   const supabase = await createClient();
@@ -55,6 +56,7 @@ export default async function CheckoutSuccessPage() {
 
   return (
     <div className="checkout-page-container">
+      <TrialConfirmation isTrial={isTrial} />
       <div className="checkout-card" style={{ textAlign: 'center' }}>
         <div
           style={{

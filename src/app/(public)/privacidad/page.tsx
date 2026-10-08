@@ -87,6 +87,11 @@ export default function PrivacidadPage() {
               Conforme a la Ley N° 19.628 sobre Protección de la Vida Privada de Chile, la usuaria tiene derecho en todo momento a acceder, rectificar, cancelar o solicitar el bloqueo de sus datos personales. Para ejercer estos derechos, basta con enviar un correo formal a <strong>team@natyentrenadora.com</strong> indicando la solicitud.
             </p>
           </section>
+          <section className="space-y-3">
+            <h2 className="text-xl font-bold text-white">6. Medición opcional del sitio público</h2>
+            <p>Con tu permiso, usamos Google Analytics 4 para conocer las visitas y mejorar el proceso de inscripción. Rechazar las estadísticas no limita el registro, la prueba ni la membresía. Puedes retirar tu permiso en «Preferencias de cookies». Los paneles de Natalia y de las alumnas quedan fuera de esta medición; no enviamos a Google sus datos personales ni su seguimiento.</p>
+            <p>Consulta los detalles y la política de Google en nuestra <a href="/cookies">Política de Cookies</a>. Esta integración técnica no sustituye la revisión profesional de los documentos legales indicada al inicio.</p>
+          </section>
         </div>
       </div>
     </div>

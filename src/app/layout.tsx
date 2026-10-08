@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '../context/AuthContext';
 import { UserDataProvider } from '../context/UserDataContext';
+import Analytics from '../components/analytics/Analytics';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://natyentrenadora.com'),
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
+        <Analytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''} />
         <AuthProvider>
           <UserDataProvider>
             {children}

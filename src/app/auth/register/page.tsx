@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/client';
 import { ArrowRight, CheckCircle2, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { GoogleMark } from '../../../components/auth/GoogleMark';
+import { emitConversion } from '../../../lib/analytics-client';
 
 function RegisterForm() {
   const searchParams = useSearchParams();
@@ -59,6 +60,9 @@ function RegisterForm() {
         setLoading(false);
         return;
       }
+
+      // Supabase may obfuscate an existing account with empty identities.
+      if (data.user?.identities?.length) emitConversion({ event: 'sign_up', method: 'email' });
 
       // Si Supabase no requiere confirmación de email y devuelve sesión directa
       if (data?.session) {

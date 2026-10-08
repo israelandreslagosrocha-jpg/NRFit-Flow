@@ -1,12 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
+import { emitConversion } from '../../lib/analytics-client';
 
 /**
- * Defines a privacy-preserving conversion-event contract for a future analytics
- * provider. It does not transmit or persist any data by itself. If an approved
- * provider later exposes window.dataLayer, the same non-identifying events are
- * available without changing conversion UI.
+ * Whitelisted CTA events, only after consent. No raw dataLayer pushes: those
+ * would bypass the provider's route and privacy checks.
  */
 export default function ConversionEvents() {
   useEffect(() => {
@@ -22,8 +21,7 @@ export default function ConversionEvents() {
         placement: target.getAttribute('data-conversion-placement') || 'unknown',
       };
 
-      window.dispatchEvent(new CustomEvent('naty:conversion', { detail: payload }));
-      if (Array.isArray(window.dataLayer)) window.dataLayer.push(payload);
+      emitConversion(payload);
     };
 
     document.addEventListener('click', handleClick);

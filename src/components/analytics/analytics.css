@@ -1,0 +1,10 @@
+.analytics-consent { position: fixed; z-index: 1000; bottom: 16px; left: 16px; right: 16px; max-width: 960px; margin: auto; padding: 20px; border: 1px solid #e9b4c0; border-radius: 20px; background: #fff7f3; color: #0b0b0b; box-shadow: 0 8px 32px #0b0b0b26; display: flex; gap: 24px; align-items: center; }
+.analytics-consent strong { font-size: 16px; }
+.analytics-consent p { margin: 8px 0 0; font-size: 13px; line-height: 1.6; }
+.analytics-consent a { color: #a80c61; text-decoration: underline; }
+.analytics-consent-actions { display: flex; gap: 10px; flex-shrink: 0; }
+.analytics-consent-actions button, .analytics-preferences { cursor: pointer; font: inherit; font-size: 13px; min-height: 44px; border: 1px solid #0b0b0b; border-radius: 12px; padding: 10px 14px; background: white; color: #0b0b0b; }
+.analytics-consent-actions button:last-child { background: #ff4fb8; }
+.analytics-consent button:focus-visible, .analytics-preferences:focus-visible { outline: 3px solid #a80c61; outline-offset: 3px; }
+.analytics-preferences { position: fixed; z-index: 90; bottom: 12px; left: 12px; font-size: 11px; }
+@media (max-width: 760px) { .analytics-consent { flex-direction: column; gap: 16px; padding: 16px; } .analytics-consent-actions { width: 100%; flex-wrap: wrap; } .analytics-consent-actions button { flex: 1; } }

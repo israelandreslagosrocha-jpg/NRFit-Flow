@@ -54,7 +54,7 @@ export default function CookiesPage() {
               <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
                 <h3 className="font-semibold text-white text-base">A. Cookies Técnicas y Estrictamente Necesarias</h3>
                 <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-                  Son indispensables para el funcionamiento del portal. Incluyen los tokens de sesión HTTP-only seguros gestionados por Supabase Auth para autenticar a la alumna, verificar roles y proteger las rutas privadas. No pueden desactivarse en los sistemas del sitio.
+                  Son indispensables para el funcionamiento del portal. Incluyen las cookies de sesión gestionadas por Supabase Auth para autenticar a la alumna, verificar roles y proteger las rutas privadas. Bloquearlas puede impedir el acceso al portal.
                 </p>
               </div>
 
@@ -79,6 +79,12 @@ export default function CookiesPage() {
             <p>
               La usuaria puede configurar su navegador para bloquear o ser notificada sobre la instalación de cookies. No obstante, si se bloquean las cookies técnicas de sesión, el acceso al portal privado de alumna y a los entrenamientos no podrá funcionar adecuadamente.
             </p>
+          </section>
+          <section className="space-y-3">
+            <h2 className="text-xl font-bold text-white">4. Estadísticas opcionales con Google Analytics</h2>
+            <p>Cuando la medición esté habilitada, Google Analytics 4 sólo se cargará si eliges «Aceptar estadísticas». Sirve para medir visitas, clics hacia la inscripción, cuentas creadas con correo y pruebas gratuitas activadas. Puede usar cookies _ga y _ga_* para distinguir visitas. Puedes rechazarlo o retirar tu permiso en «Preferencias de cookies» sin perder acceso al servicio.</p>
+            <p>La preferencia se guarda en tu navegador mediante almacenamiento local. No enviamos a Analytics nombres, correos, contraseñas, medidas, documentos, identificadores de cuenta ni datos de los dashboards. La medición automática de formularios y vídeos está desactivada. No hemos activado Meta Pixel ni personalización publicitaria.</p>
+            <p>Google procesa las estadísticas conforme a su política: <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">Cómo utiliza Google la información de sitios que usan sus servicios</a>.</p>
           </section>
         </div>
       </div>

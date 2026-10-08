@@ -7,6 +7,7 @@ import { ShieldCheck, ArrowRight, AlertCircle, Info, Loader2 } from 'lucide-reac
 import { createCheckoutSubscriptionAction } from '../../actions/subscription';
 import type { MembershipOffer } from '../../lib/offers/membership-offer';
 import './checkout.css';
+import { rememberTrialStarted } from '../../lib/analytics-client';
 
 type CheckoutClientProps = {
   offer: MembershipOffer;
@@ -48,6 +49,7 @@ export default function CheckoutClient({ offer }: CheckoutClientProps) {
       }
 
       if (result.redirectUrl) {
+        if (result.mode === 'FREE_TRIAL') rememberTrialStarted();
         window.location.href = result.redirectUrl;
       } else {
         setErrorMessage('No se recibió la URL de redirección de la pasarela.');

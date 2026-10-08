@@ -5,13 +5,13 @@ import Home from '../../views/Home';
 import { getCurrentMembershipOffer } from '../../lib/offers/membership-offer';
 
 export const metadata: Metadata = {
-  title: 'Naty Entrenadora | Entrena para la vida que tienes',
-  description: 'Dos clases online en vivo por semana y una biblioteca de entrenamientos flexibles para mujeres que quieren recuperar fuerza, energía, movilidad y constancia.',
+  title: 'Entrenamiento online para mujeres | Naty Entrenadora',
+  description: 'Entrena desde casa con Natalia: clases online en vivo lunes y miércoles y rutinas de 10 a 40 minutos a tu ritmo. Prueba 7 días gratis, sin tarjeta.',
   alternates: {
     canonical: 'https://natyentrenadora.com',
   },
   openGraph: {
-    title: 'Naty Entrenadora | Entrena para la vida que tienes',
+    title: 'Entrenamiento online para mujeres | Naty Entrenadora',
     description: 'Dos clases en vivo por Zoom cada semana y una biblioteca flexible para entrenar desde casa.',
     url: 'https://natyentrenadora.com',
     siteName: 'Naty Entrenadora',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Naty Entrenadora | Entrena para la vida que tienes',
+    title: 'Entrenamiento online para mujeres | Naty Entrenadora',
     description: 'Dos clases en vivo semanales y entrenamientos flexibles para mujeres reales.',
     images: ['https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp'],
   },
