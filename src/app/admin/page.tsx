@@ -73,6 +73,23 @@ export default async function AdminPage({
         (a: any, b: any) => String(b.created_at).localeCompare(String(a.created_at))
       ),
     }));
+
+    // Un pago externo o una cuenta sin membresía pueden no tener billing_email.
+    // Resolver sólo esos casos desde Auth, después de autorizar al administrador,
+    // y entregar al cliente únicamente el correo (nunca el objeto de usuario).
+    students = await Promise.all(students.map(async (student) => {
+      if (student.memberships[0]?.billing_email?.trim() || !student.profile?.user_id) {
+        return student;
+      }
+
+      try {
+        const { data, error } = await admin.auth.admin.getUserById(student.profile.user_id);
+        return { ...student, account_email: error ? null : data.user?.email || null };
+      } catch {
+        // Un fallo de lectura de Auth no debe ocultar la ficha ni la membresía.
+        return { ...student, account_email: null };
+      }
+    }));
     content = contentResult.data || [];
     sessions = sessionsResult.data || [];
     transactions = transactionsResult.data || [];

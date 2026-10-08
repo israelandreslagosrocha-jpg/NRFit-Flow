@@ -46,6 +46,7 @@ import {
 type Student = {
   id: string;
   created_at: string;
+  account_email?: string | null;
   profile: {
     id?: string;
     full_name: string;
@@ -666,7 +667,7 @@ export default function AdminDashboardClient({
                               <div className="avatar-circle">{name.charAt(0)}</div>
                               <div>
                                 <span className="cell-name">{name}</span>
-                                <span className="cell-sub">{m?.billing_email || 'Sin email registrado'}</span>
+                                <span className="cell-sub">{m?.billing_email?.trim() || student.account_email || 'Correo no disponible'}</span>
                               </div>
                             </div>
                           </td>
