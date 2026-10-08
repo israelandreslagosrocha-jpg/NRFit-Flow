@@ -13,7 +13,10 @@ Fecha: 8 de octubre de 2026. Cuenta propietaria elegida: `newensport.fit@gmail.c
 - Search Console: **propiedad del dominio verificada** mediante DNS con la cuenta elegida. TTL 3600 para conservar el TTL original del RRset TXT `@`, compartido con SPF; los registros originales quedaron intactos. No eliminar ese TXT.
 - Sitemap enviado: `https://natyentrenadora.com/sitemap.xml`. Google confirmó el envío, pero su primera lectura indicó «No se ha podido obtener». Comprobación pública: HTTP 200, XML válido servido por Vercel. Recepción/indexación de Google pendiente de comprobar; no equivalen a envío aceptado.
 - Variable `NEXT_PUBLIC_GA_MEASUREMENT_ID` guardada y verificada en Vercel **Production**.
-- Código local preparado; **no afirmar recepción real hasta desplegar y comprobar Tiempo real**.
+- Código publicado en producción: commit `4b748f7`, deployment Vercel `4ngcLdWSj5d3NE89PvGWJ9ydBmAV` con estado **Ready**. La portada oficial muestra el nuevo título SEO y el consentimiento.
+- **Recepción real comprobada** en GA4: `page_view` (Inicio y Registro) y `enrollment_start` tras aceptar estadísticas. Son visitas y clics de QA, no alumnas nuevas ni pagos.
+- `trial_started` configurado como evento clave **con código**, sin valor monetario predeterminado; no se deriva de una visita a la página de éxito. Todavía no se verificó una nueva activación real de prueba en esta sesión.
+- Inspección de portada: ya estaba en el índice; su registro histórico advertía un bloqueo de robots. La prueba en tiempo real del 8 de octubre confirmó **«La URL está disponible para Google / La página se puede indexar»**. Google aceptó la solicitud de nuevo rastreo. Esto no garantiza posición ni actualización inmediata.
 
 ## Activación en Vercel
 
@@ -37,6 +40,10 @@ Google OAuth sigue funcionando sin modificaciones, pero su alta no se cuenta com
 No hay `purchase`, ingresos, Meta Pixel, CAPI ni campañas activas. El pago debe medirse después con evidencia de confirmación de la pasarela y deduplicación, no por redirección.
 
 ## Verificación después de desplegar
+
+Comprobaciones realizadas el 8 de octubre: build de producción, seis tests de privacidad/medición y nueve tests de contratos del portal aprobados, lint sin errores. En navegador de producción se comprobó ausencia de script Google antes de consentir y al rechazar, ID correcto tras aceptar, eventos reales en GA4, retiro de consentimiento persistido (script ausente al recargar) y banner sin desborde a 390×844. Sin errores de consola en las páginas públicas probadas. No se modificaron cuentas, membresías, SQL ni pasarelas durante estas pruebas.
+
+Pendientes de verificación funcional completa: alta real de correo, activación de trial una sola vez, dashboard autenticado y cookies tras retirar permiso. Las exclusiones y el marcador se verificaron mediante contratos de código, no sustituyen esas pruebas de extremo a extremo. El sitemap sigue con estado «No se ha podido obtener» en Google incluso tras reenviarlo una vez después del deploy; respuesta pública XML HTTP 200 y rastreo actual de la portada correctos. Revisar su próxima lectura sin afirmar que ya fue procesado.
 
 1. Navegador nuevo: rechazar estadísticas; no debe existir carga `googletagmanager.com/gtag/js` ni cookies `_ga*`.
 2. Aceptar estadísticas: ver un `page_view` en Tiempo real de la propiedad correcta.
