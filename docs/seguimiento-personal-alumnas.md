@@ -1,6 +1,16 @@
 # Seguimiento personal desde «Detalle»
 
-Implementación local del 12 de octubre de 2026. No está activada en Supabase ni publicada por este cambio.
+Activado el 12 de octubre de 2026: SQL ejecutado en staging y producción, y commit funcional `9df9496` publicado en `main` y `migration/nextjs-15`.
+
+## Verificación de la activación
+
+- Ambos proyectos Supabase (PostgreSQL 17.6) confirmaron ejecución correcta de la migración.
+- En ambos se comprobó: RLS activado, sin lectura anónima, sin inserción directa de alumnas y sin ejecución de cambios de precio desde `authenticated`. La función de precio está habilitada únicamente para el servidor.
+- Vercel confirmó Preview y Production en estado **Ready** para `9df9496`. Despliegue de producción: `https://vercel.com/lagosrocha/nr-fit-flow-obv5/DVJ14Evznykab12XVRi9L3pgk1b5`.
+- En `https://natyentrenadora.com/admin`, sesión administrativa real: **Alumnas → alumnademo2 → Detalle** carga medidas y reproducciones sin errores, y el formulario de acompañamiento está disponible.
+- Se guardó un mensaje técnico compartido exclusivamente con `alumnademo2`, visible en el historial. No se modificaron pagos ni membresías reales.
+- La demo no tenía medidas ni reproducciones registradas. No se generaron valores ficticios. Falta el recorrido con sesión de alumna para verificar reproducción real, registro de medidas y recepción del mensaje en su propio portal; el seguimiento previo se probó en navegador aislado y PostgreSQL temporal.
+- Pruebas: 29 contratos/unitarias, 36 comprobaciones SQL aisladas y compilación de producción correctas.
 
 ## Qué incluye
 
