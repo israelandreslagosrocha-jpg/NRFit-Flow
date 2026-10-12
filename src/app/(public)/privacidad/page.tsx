@@ -54,9 +54,11 @@ export default function PrivacidadPage() {
               <li><strong>Datos de Identificación y Contacto:</strong> Nombre completo, correo electrónico, número de teléfono (opcional) y preferencias generales de entrenamiento (nivel, equipamiento).</li>
               <li><strong>Datos de Autenticación:</strong> Contraseña cifrada en reposo mediante infraestructura Supabase Auth.</li>
               <li><strong>Información Técnica:</strong> Dirección IP, registros de acceso y eventos técnicos estrictamente necesarios para la seguridad perimetral y prevención de fraude.</li>
+              <li><strong>Acompañamiento personal:</strong> Medidas que decidas registrar (peso, cintura y cadera), tus notas, asistencia registrada y mensajes personales de Natalia. La alumna y la administración autorizada pueden consultar el seguimiento de esa cuenta; las notas internas de administración no se publican a otras alumnas.</li>
+              <li><strong>Reproducción de clases:</strong> Tiempo reproducido, última posición y fecha de reproducción para retomar videos y acompañar tu proceso. Este registro no acredita ejercicio realizado y no reconstruye reproducciones anteriores a su activación.</li>
             </ul>
             <p className="text-rose-300/90 font-medium">
-              Importante: No solicitamos ni almacenamos datos de salud sensibles, diagnósticos clínicos ni historias médicas en la base de datos de la plataforma.
+              No solicitamos diagnósticos clínicos ni historias médicas. El registro de medidas es voluntario; evita incluir información médica en notas o comentarios. Los datos de acompañamiento no se envían a Analytics ni a herramientas publicitarias.
             </p>
           </section>
 
@@ -78,6 +80,7 @@ export default function PrivacidadPage() {
               <li>Validar la vigencia del período de prueba y membresía activa.</li>
               <li>Enviar comunicaciones operativas críticas (confirmaciones de suscripción, avisos de cobro, restablecimiento de contraseña).</li>
               <li>Garantizar la seguridad técnica y prevenir accesos no autorizados mediante Row Level Security (RLS).</li>
+              <li>Acompañar individualmente el avance de cada alumna, revisar sus registros voluntarios y entregar orientaciones o materiales personalizados.</li>
             </ul>
           </section>
 

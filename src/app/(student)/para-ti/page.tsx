@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
 import { createAdminClient } from '../../../lib/supabase/admin';
 import StudentPortal from '../../../components/student/StudentPortal';
+import { getMyFollowUpAction } from '../../../actions/student-follow-up';
 
 export const metadata: Metadata = {
   title: 'Para ti | Portal de Alumna | Naty Entrenadora',
@@ -86,7 +87,8 @@ export default async function StudentParaTiPage({
         .select('id, date, weight_kg, waist_cm, hips_cm, notes, created_at')
         .eq('student_id', student.id)
         .order('date', { ascending: false })
-        .limit(10),
+        .order('created_at', { ascending: false })
+        .limit(120),
       admin
         .from('bookings')
         .select('id, attendance(status)')
@@ -115,6 +117,7 @@ export default async function StudentParaTiPage({
     has_zoom_link: Boolean(zoom_join_url),
   }));
   const query = await searchParams;
+  const followUp = await getMyFollowUpAction();
 
   return (
     <StudentPortal
@@ -125,6 +128,7 @@ export default async function StudentParaTiPage({
       membership={activeMembership}
       measurements={measurements}
       attendance={attendance}
+      followUp={followUp}
       initialSection={query.seccion}
       zoomState={query.zoom}
     />

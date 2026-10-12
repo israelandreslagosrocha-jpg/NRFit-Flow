@@ -27,6 +27,7 @@ import {
   X,
 } from 'lucide-react';
 import { AuthSignOutButton } from '../../components/auth/AuthSignOutButton';
+import StudentFollowUp from '../../components/admin/StudentFollowUp';
 import {
   publishContentAction,
   createLiveSessionAction,
@@ -711,6 +712,7 @@ export default function AdminDashboardClient({
                     <button onClick={() => setSelectedStudent(null)} className="btn-close-drawer">✕</button>
                   </div>
                   <div className="drawer-body">
+                    <StudentFollowUp key={selectedStudent.id} studentId={selectedStudent.id} name={selectedStudent.profile?.full_name || 'Alumna'} onPriceSaved={(price) => setSelectedStudent((current) => current ? { ...current, memberships: current.memberships.map((membership, index) => index === 0 ? { ...membership, price_contracted: price } : membership) } : null)}>
                     {(() => {
                       const membership = (selectedStudent.memberships || [])[0];
                       const activeDiscounts = (selectedStudent.membership_discounts || []).filter((discount) =>
@@ -743,7 +745,7 @@ export default function AdminDashboardClient({
                             <input type="hidden" name="student_id" value={selectedStudent.id} />
                             <div className="form-row-2">
                               <label>Desde cuándo<input type="date" name="paid_from" required defaultValue={santiagoDateInputValue()} /></label>
-                              <label>Monto CLP<input type="number" name="amount" min="1" max="9999999" step="1" required defaultValue={defaultPrice} /></label>
+                              <label>Monto CLP<input key={defaultPrice} type="number" name="amount" min="1" max="9999999" step="1" required defaultValue={defaultPrice} /></label>
                             </div>
                             <div className="form-row-2">
                               <label>Medio<select name="payment_method" defaultValue="TRANSFERENCIA"><option value="TRANSFERENCIA">Transferencia</option><option value="EFECTIVO">Efectivo</option><option value="OTRO">Otro</option></select></label>
@@ -808,6 +810,7 @@ export default function AdminDashboardClient({
                         </section>}
                       </>;
                     })()}
+                    </StudentFollowUp>
                   </div>
                 </div>
               </div>

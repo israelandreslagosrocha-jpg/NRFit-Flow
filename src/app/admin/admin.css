@@ -1200,7 +1200,7 @@
 }
 
 .student-drawer-card {
-  width: min(480px, 100%);
+  width: min(620px, 100%);
   background: #ffffff;
   height: 100%;
   padding: 2rem;

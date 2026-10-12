@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { chileToday } from '../../lib/student-follow-up';
 import { recordMeasurementAction } from '../../actions/measurements';
 import { X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import './BodyMeasurementsModal.css';
@@ -22,10 +24,12 @@ export default function BodyMeasurementsModal({
   lastWaist,
   lastHips,
 }: Props) {
+  const router = useRouter();
   const [weight, setWeight] = useState<string>(lastWeight ? String(lastWeight) : '');
   const [waist, setWaist] = useState<string>(lastWaist ? String(lastWaist) : '');
   const [hips, setHips] = useState<string>(lastHips ? String(lastHips) : '');
   const [notes, setNotes] = useState<string>('');
+  const [measurementDate, setMeasurementDate] = useState(chileToday());
   const [loading, setLoading] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -37,6 +41,7 @@ export default function BodyMeasurementsModal({
     setLoading(true);
 
     const res = await recordMeasurementAction({
+      date: measurementDate,
       weight_kg: parseFloat(weight),
       waist_cm: waist ? parseFloat(waist) : null,
       hips_cm: hips ? parseFloat(hips) : null,
@@ -48,6 +53,7 @@ export default function BodyMeasurementsModal({
     if (res.success) {
       setStatusMessage({ type: 'success', text: res.message });
       if (onSaved) onSaved();
+      router.refresh();
       setTimeout(() => {
         onClose();
       }, 1500);
@@ -62,7 +68,7 @@ export default function BodyMeasurementsModal({
         <div className="measurements-modal-header">
           <div>
             <h3 id="modal-title">Registrar Medidas</h3>
-            <p>Registra tu peso y circunferencias para monitorear tu evolución semanal.</p>
+            <p>Sugerimos registrar tus cambios cada mes. Natalia podrá revisarlos para acompañarte personalmente.</p>
           </div>
           <button className="measurements-close-btn" onClick={onClose} aria-label="Cerrar modal">
             <X size={20} />
@@ -77,6 +83,7 @@ export default function BodyMeasurementsModal({
         )}
 
         <form onSubmit={handleSubmit} className="measurements-form">
+          <div className="measurements-input-group"><label htmlFor="measurement_date">Fecha del registro *</label><input id="measurement_date" type="date" value={measurementDate} onChange={(event) => setMeasurementDate(event.target.value)} min="2000-01-01" max={chileToday()} required /></div>
           <div className="measurements-input-group">
             <label htmlFor="weight_kg">Peso actual (kg) *</label>
             <input

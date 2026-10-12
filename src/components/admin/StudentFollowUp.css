@@ -1,0 +1,22 @@
+.student-follow-up { color: #25334a; }
+.follow-up-name { font-weight: 700; margin: 0 0 16px; }
+.follow-up-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.follow-up-tabs button { border: 1px solid #dedbea; padding: 10px 12px; border-radius: 12px; background: #fff; font: inherit; cursor: pointer; }
+.follow-up-tabs button[aria-pressed="true"] { background: #ff40b6; color: #111; border-color: #ff40b6; }
+.student-follow-up button:disabled { opacity: .55; cursor: not-allowed; }
+.follow-up-alert { padding: 12px; border-radius: 12px; background: #fff0ed; color: #8c3434; font-size: 13px; line-height: 1.6; margin: 12px 0; }
+.follow-up-alert.success { background: #edfcf5; color: #156542; }
+.follow-up-cancel { display: block; margin: 10px auto 0; border: 0; background: transparent; color: #754458; font: inherit; cursor: pointer; }
+.follow-up-summary { display: flex; gap: 20px; padding: 14px; background: #f6f5fc; border-radius: 12px; }
+.follow-up-summary strong { font-size: 23px; margin-right: 5px; }
+.follow-up-entry { display: flex; flex-direction: column; gap: 7px; border: 1px solid #e8e2ec; padding: 14px; border-radius: 14px; margin: 12px 0; overflow-wrap: anywhere; }
+.follow-up-entry p { white-space: pre-wrap; font-size: 14px; line-height: 1.6; margin: 0; }
+.follow-up-entry span, .follow-up-entry small { font-size: 12px; line-height: 1.5; color: #60718a; }
+.follow-up-entry progress { width: 100%; accent-color: #bc1873; }
+.follow-up-entry a { font-size: 13px; color: #ad1468; }
+.follow-up-table-wrap { overflow-x: auto; margin-bottom: 16px; }
+.follow-up-table-wrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.follow-up-table-wrap th, .follow-up-table-wrap td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e8e2ec; vertical-align: top; }
+.follow-up-table-wrap small { display: block; max-width: 200px; white-space: pre-wrap; overflow-wrap: anywhere; color: #60718a; margin-top: 5px; }
+.follow-up-history-title { margin-top: 25px !important; }
+.student-follow-up textarea { width: 100%; padding: 12px; font: inherit; border: 1px solid #dae2ed; border-radius: 10px; resize: vertical; }

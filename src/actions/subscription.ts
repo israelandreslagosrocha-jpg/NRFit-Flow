@@ -442,6 +442,7 @@ export async function beginMembershipRenewalAction(
     })
     .eq('id', membership.id)
     .eq('status', membership.status)
+    .eq('price_contracted', membership.price_contracted)
     .select('id, gateway_customer_id')
     .maybeSingle();
 

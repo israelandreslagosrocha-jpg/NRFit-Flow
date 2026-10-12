@@ -4,8 +4,11 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '../lib/supabase/server';
 import { createAdminClient } from '../lib/supabase/admin';
 import { getStudentProfileByUserId } from '../lib/supabase/profile-helpers';
+import { chileToday } from '../lib/student-follow-up';
+import { isValidIsoDate } from '../lib/team-naty-schedule';
 
 export type MeasurementInput = {
+  date?: string;
   weight_kg: number;
   waist_cm?: number | null;
   hips_cm?: number | null;
@@ -45,11 +48,12 @@ export async function recordMeasurementAction(input: MeasurementInput): Promise<
     }
 
     const weight = Number(input.weight_kg);
-    if (isNaN(weight) || weight < 30 || weight > 250) {
+    if (!Number.isFinite(weight) || weight < 30 || weight > 250) {
       return { success: false, message: 'El peso ingresado debe estar entre 30 y 250 kg.' };
     }
 
     const waist = optionalNumber(input.waist_cm);
+    if (input.waist_cm != null && waist === null) return { success: false, message: 'La cintura debe ser un número válido.' };
     if (waist !== null) {
       if (waist < 40 || waist > 200) {
         return { success: false, message: 'La cintura ingresada debe estar entre 40 y 200 cm.' };
@@ -57,20 +61,24 @@ export async function recordMeasurementAction(input: MeasurementInput): Promise<
     }
 
     const hips = optionalNumber(input.hips_cm);
+    if (input.hips_cm != null && hips === null) return { success: false, message: 'La cadera debe ser un número válido.' };
     if (hips !== null) {
       if (hips < 40 || hips > 220) {
         return { success: false, message: 'La cadera ingresada debe estar entre 40 y 220 cm.' };
       }
     }
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = chileToday();
+    const date = input.date ?? today;
+    if (typeof date !== 'string' || !isValidIsoDate(date) || date < '2000-01-01' || date > today) return { success: false, message: 'Elige una fecha válida que no esté en el futuro.' };
+    if (input.notes != null && (typeof input.notes !== 'string' || input.notes.length > 500)) return { success: false, message: 'Las notas pueden tener hasta 500 caracteres.' };
     const admin = createAdminClient();
 
     const { error: insertError } = await admin
       .from('body_measurements')
       .insert({
         student_id: student.id,
-        date: today,
+        date,
         weight_kg: weight,
         waist_cm: waist,
         hips_cm: hips,
@@ -83,6 +91,7 @@ export async function recordMeasurementAction(input: MeasurementInput): Promise<
     }
 
     revalidatePath('/para-ti');
+    revalidatePath('/admin');
     return { success: true, message: '¡Medidas registradas con éxito!' };
   } catch (err: any) {
     console.error('[measurements] Exception in recordMeasurementAction:', err);
