@@ -20,6 +20,7 @@
     "test:ratelimit": "node --test src/tests/m09_3e-rate-limiting.test.ts",
     "test:infra": "node --test src/tests/m09_3f-infrastructure-certification.test.ts",
     "test:portal": "node --test src/tests/dashboard-portal.test.ts",
+    "test:portal-pagination": "node --test src/tests/portal-pagination.test.ts",
     "test:analytics": "node --test src/tests/analytics-privacy.test.ts",
     "test:follow-up": "node --test src/tests/student-follow-up.test.ts",
     "inventory:pg": "node --experimental-strip-types scripts/runtime-pg-inventory.ts",

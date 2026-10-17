@@ -1,4 +1,8 @@
 /* Student Portal - Design System adaptado de Mockups */
+.portal-load-more { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 0; }
+.portal-load-more p { margin: 0; color: #746574; font-size: 13px; }
+.portal-load-more button { border: 1px solid #f1a0ce; border-radius: 12px; background: #fff0f8; color: #a81869; font-weight: 700; padding: 12px 20px; cursor: pointer; }
+.portal-load-more button:focus-visible { outline: 3px solid #be247a; outline-offset: 3px; }
 .tracked-youtube-player, .tracked-youtube-player iframe { width: 100%; height: 100%; border: 0; }
 .personal-follow-up { display: grid; gap: 24px; }
 .personal-coach-message { padding: 16px; border: 1px solid #f0cde1; background: #fff8fc; border-radius: 14px; margin-top: 14px; overflow-wrap: anywhere; }
