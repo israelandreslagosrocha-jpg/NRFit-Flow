@@ -23,10 +23,14 @@ export function safeConversion(detail: unknown): { event: string; params: Record
   if (!detail || typeof detail !== 'object') return null;
   const { event, placement, method } = detail as Record<string, unknown>;
   if (event === 'enrollment_start') {
-    const allowed = ['navbar', 'mobile_navigation', 'hero', 'campaign', 'pricing', 'footer', 'final_cta'];
+    const allowed = ['navbar', 'mobile_navigation', 'hero', 'campaign', 'pricing', 'footer', 'final_cta', 'free_workouts'];
     return { event, params: { placement: typeof placement === 'string' && allowed.includes(placement) ? placement : 'unknown' } };
   }
   if (event === 'sign_up' && method === 'email') return { event, params: { method: 'email' } };
   if (event === 'trial_started') return { event, params: {} };
+  if (event === 'social_click' && (detail as Record<string, unknown>).network === 'youtube') return { event, params: { network: 'youtube' } };
+  if (event === 'social_click' && (detail as Record<string, unknown>).network === 'instagram') return { event, params: { network: 'instagram' } };
+  const video = (detail as Record<string, unknown>).video;
+  if (event === 'free_workout_open' && (video === 'BvZ08hjIF4o' || video === 'jjcmvwv1hP8')) return { event, params: { video } };
   return null;
 }

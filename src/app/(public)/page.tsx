@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import Home from '../../views/Home';
 import { getCurrentMembershipOffer } from '../../lib/offers/membership-offer';
+import { PUBLIC_SOCIAL } from '../../lib/public-social';
 
 export const metadata: Metadata = {
   title: 'Entrenamiento online para mujeres | Naty Entrenadora',
@@ -47,6 +48,7 @@ export default async function PublicHomePage() {
         '@id': 'https://natyentrenadora.com/#organization',
         'name': 'Naty Entrenadora',
         'url': 'https://natyentrenadora.com',
+        'sameAs': [PUBLIC_SOCIAL.youtube, PUBLIC_SOCIAL.instagram],
         'logo': 'https://res.cloudinary.com/dhgifjpkh/image/upload/v1790527147/compressed_Imagen_de_ChatGPT_27_sept_2026_01_38_38_p.m._eqbozm.webp',
         'email': 'team@natyentrenadora.com',
         'founder': {

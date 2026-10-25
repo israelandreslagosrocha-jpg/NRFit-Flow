@@ -5,6 +5,7 @@ import PreLaunchCampaignSection from '../components/landing/PreLaunchCampaignSec
 import IdentificationSection from '../components/landing/IdentificationSection';
 import ParadigmShiftSection from '../components/landing/ParadigmShiftSection';
 import NataliaAuthoritySection from '../components/landing/NataliaAuthoritySection';
+import FreeWorkoutsSection from '../components/landing/FreeWorkoutsSection';
 import HowItWorksSection from '../components/landing/HowItWorksSection';
 import ProgressionSection from '../components/landing/ProgressionSection';
 import DashboardPreviewSection from '../components/landing/DashboardPreviewSection';
@@ -31,6 +32,9 @@ export default function Home({ offer }) {
 
       {/* 5. Natalia Riquelme (Autoridad y Frase Personal) */}
       <NataliaAuthoritySection />
+
+      {/* Muestra pública antes de explicar la membresía: conocer → probar → decidir. */}
+      <FreeWorkoutsSection />
 
       {/* 6. Cómo Funciona (3 grabados + 2 sesiones LIVE) */}
       <HowItWorksSection />

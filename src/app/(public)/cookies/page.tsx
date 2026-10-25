@@ -82,9 +82,14 @@ export default function CookiesPage() {
           </section>
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">4. Estadísticas opcionales con Google Analytics</h2>
-            <p>Cuando la medición esté habilitada, Google Analytics 4 sólo se cargará si eliges «Aceptar estadísticas». Sirve para medir visitas, clics hacia la inscripción, cuentas creadas con correo y pruebas gratuitas activadas. Puede usar cookies _ga y _ga_* para distinguir visitas. Puedes rechazarlo o retirar tu permiso en «Preferencias de cookies» sin perder acceso al servicio.</p>
+            <p>Cuando la medición esté habilitada, Google Analytics 4 sólo se cargará si eliges «Aceptar estadísticas». Sirve para medir visitas, clics hacia la inscripción, aperturas de clases públicas, clics hacia redes sociales, cuentas creadas con correo y pruebas gratuitas activadas. Un clic no confirma una reproducción completa, una suscripción ni un seguimiento. Puede usar cookies _ga y _ga_* para distinguir visitas. Puedes rechazarlo o retirar tu permiso en «Preferencias de cookies» sin perder acceso al servicio.</p>
             <p>La preferencia se guarda en tu navegador mediante almacenamiento local. No enviamos a Analytics nombres, correos, contraseñas, medidas, documentos, identificadores de cuenta ni datos de los dashboards. La medición automática de formularios y vídeos está desactivada. No hemos activado Meta Pixel ni personalización publicitaria.</p>
             <p>Google procesa las estadísticas conforme a su política: <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">Cómo utiliza Google la información de sitios que usan sus servicios</a>.</p>
+          </section>
+          <section className="space-y-3">
+            <h2 className="text-xl font-bold text-white">5. Clases públicas de YouTube</h2>
+            <p>Las miniaturas de las clases gratuitas se sirven desde esta web. El reproductor externo sólo se carga cuando pulsas para ver una clase y utiliza el dominio youtube-nocookie.com. Al cargarlo, tu navegador se conecta con YouTube y Google puede recibir información técnica necesaria para prestar ese servicio, conforme a su <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>. Esto es independiente de aceptar o rechazar nuestras estadísticas opcionales.</p>
+            <p>Los botones de YouTube e Instagram abren esas plataformas. La suscripción o el seguimiento se confirman allí; esta web no los realiza automáticamente ni accede a tus cuentas sociales.</p>
           </section>
         </div>
       </div>

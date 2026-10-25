@@ -69,8 +69,8 @@ export default function HeroSection({ offer }) {
               <Link href="/auth/register?trial=true" className="nt-btn nt-btn-primary" data-conversion-event="enrollment_start" data-conversion-placement="hero">
                 QUIERO SER PARTE DEL TEAM <ArrowRight size={18} />
               </Link>
-              <a href="#como-funciona" className="nt-btn nt-btn-secondary">
-                CONOCE CÓMO FUNCIONA
+              <a href="#entrenamientos-gratis" className="nt-btn nt-btn-secondary">
+                VER ENTRENAMIENTOS GRATIS
               </a>
             </div>
 

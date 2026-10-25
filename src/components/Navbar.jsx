@@ -24,7 +24,7 @@ export default function Navbar() {
   const navItems = [
     { path: '/#como-funciona', label: 'CÓMO FUNCIONA' },
     { path: '/#natalia', label: 'NATALIA' },
-    { path: '/#plataforma', label: 'PLATAFORMA' },
+    { path: '/#entrenamientos-gratis', label: 'GRATIS' },
     { path: '/#comunidad', label: 'COMUNIDAD' },
     { path: '/#oferta', label: 'MEMBRESÍA' },
     { path: '/#faq', label: 'PREGUNTAS' },

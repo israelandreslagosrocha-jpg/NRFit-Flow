@@ -22,6 +22,7 @@
     "test:portal": "node --test src/tests/dashboard-portal.test.ts",
     "test:portal-pagination": "node --test src/tests/portal-pagination.test.ts",
     "test:analytics": "node --test src/tests/analytics-privacy.test.ts",
+    "test:free-workouts": "node --test src/tests/public-free-workouts.test.ts",
     "test:follow-up": "node --test src/tests/student-follow-up.test.ts",
     "inventory:pg": "node --experimental-strip-types scripts/runtime-pg-inventory.ts",
     "audit:security": "node --experimental-strip-types scripts/security-inventory-audit.ts",

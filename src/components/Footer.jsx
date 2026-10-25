@@ -3,6 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, Mail } from 'lucide-react';
+import { YouTubeMark, InstagramMark } from './SocialMarks';
+import { PUBLIC_SOCIAL } from '../lib/public-social';
+import { emitConversion } from '../lib/analytics-client';
 import './Footer.css';
 
 export default function Footer() {
@@ -41,7 +44,10 @@ export default function Footer() {
             <p className="footer-brand-desc">
               Plataforma digital de entrenamiento online continuo para mujeres. Guiado por Natalia Riquelme, Preparadora Física con más de 15 años de experiencia.
             </p>
-            <p className="footer-brand-note">Las redes oficiales se agregarán aquí cuando estén verificadas.</p>
+            <div className="footer-social-official" aria-label="Redes oficiales">
+              <a href={PUBLIC_SOCIAL.subscribe} target="_blank" rel="noopener noreferrer" onClick={() => emitConversion({ event: 'social_click', network: 'youtube' })}><YouTubeMark size={19} />Suscribirme en YouTube<span className="footer-sr-only"> (nueva pestaña)</span></a>
+              <a href={PUBLIC_SOCIAL.instagram} target="_blank" rel="noopener noreferrer" onClick={() => emitConversion({ event: 'social_click', network: 'instagram' })}><InstagramMark size={19} />Seguir en Instagram<span className="footer-sr-only"> (nueva pestaña)</span></a>
+            </div>
           </div>
 
           {/* Nav Col 1: Platform */}
@@ -49,6 +55,7 @@ export default function Footer() {
             <h4 className="footer-col-title">Plataforma</h4>
             <ul className="footer-links-list-react">
               <li><Link href="/#como-funciona">Cómo Funciona</Link></li>
+              <li><Link href="/#entrenamientos-gratis">Entrenamientos gratis</Link></li>
               <li><Link href="/#natalia">Natalia</Link></li>
               <li><Link href="/#plataforma">Plataforma</Link></li>
               <li><Link href="/#comunidad">Comunidad</Link></li>

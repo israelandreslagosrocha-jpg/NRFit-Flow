@@ -1,0 +1,48 @@
+.free-workouts { background: #fff0f7; color: var(--nt-text-primary); }
+.free-workouts-heading { display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: end; }
+.free-workouts-heading h2 { margin-top: 1rem; }
+.free-workouts-heading .nt-subtitle { margin: 0 0 .3rem; max-width: 480px; }
+.free-workouts-benefits { display: flex; flex-wrap: wrap; gap: .7rem 1.5rem; margin: 1.8rem 0; color: #6d3d59; font-size: .85rem; }
+.free-workouts-benefits span { display: inline-flex; align-items: center; gap: .4rem; }
+.free-workouts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+.free-workout-card { min-width: 0; border: 1px solid #eed6e3; border-radius: 22px; overflow: hidden; background: #fff; box-shadow: 0 16px 32px -28px #5b2447; }
+.free-workout-media { aspect-ratio: 16 / 9; min-height: 200px; background: #171116; }
+.free-workout-media iframe { display: block; width: 100%; height: 100%; min-height: 200px; border: 0; }
+.free-workout-cover { position: relative; width: 100%; height: 100%; min-height: 200px; display: block; padding: 0; border: 0; background: #171116; cursor: pointer; }
+.free-workout-cover img { display: block; width: 100%; height: 100%; object-fit: cover; aspect-ratio: 16 / 9; }
+.free-workout-play { position: absolute; inset: 0; display: flex; gap: .65rem; align-items: center; justify-content: center; background: linear-gradient(transparent 30%, #12060d80); color: #fff; text-shadow: 0 1px 4px #000; font-weight: 800; }
+.free-workout-play > svg { box-sizing: content-box; padding: 16px; background: #b82278; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 8px 25px #0004; transition: transform .2s; }
+.free-workout-cover:hover .free-workout-play > svg { transform: scale(1.08); }
+.free-workout-cover:focus-visible { outline: 4px solid #b82278; outline-offset: -5px; }
+.free-workout-info { padding: 1.5rem; }
+.free-workout-category { display: inline-block; color: #a31d69; font-weight: 800; font-size: .7rem; letter-spacing: .09em; }
+.free-workout-info h3 { font-size: 1.4rem; margin: .55rem 0 .75rem; }
+.free-workout-info p { font-size: .95rem; }
+.free-workout-info .free-workout-external-note { font-size: .78rem; margin-top: .6rem; color: #74616c; }
+.free-workout-play > span { display: inline-flex; align-items: center; gap: .35rem; }
+.free-workout-links { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.2rem; }
+.free-workout-links a, .free-workout-links button { display: inline-flex; gap: .4rem; align-items: center; font-size: .85rem; color: #9e1e65; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.free-workout-links button { background: none; border: 0; cursor: pointer; padding: .3rem 0; }
+.free-workouts-privacy { font-size: .78rem; color: #74616c; line-height: 1.6; margin-top: 1.2rem; max-width: 850px; }
+.free-workouts-privacy a { text-decoration: underline; text-underline-offset: 2px; }
+.free-workouts-channel-link { display: inline-flex; align-items: center; gap: .4rem; margin-top: .8rem; color: #9e1e65; font-size: .85rem; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; }
+.free-workouts-social { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center; padding: 2rem 0; margin-top: 1rem; }
+.free-workouts-social h3, .free-workouts-membership h3 { margin: .5rem 0; font-size: 1.4rem; }
+.free-workouts-social p, .free-workouts-membership p { font-size: .92rem; max-width: 620px; }
+.free-workouts-social-actions { display: flex; flex-direction: column; gap: .7rem; }
+.free-social-button { display: inline-flex; align-items: center; justify-content: center; gap: .6rem; border: 1px solid #dcb3cc; border-radius: 999px; padding: .85rem 1.3rem; background: #fff; font-size: .85rem; font-weight: 750; white-space: nowrap; }
+.free-social-button:hover { background: #ffe2f1; border-color: #b82278; }
+.free-social-youtube svg { color: #b51d31; }
+.free-workouts-membership { display: flex; gap: 2rem; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #efd1e3; border-radius: 22px; padding: 2rem; }
+.free-workouts-membership .nt-btn { flex-shrink: 0; }
+.social-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 767px) {
+  .free-workouts-heading, .free-workouts-grid, .free-workouts-social { grid-template-columns: 1fr; gap: 1.25rem; }
+  .free-workouts-social { padding: 1.5rem 0; }
+  .free-workouts-social-actions { flex-direction: row; flex-wrap: wrap; }
+  .free-social-button { flex: 1; }
+  .free-workouts-membership { flex-direction: column; align-items: stretch; gap: 1.3rem; padding: 1.4rem; }
+  .free-workouts-membership .nt-btn { white-space: normal; text-align: center; }
+  .free-workout-info { padding: 1.2rem; }
+}
+@media (prefers-reduced-motion: reduce) { .free-workout-play > svg { transition: none; } }
