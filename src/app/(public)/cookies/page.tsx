@@ -88,7 +88,7 @@ export default function CookiesPage() {
           </section>
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white">5. Clases públicas de YouTube</h2>
-            <p>Las miniaturas de las clases gratuitas se sirven desde esta web. El reproductor externo sólo se carga cuando pulsas para ver una clase y utiliza el dominio youtube-nocookie.com. Al cargarlo, tu navegador se conecta con YouTube y Google puede recibir información técnica necesaria para prestar ese servicio, conforme a su <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>. Esto es independiente de aceptar o rechazar nuestras estadísticas opcionales.</p>
+            <p>Las miniaturas de las clases gratuitas se sirven desde esta web: nuestro servidor consulta sus portadas públicas en YouTube y las guarda temporalmente para actualizarlas, sin enviar cookies ni datos de la visitante a YouTube. El reproductor externo sólo se carga cuando pulsas para ver una clase y utiliza el dominio youtube-nocookie.com. Al cargarlo, tu navegador se conecta con YouTube y Google puede recibir información técnica necesaria para prestar ese servicio, conforme a su <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>. Esto es independiente de aceptar o rechazar nuestras estadísticas opcionales.</p>
             <p>Los botones de YouTube e Instagram abren esas plataformas. La suscripción o el seguimiento se confirman allí; esta web no los realiza automáticamente ni accede a tus cuentas sociales.</p>
           </section>
         </div>

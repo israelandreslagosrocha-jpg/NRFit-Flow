@@ -29,3 +29,9 @@ export function freeWorkoutEmbed(id: string) {
   if (!FREE_WORKOUTS.some((video) => video.id === id && video.playback === 'embedded')) return null;
   return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1`;
 }
+
+/** Mismo dominio: el servidor actualiza la portada sin exponer a la visitante a YouTube. */
+export function freeWorkoutThumbnail(id: string) {
+  if (!FREE_WORKOUTS.some((video) => video.id === id)) return null;
+  return `/api/public-workout-thumbnail/${id}`;
+}

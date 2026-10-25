@@ -31,3 +31,14 @@ El inicio conserva la inscripción como CTA principal y ofrece un acceso secunda
 - Ancho móvil observado de 382 px: tarjetas apiladas, sin desbordamiento horizontal y reproductor de 200 px de alto.
 - Suscripción y seguimiento no ejecutados durante las pruebas.
 - Compilación final y despliegue se comprueban antes de entregar.
+
+## Actualización posterior: portadas sincronizadas
+
+A petición del propietario, las portadas ahora se consultan desde YouTube mediante una ruta del mismo dominio: `/api/public-workout-thumbnail/[videoId]`. Sustituye el uso exclusivo de miniaturas locales descrito arriba; esas imágenes quedan como respaldo.
+
+- Sólo acepta los dos IDs públicos de esta selección. No incorpora videos nuevos automáticamente ni consulta contenido privado.
+- Host de origen fijo `i.ytimg.com`, sin reenviar cookies, cabeceras de la visitante, tokens o credenciales. No permite redirecciones del origen ni URLs arbitrarias.
+- Intenta portada HD y luego estándar; si falla, redirige a la imagen local. Tiempo máximo de 4 segundos por intento, tipos de imagen permitidos y tamaño máximo de 2 MB.
+- Caché: 5 minutos en navegador y 15 minutos en CDN. No se promete actualización instantánea: también puede influir la propagación de YouTube. No requiere nuevo despliegue al cambiar una portada.
+- Mantiene el reproductor bajo clic explícito, las restricciones de GAP y la política CSP existente. No se añaden conexiones directas a YouTube desde el navegador para las miniaturas.
+- 27 pruebas de portadas, privacidad y regresión del portal correctas, incluyendo rechazo de IDs ajenos, fallo de HD y respaldo ante HTML, timeout o imagen vacía.

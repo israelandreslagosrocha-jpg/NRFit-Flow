@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Check, ExternalLink, Play } from 'lucide-react';
 import { YouTubeMark, InstagramMark } from '../SocialMarks';
-import { FREE_WORKOUTS, PUBLIC_SOCIAL, freeWorkoutEmbed } from '../../lib/public-social';
+import { FREE_WORKOUTS, PUBLIC_SOCIAL, freeWorkoutEmbed, freeWorkoutThumbnail } from '../../lib/public-social';
 import { emitConversion } from '../../lib/analytics-client';
 import './FreeWorkoutsSection.css';
 
@@ -24,11 +24,11 @@ export default function FreeWorkoutsSection() {
           <div className="free-workout-media">
             {activeVideo === video.id && video.playback === 'embedded' ? <iframe title={video.title + ' · Clase gratuita de Naty Entrenadora'} src={freeWorkoutEmbed(video.id)!} allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : video.playback === 'youtube' ?
               <a className="free-workout-cover" href={'https://www.youtube.com/watch?v=' + video.id} target="_blank" rel="noopener noreferrer" aria-label={'Ver ' + video.title + ' gratis en YouTube (nueva pestaña)'} onClick={() => emitConversion({ event: 'social_click', network: 'youtube' })}>
-                <img src={video.thumbnail} width={640} height={360} loading="lazy" alt={'Miniatura de ' + video.title + ' con Natalia'} />
+                <img src={freeWorkoutThumbnail(video.id)!} width={640} height={360} loading="lazy" alt={'Miniatura de ' + video.title + ' con Natalia'} />
                 <span className="free-workout-play"><Play size={25} fill="currentColor" aria-hidden="true" /><span>Ver en YouTube <ExternalLink size={14} aria-hidden="true" /></span></span>
               </a> :
               <button type="button" className="free-workout-cover" aria-label={'Cargar video de YouTube: ' + video.title} onClick={() => { setActiveVideo(video.id); emitConversion({ event: 'free_workout_open', video: video.id }); }}>
-                <img src={video.thumbnail} width={640} height={360} loading="lazy" alt={'Miniatura de ' + video.title + ' con Natalia'} />
+                <img src={freeWorkoutThumbnail(video.id)!} width={640} height={360} loading="lazy" alt={'Miniatura de ' + video.title + ' con Natalia'} />
                 <span className="free-workout-play"><Play size={25} fill="currentColor" aria-hidden="true" /><span>Ver clase gratis</span></span>
               </button>}
           </div>

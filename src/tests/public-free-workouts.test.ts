@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { FREE_WORKOUTS, PUBLIC_SOCIAL, freeWorkoutEmbed } from '../lib/public-social.ts';
+import { FREE_WORKOUTS, PUBLIC_SOCIAL, freeWorkoutEmbed, freeWorkoutThumbnail } from '../lib/public-social.ts';
+import { publicWorkoutThumbnail } from '../lib/public-workout-thumbnail.ts';
 import { safeConversion, analyticsPage } from '../lib/analytics-policy.ts';
 const source = (path: string) => fs.readFileSync(new URL('../../' + path, import.meta.url), 'utf8');
 
@@ -17,6 +18,50 @@ test('sólo muestra los dos videos públicos verificados y la cuenta correcta', 
   }
   assert.equal(freeWorkoutEmbed('unlisted-private-video'), null);
   assert.equal(freeWorkoutEmbed('jjcmvwv1hP8'), null, 'No mostrar el reproductor que YouTube bloquea para GAP');
+  assert.equal(freeWorkoutThumbnail('BvZ08hjIF4o'), '/api/public-workout-thumbnail/BvZ08hjIF4o');
+  assert.equal(freeWorkoutThumbnail('https://private.example/image'), null);
+});
+test('actualiza la portada desde un host fijo sin reenviar datos de la visitante', async () => {
+  const response = await publicWorkoutThumbnail('BvZ08hjIF4o', 'https://natyentrenadora.com/api/public-workout-thumbnail/BvZ08hjIF4o', async (url, options) => {
+    assert.equal(url, 'https://i.ytimg.com/vi/BvZ08hjIF4o/maxresdefault.jpg');
+    assert.equal(options?.cache, 'no-store');
+    assert.equal(options?.redirect, 'error');
+    assert.equal(options?.headers, undefined);
+    assert.ok(options?.signal);
+    return new Response(new Uint8Array([255, 216, 255]), { headers: { 'Content-Type': 'image/jpeg' } });
+  });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('content-type'), 'image/jpeg');
+  assert.equal(response.headers.get('cache-control'), 'public, max-age=300, s-maxage=900');
+  assert.equal((await response.arrayBuffer()).byteLength, 3);
+  const section = source('src/components/landing/FreeWorkoutsSection.tsx');
+  assert.equal(section.match(/src={freeWorkoutThumbnail\(video.id\)!}/g)?.length, 2);
+});
+test('rechaza IDs ajenos sin hacer consultas y recurre a calidad estándar si falla HD', async () => {
+  let calls = 0;
+  const unknown = await publicWorkoutThumbnail('private', 'https://natyentrenadora.com/', async () => { calls++; throw new Error('No debe consultar'); });
+  assert.equal(unknown.status, 404);
+  assert.equal(calls, 0);
+  const urls: string[] = [];
+  const result = await publicWorkoutThumbnail('jjcmvwv1hP8', 'https://natyentrenadora.com/', async (url) => {
+    urls.push(String(url));
+    return urls.length === 1 ? new Response(null, { status: 404 }) : new Response('image', { headers: { 'content-type': 'image/jpeg' } });
+  });
+  assert.equal(result.status, 200);
+  assert.deepEqual(urls, ['https://i.ytimg.com/vi/jjcmvwv1hP8/maxresdefault.jpg', 'https://i.ytimg.com/vi/jjcmvwv1hP8/hqdefault.jpg']);
+});
+test('fallos, HTML y respuestas vacías usan el respaldo local y se reintentan pronto', async () => {
+  for (const fetcher of [
+    async () => { throw new Error('Timeout'); },
+    async () => new Response('<html>blocked</html>', { headers: { 'content-type': 'text/html' } }),
+    async () => new Response(null, { headers: { 'content-type': 'image/jpeg' } }),
+    async () => new Response('huge', { headers: { 'content-type': 'image/jpeg', 'content-length': '3000000' } }),
+  ]) {
+    const result = await publicWorkoutThumbnail('BvZ08hjIF4o', 'https://natyentrenadora.com/', fetcher);
+    assert.equal(result.status, 307);
+    assert.equal(result.headers.get('location'), 'https://natyentrenadora.com/images/free-workouts/pilates-principiantes.avif');
+    assert.equal(result.headers.get('cache-control'), 'public, max-age=60, s-maxage=60');
+  }
 });
 test('los videos se cargan tras acción explícita, no al entrar a la página', () => {
   const section = source('src/components/landing/FreeWorkoutsSection.tsx');
